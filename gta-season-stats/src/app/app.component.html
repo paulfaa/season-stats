@@ -1,0 +1,58 @@
+<mat-toolbar>
+  <mat-toolbar-row>
+    <span id="main-title">GTA Wrapped</span>
+  </mat-toolbar-row>
+  
+  <mat-toolbar-row>
+    <span id="sub-title">2025/2026 Season</span>
+  </mat-toolbar-row>
+</mat-toolbar>
+
+<app-podium [podiumTitle]="'Most wins'" [podiumData]="[
+  { username: 'Alice', points: 200 },
+  { username: 'Bob', points: 150 },
+  { username: 'Charlie', points: 120 }
+]"></app-podium>
+
+<app-podium [podiumTitle]="'Most second places'" [podiumData]="[
+  { username: 'Alice', points: 200 },
+  { username: 'Bob', points: 150 },
+  { username: 'Charlie', points: 120 }
+]"></app-podium>
+
+<app-podium [podiumTitle]="'Most appearances'" [podiumData]="[
+  { username: 'Alice', points: 200 },
+  { username: 'Bob', points: 150 },
+  { username: 'Charlie', points: 120 }
+]"></app-podium>
+
+<app-number-display
+  [numberTitle]="'Total Playlists'"
+  [podiumData]="{ username: '', points: 200 }"
+>
+</app-number-display>
+
+<app-number-display
+  [numberTitle]="'Average length'"
+  [podiumData]="{ username: '', points: 12.5 }"
+>
+</app-number-display>
+
+Most Dedicated
+
+Playlists created
+
+Average length
+
+Most draws
+
+Average squad size
+
+Most popular day
+
+
+Longest win streak
+
+Average points
+
+Table with all data

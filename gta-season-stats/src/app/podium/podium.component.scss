@@ -1,0 +1,47 @@
+// podium.component.scss
+.podium-container {
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+    gap: 10px;
+    text-align: center;
+    padding-top: 35px;
+  
+    .podium-item {
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      align-items: center;
+      padding: 10px;
+      border-radius: 10px 10px 0 0;
+      width: 80px;
+  
+      &.first {
+        background-color: #FFD700;
+        height: 120px;
+      }
+      &.second {
+        background-color: #C0C0C0;
+        height: 100px;
+      }
+      &.third {
+        background-color: #CD7F32;
+        height: 80px;
+      }
+  
+      .username {
+        font-weight: bold;
+      }
+      .points {
+        font-size: 14px;
+      }
+    }
+}
+
+.podium-title{
+  display: flex;
+  justify-content: center;
+  font-size: x-large;
+  padding-top: 15px;
+  padding-bottom: 25px;
+}
