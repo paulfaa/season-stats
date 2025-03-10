@@ -11,7 +11,7 @@ export class StatsContainerComponent implements OnInit {
   constructor(private sheetsService: GoogleSheetsService) { }
 
   ngOnInit(): void {
-    const result = this.sheetsService.fetchExcel().subscribe(result => {
+    const result = this.sheetsService.fetchSheetsPlaylistData().subscribe(result => {
       console.log(result);
     });
   }

@@ -9,3 +9,8 @@ export interface Playlist {
     length: number;
     players: Player[];
 }
+
+export interface PodiumResult {
+    title: string;
+    players: Player[];
+}

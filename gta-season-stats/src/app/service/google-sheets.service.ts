@@ -2,6 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { map, Observable } from 'rxjs';
 import * as XLSX from 'xlsx';
+import { Playlist } from '../models';
 
 @Injectable({
   providedIn: 'root'
@@ -11,7 +12,7 @@ export class GoogleSheetsService {
 
   constructor(private http: HttpClient) {}
 
-  fetchExcel(): Observable<any[]> {
+  fetchSheetsPlaylistData(): Observable<Playlist[]> {
     return this.http.get(GoogleSheetsService.SHEET_URL, { responseType: 'arraybuffer' }).pipe(
       map(data => this.parseExcel(data))
     );
@@ -26,7 +27,7 @@ export class GoogleSheetsService {
     return this.mergeData(playlistsSheet, playersSheet);
   }
 
-  private mergeData(playlists: any[], players: any[]): any[] {
+  private mergeData(playlists: any[], players: any[]): Playlist[] {
     return playlists.map(pl => ({
       date: pl['Date'],
       name: pl['Playlist_Name'],
