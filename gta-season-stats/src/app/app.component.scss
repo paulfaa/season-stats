@@ -6,3 +6,35 @@
 #sub-title{
     font-size: small;
 }
+
+
+#content{
+    overflow: visible;
+    text-align: center;
+    font-size: 1.5rem;
+}
+#container{
+    width: 100%;
+}
+
+app-podium{
+    position: absolute;
+    height: auto;
+    z-index: 0;
+    width: 100%;
+}
+
+app-podium:nth-child(1) {
+    top: 20vh;
+}
+app-podium:nth-child(2) {
+    top: 70vh;
+}
+app-podium:nth-child(3) {
+    top: 130vh;
+}
+
+.stats-container {
+    position: relative; /* Ensure children are positioned relative to this */
+    min-height: 200vh; /* Ensure enough space to scroll */
+}

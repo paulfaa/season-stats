@@ -8,35 +8,19 @@
   </mat-toolbar-row>
 </mat-toolbar>
 
-<app-podium [podiumTitle]="'Most wins'" [podiumData]="[
-  { username: 'Alice', points: 200 },
-  { username: 'Bob', points: 150 },
-  { username: 'Charlie', points: 120 }
-]"></app-podium>
+<stats-container></stats-container>
 
-<app-podium [podiumTitle]="'Most second places'" [podiumData]="[
-  { username: 'Alice', points: 200 },
-  { username: 'Bob', points: 150 },
-  { username: 'Charlie', points: 120 }
-]"></app-podium>
-
-<app-podium [podiumTitle]="'Most appearances'" [podiumData]="[
-  { username: 'Alice', points: 200 },
-  { username: 'Bob', points: 150 },
-  { username: 'Charlie', points: 120 }
-]"></app-podium>
-
-<app-number-display
-  [numberTitle]="'Total Playlists'"
-  [podiumData]="{ username: '', points: 200 }"
->
-</app-number-display>
-
-<app-number-display
-  [numberTitle]="'Average length'"
-  [podiumData]="{ username: '', points: 12.5 }"
->
-</app-number-display>
+<div class="stats-container">
+  <app-podium 
+    *ngFor="let podium of podiums; let i = index" 
+    parallax 
+    [ratio]="1"
+    [fadeStart]="i * 10"
+    [fadeEnd]="i * 150"
+    [podiumTitle]="podium.title" 
+    [podiumData]="podium.data">
+  </app-podium>
+</div>
 
 Most Dedicated
 
@@ -56,3 +40,15 @@ Longest win streak
 Average points
 
 Table with all data
+
+
+<div id="container">
+  <div id="content">
+    <div style="width: 80%; margin-left: auto; margin-right: auto;">
+      Lots of placeholder text here so we ample vertical scroll to play with....
+    </div>
+  </div>
+</div>
+
+
+Append the rest of these images to the above CSV files. The list of possible usernames are 'hurling1', 'cooooney95', 'meas_taibhse', 'mikc95', 'kendy232', 'jackw2610', 'iiCiaran', if you are unable to read the username text correctly, pick the most similar one from the list
