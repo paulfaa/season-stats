@@ -1,9 +1,11 @@
 <div class="number-display-container">
-    <div class="number-value">
-        {{podiumData.points}}
+    <div class="number-value" *ngIf="individualResult?.value || individualResult?.player">
+        {{individualResult?.value}}
+        <p>{{individualResult?.player}}</p>
     </div>
-    {{podiumData.username}}
-    <span class="number-title">
-        {{numberTitle}}
-    </span>
+    
+    <p class="number-subtitle">
+        {{individualResult?.subtitle}}
+    </p>
 </div>
+<span class="number-title">{{individualResult?.title}}</span>

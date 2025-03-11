@@ -1,4 +1,5 @@
 import { Component, Input, OnInit } from '@angular/core';
+import { IndividualResult } from '../models';
 
 @Component({
   selector: 'app-number-display',
@@ -7,8 +8,7 @@ import { Component, Input, OnInit } from '@angular/core';
 })
 export class NumberDisplayComponent implements OnInit {
 
-  @Input() podiumData: { username?: string; points?: number } = {username: undefined, points: undefined};
-  @Input() numberTitle: string = "";
+  @Input() individualResult: IndividualResult | undefined = undefined;
 
   constructor() { }
 

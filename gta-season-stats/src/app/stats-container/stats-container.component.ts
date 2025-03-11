@@ -1,5 +1,7 @@
 import { Component, OnInit } from '@angular/core';
-import { GoogleSheetsService } from '../service/google-sheets.service';
+import { StatsCalculatorService } from '../service/stats-calculator.service';
+import { Observable } from 'rxjs';
+import { IndividualResult, PodiumResult } from '../models';
 
 @Component({
   selector: 'stats-container',
@@ -8,11 +10,15 @@ import { GoogleSheetsService } from '../service/google-sheets.service';
 })
 export class StatsContainerComponent implements OnInit {
 
-  constructor(private sheetsService: GoogleSheetsService) { }
+  podiumStats$: Observable<PodiumResult[]> | undefined;
+  individualStats$: Observable<IndividualResult[]> | undefined;
+
+  constructor(private statsCalculator: StatsCalculatorService) { }
 
   ngOnInit(): void {
-    const result = this.sheetsService.fetchSheetsPlaylistData().subscribe(result => {
-      console.log(result);
-    });
+    this.podiumStats$ = this.statsCalculator.getAllPodiumStats();
+    this.podiumStats$.subscribe();
+    this.individualStats$ = this.statsCalculator.getAllIndividualStats();
+    this.individualStats$.subscribe();
   }
 }

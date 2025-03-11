@@ -10,6 +10,8 @@ import { NumberDisplayComponent } from './number-display/number-display.componen
 import { HttpClientModule } from '@angular/common/http';
 import { ParallaxDirective } from './parallax.directive';
 import { StatsContainerComponent } from './stats-container/stats-container.component';
+import { PodiumFormatPipe } from './pipes/podium-format.pipe';
+import { MatDividerModule } from '@angular/material/divider';
 
 @NgModule({
   declarations: [
@@ -17,14 +19,16 @@ import { StatsContainerComponent } from './stats-container/stats-container.compo
     PodiumComponent,
     NumberDisplayComponent,
     ParallaxDirective,
-    StatsContainerComponent
+    StatsContainerComponent,
+    PodiumFormatPipe,
   ],
   imports: [
     BrowserModule,
     HttpClientModule,
     AppRoutingModule,
     BrowserAnimationsModule,
-    MatToolbarModule
+    MatToolbarModule,
+    MatDividerModule
   ],
   providers: [],
   bootstrap: [AppComponent]

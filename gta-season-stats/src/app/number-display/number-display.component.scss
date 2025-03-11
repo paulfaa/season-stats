@@ -2,19 +2,25 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    gap: 10px;
     text-align: center;
-    padding-top: 35px;
+    padding-top: 100px;
     flex-direction: column;
-    padding-bottom: 55px;
 }
 
 .number-title{
+    display: flex;
+    justify-content: center;
     font-size: x-large;
+    padding-bottom: 55px;
 }
 
 .number-value{
     font-size: 70px;
     padding-bottom: 15px;
+    text-shadow: #FC0 1px 0 10px;
+}
+
+.number-subtitle {
+    font-size: large;
     text-shadow: #FC0 1px 0 10px;
 }

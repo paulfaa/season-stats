@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { map, Observable } from 'rxjs';
+import { map, Observable, of, tap } from 'rxjs';
 import * as XLSX from 'xlsx';
 import { Playlist } from '../models';
 
@@ -13,9 +13,24 @@ export class GoogleSheetsService {
   constructor(private http: HttpClient) {}
 
   fetchSheetsPlaylistData(): Observable<Playlist[]> {
-    return this.http.get(GoogleSheetsService.SHEET_URL, { responseType: 'arraybuffer' }).pipe(
-      map(data => this.parseExcel(data))
-    );
+    const lastUpdate = localStorage.getItem('lastUpdate');
+    const storedData = localStorage.getItem('sheetsData');
+    // If data was fetched less than an hour ago, use the cached data
+    if (lastUpdate && storedData && Date.now() - parseInt(lastUpdate) < 1000 * 60 * 60) {
+      console.info('Using cached data');
+      const arrayBuffer = this.base64ToArrayBuffer(storedData);
+      return of(this.parseExcel(arrayBuffer));
+    }
+    else {
+      console.info('Fetching new data');
+      return this.http.get(GoogleSheetsService.SHEET_URL, { responseType: 'arraybuffer' }).pipe(
+        tap(data => {
+          localStorage.setItem('sheetsData', this.arrayBufferToBase64(data));
+          localStorage.setItem('lastUpdate', Date.now().toString());
+        }),
+        map(data => this.parseExcel(data))
+      );
+    }
   }
 
   private parseExcel(data: ArrayBuffer): any[] {
@@ -24,7 +39,9 @@ export class GoogleSheetsService {
     const playlistsSheet = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
     const playersSheet = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[1]]);
 
-    return this.mergeData(playlistsSheet, playersSheet);
+    const result = this.mergeData(playlistsSheet, playersSheet);
+    console.log(result);
+    return result;
   }
 
   private mergeData(playlists: any[], players: any[]): Playlist[] {
@@ -39,6 +56,25 @@ export class GoogleSheetsService {
           points: parseInt(p['Points'])
         }))
     }));
+  }
+
+  private base64ToArrayBuffer(base64: string): ArrayBuffer {
+    const binaryString = atob(base64);
+    const len = binaryString.length;
+    const bytes = new Uint8Array(len);
+    for (let i = 0; i < len; i++) {
+      bytes[i] = binaryString.charCodeAt(i);
+    }
+    return bytes.buffer;
+  }
+  
+  private arrayBufferToBase64(buffer: ArrayBuffer): string {
+    const bytes = new Uint8Array(buffer);
+    let binary = '';
+    for (let i = 0; i < bytes.byteLength; i++) {
+      binary += String.fromCharCode(bytes[i]);
+    }
+    return btoa(binary);
   }
 
 }

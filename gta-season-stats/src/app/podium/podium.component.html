@@ -1,20 +1,17 @@
 <div class="podium-container" [style.top.px]="startPosition">
-    <!-- Second place -->
-    <div class="podium-item second">
-      <p class="username">{{ podiumData[1].username || '---' }}</p>
-      <p class="points">{{ podiumData[1].points || 0 }} pts</p>
+    <div *ngIf="podiumData[1]?.name" class="podium-item second">
+      <p class="username">{{ podiumData[1].name}}</p>
+      <p class="points">{{ podiumData[1].points | podiumFormat: podiumType }}</p>
     </div>
     
-    <!-- First place (Tallest) -->
     <div class="podium-item first">
-      <p class="username">{{ podiumData[0].username || '---' }}</p>
-      <p class="points">{{ podiumData[0].points || 0 }} pts</p>
+      <p class="username">{{ podiumData[0].name}}</p>
+      <p class="points">{{ podiumData[0].points | podiumFormat: podiumType }}</p>
     </div>
     
-    <!-- Third place -->
-    <div class="podium-item third">
-      <p class="username">{{ podiumData[2].username || '---' }}</p>
-      <p class="points">{{ podiumData[2].points || 0 }} pts</p>
+    <div *ngIf="podiumData[2]?.name" class="podium-item third">
+      <p class="username">{{ podiumData[2].name}}</p>
+      <p class="points">{{ podiumData[2].points | podiumFormat: podiumType }}</p>
     </div>
   </div>
   <span class="podium-title">{{podiumTitle}}</span>

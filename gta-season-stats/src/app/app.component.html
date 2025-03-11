@@ -10,17 +10,7 @@
 
 <stats-container></stats-container>
 
-<div class="stats-container">
-  <app-podium 
-    *ngFor="let podium of podiums; let i = index" 
-    parallax 
-    [ratio]="1"
-    [fadeStart]="i * 10"
-    [fadeEnd]="i * 150"
-    [podiumTitle]="podium.title" 
-    [podiumData]="podium.data">
-  </app-podium>
-</div>
+
 
 Most Dedicated
 
