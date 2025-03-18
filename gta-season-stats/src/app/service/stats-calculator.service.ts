@@ -32,17 +32,17 @@ export class StatsCalculatorService {
 
   public getAllPodiumStats(): Observable<PodiumResult[]> {
     return this.playlistData$.pipe(
-      filter(data => data.length > 0), // ✅ Ensures stats are calculated only when data is available
-      tap(() => this.updateAllGroupStats()), // ✅ Runs update only once data exists
-      switchMap(() => this.podiumData$) // ✅ Returns updated stats
+      filter(data => data.length > 0), 
+      tap(() => this.updateAllGroupStats()),
+      switchMap(() => this.podiumData$)
     );
   }
 
   public getAllIndividualStats(): Observable<IndividualResult[]> {
     return this.playlistData$.pipe(
-      filter(data => data.length > 0), // ✅ Ensures stats are calculated only when data is available
-      tap(() => this.updateAllIndividualStats()), // ✅ Runs update only once data exists
-      switchMap(() => this.individualData$) // ✅ Returns updated stats
+      filter(data => data.length > 0), 
+      tap(() => this.updateAllIndividualStats()),
+      switchMap(() => this.individualData$) 
     );
   }
 
@@ -51,7 +51,7 @@ export class StatsCalculatorService {
     stats.push(this.calculateTotalNumberOfPlaylists());
     stats.push(this.calculateAveragePlaylistLength());
     stats.push(this.calculateAverageSquadSize());
-    stats.push(this.calculateMostPopularDay());
+    stats.push(...this.calculateMostPopularDays());
     stats.push(this.calculateLongestWinningStreak());
     this.individualDataSubject.next(stats);
   }
@@ -85,8 +85,7 @@ export class StatsCalculatorService {
     return { title: 'Average Squad Size', value: avgSize }
   }
 
-  // also calculate least popular day
-  private calculateMostPopularDay(): IndividualResult {
+  private calculateMostPopularDays(): IndividualResult[] {
     const dayCounts: Record<string, number> = {};
 
     this.playlistDataSubject.value.forEach(playlist => {
@@ -95,12 +94,14 @@ export class StatsCalculatorService {
     });
 
     const sortedDays = Object.entries(dayCounts).sort((a, b) => b[1] - a[1]);
-    const result = sortedDays[0][0];
-    return { title: 'Most Popular Day', subtitle: result }
+    const mostPopularDay = sortedDays[0][0];
+    const sortedLeastPopular = Object.entries(dayCounts).sort((a, b) => a[1] - b[1]); 
+    const leastPopularDay = sortedLeastPopular[0][0];
+
+    return [{ title: 'Most Popular Day', subtitle: mostPopularDay }, { title: 'Least Popular Day', subtitle: leastPopularDay }];
   }
 
   private calculateLongestWinningStreak(): IndividualResult {
-    // Step 1: Sort playlists by date (assuming date format is YYYY-MM-DD)
     this.playlistDataSubject.value.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
     let longestStreak = 0;
@@ -108,29 +109,26 @@ export class StatsCalculatorService {
     let currentWinner = "";
     let bestPlayer = "";
 
-    // Step 2: Iterate through playlists to track streaks
     this.playlistDataSubject.value.forEach(playlist => {
-      //ignore draws
-      if (playlist.players[0].points == playlist.players[1].points) {
+      if (this.playlistWasDraw(playlist)) {
         return;
       }
-      const winner = playlist.players[0].name; // First player is the winner
+      const winner = playlist.players[0].name; 
 
       if (winner === currentWinner) {
-        currentStreak++; // Extend the streak
+        currentStreak++;
       } else {
         currentWinner = winner;
-        currentStreak = 1; // Reset streak
+        currentStreak = 1;
       }
 
-      // Update longest streak and best player
       if (currentStreak > longestStreak) {
         longestStreak = currentStreak;
         bestPlayer = currentWinner;
       }
     });
 
-    return { title: 'Longest Streak:', subtitle: bestPlayer, value: longestStreak }; // Return the player with the longest winning streak
+    return { title: 'Longest Winning Streak:', subtitle: bestPlayer, value: longestStreak };
   }
 
   private calculateMostWins(): PodiumResult {
@@ -179,7 +177,7 @@ export class StatsCalculatorService {
       .map(([name, count]) => ({ name, points: count })) // 'points' represents second-place finishes
       .sort((a, b) => b.points - a.points);
 
-    return this.generateWorstThreePodiumStat("Most Second Place Finishes", sortedPlayers);
+    return this.generateBestThreePodiumStat("Most Second Place Finishes", sortedPlayers);
   }
 
   private calculateMostLastPlaces(): PodiumResult {
@@ -198,16 +196,14 @@ export class StatsCalculatorService {
       .map(([name, count]) => ({ name, points: count }))
       .sort((a, b) => b.points - a.points);
 
-    return this.generateWorstThreePodiumStat("Most Last Place Finishes", sortedPlayers);
+    return this.generateBestThreePodiumStat("Most Last Place Finishes", sortedPlayers);
   }
 
-  //also calc lowest win ratio
   private calculateWinRatios(): PodiumResult[] {
     const playerStats: Record<string, { wins: number; appearances: number }> = {};
 
-    // Step 1: Count wins and appearances
     this.playlistDataSubject.value.forEach(playlist => {
-      if (playlist.players[0].points == playlist.players[1].points) {
+      if(this.playlistWasDraw(playlist)){
         return
       }
 
@@ -267,7 +263,7 @@ export class StatsCalculatorService {
 
     // Step 1: Calculate win margins for each winner
     this.playlistDataSubject.value.forEach(playlist => {
-      if (this.checkIfPlaylistWasDraw(playlist)) {
+      if (this.playlistWasDraw(playlist)) {
         return
       }
       const sortedPlayers = [...playlist.players].sort((a, b) => b.points - a.points);
@@ -292,7 +288,7 @@ export class StatsCalculatorService {
         points: stats.totalMargin / stats.wins // Average win margin
       }));
 
-    const bestAverageWinMargin = this.generateBestThreePodiumStat("Average win margin", averageWinMargins);
+    const bestAverageWinMargin = this.generateBestThreePodiumStat("Best Average win margin", averageWinMargins);
     const worstAverageWinMargin = this.generateWorstThreePodiumStat("Worst Average win margin", averageWinMargins);
     return [bestAverageWinMargin, worstAverageWinMargin];
   }
@@ -354,13 +350,12 @@ export class StatsCalculatorService {
   private generateWorstThreePodiumStat(podiumTitle: string, players: Player[]): PodiumStat {
     return {
       title: podiumTitle,
-      players: players.sort((a, b) => a.points - b.points).slice(0, 3)
+      players: players.sort((a, b) => a.points - b.points).slice(0, 3),
+      isNegative: true
     };
   }
 
-  private checkIfPlaylistWasDraw(playlist: Playlist): boolean {
+  private playlistWasDraw(playlist: Playlist): boolean {
     return playlist.players[0].points == playlist.players[1].points;
   }
-
-
 }

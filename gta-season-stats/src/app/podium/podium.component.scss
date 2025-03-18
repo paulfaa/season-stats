@@ -1,47 +1,93 @@
-// podium.component.scss
 .podium-container {
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  text-align: center;
+  padding-top: 100px;
+
+  .podium-item {
     display: flex;
-    justify-content: center;
-    align-items: flex-end;
-    gap: 10px;
-    text-align: center;
-    padding-top: 100px;
-  
-    .podium-item {
-      display: flex;
-      flex-direction: column;
-      justify-content: flex-end;
-      align-items: center;
-      padding: 10px;
-      border-radius: 10px 10px 0 0;
-      width: 80px;
-  
-      &.first {
-        background-color: #FFD700;
-        height: 120px;
-      }
-      &.second {
-        background-color: #C0C0C0;
-        height: 100px;
-      }
-      &.third {
-        background-color: #CD7F32;
-        height: 80px;
-      }
-  
-      .username {
-        font-weight: bold;
-      }
-      .points {
-        font-size: 14px;
-      }
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: center;
+    padding: 10px;
+    border-radius: 10px 10px 0 0;
+    width: 90px;
+
+    &.first {
+      background-color: #FFD700;
+      animation-delay: calc(var(--random-delay) * 1s);
+      height: 120px;
     }
+
+    &.second {
+      background-color: #C0C0C0;
+      height: 100px;
+    }
+
+    &.third {
+      background-color: #CD7F32;
+      height: 80px;
+    }
+
+    &.negative.first {
+      background-color: #e9350d;
+    }
+
+    &.negative.second {
+      background-color: #f5670f;
+    }
+
+    &.negative.third {
+      background-color: #de9104;
+    }
+
+    .username {
+      font-weight: bold;
+    }
+
+    .points {
+      font-size: 14px;
+    }
+  }
 }
 
-.podium-title{
+.podium-title {
   display: flex;
   justify-content: center;
   font-size: x-large;
   padding-top: 15px;
   padding-bottom: 55px;
+}
+
+@keyframes shine {
+  0% {
+    background-position: 0% 50%;
+  }
+
+  100% {
+    background-position: 100% 50%;
+  }
+}
+
+.gold {
+  background: linear-gradient(110deg, #FFD700 20%, #fffacdb2 50%, #FFD700 60%);
+  background-size: 200% 200%;
+  animation-delay: calc(var(--random-delay) * 1s);
+  animation: shine 2s linear infinite alternate;
+}
+
+@keyframes vibrate-1 {
+  0% { transform: translate(0); }
+  20% { transform: translate(-0px, 2px); }
+  40% { transform: translate(2px, 0px); }
+  60% { transform: translate(-2px, 0px); }
+  80% { transform: translate(2px, 2px); }
+  100% { transform: translate(0); }
+}
+
+.podium-item.negative.first {
+  background: #e9350d important;
+  -webkit-animation: vibrate-1 0.6s linear infinite both;
+  animation: vibrate-1 0.6s linear infinite both;
 }

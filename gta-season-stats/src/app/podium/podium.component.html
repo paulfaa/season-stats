@@ -1,15 +1,15 @@
-<div class="podium-container" [style.top.px]="startPosition">
-    <div *ngIf="podiumData[1]?.name" class="podium-item second">
+<div class="podium-container">
+    <div *ngIf="podiumData[1]?.name" class="podium-item second" [style.height.px]="podiumHeights[1]" [ngClass]="{ 'negative': isNegative }">
       <p class="username">{{ podiumData[1].name}}</p>
       <p class="points">{{ podiumData[1].points | podiumFormat: podiumType }}</p>
     </div>
     
-    <div class="podium-item first">
+    <div class="podium-item first" [style.height.px]="podiumHeights[0]" [ngClass]="{ 'negative': isNegative, 'gold': !isNegative }">
       <p class="username">{{ podiumData[0].name}}</p>
       <p class="points">{{ podiumData[0].points | podiumFormat: podiumType }}</p>
     </div>
     
-    <div *ngIf="podiumData[2]?.name" class="podium-item third">
+    <div *ngIf="podiumData[2]?.name" class="podium-item third" [style.height.px]="podiumHeights[2]" [ngClass]="{ 'negative': isNegative }">
       <p class="username">{{ podiumData[2].name}}</p>
       <p class="points">{{ podiumData[2].points | podiumFormat: podiumType }}</p>
     </div>

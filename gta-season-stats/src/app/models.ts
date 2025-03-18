@@ -13,6 +13,7 @@ export interface Playlist {
 export interface PodiumResult {
     title: string;
     players: Player[];
+    isNegative?: boolean;
 }
 
 export interface IndividualResult {

@@ -9,6 +9,8 @@
     <app-podium 
       *ngFor="let podium of podiumStats$ | async; let i = index" 
       [podiumTitle]="podium.title" 
-      [podiumData]="podium.players">
+      [podiumData]="podium.players"
+      [isNegative]="podium.isNegative"
+      >
     </app-podium>
   </div>
