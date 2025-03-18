@@ -11,6 +11,7 @@ export class PodiumComponent implements OnInit {
   @Input() podiumTitle: string = "";
   @Input() startPosition: number = 0;
   @Input() isNegative: boolean | undefined;
+  @Input() invertOrder: boolean | undefined;
 
   maxHeight = 140;
   minHeight = 80;

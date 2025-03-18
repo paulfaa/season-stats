@@ -14,6 +14,7 @@ export interface PodiumResult {
     title: string;
     players: Player[];
     isNegative?: boolean;
+    invertOrder?: boolean;
 }
 
 export interface IndividualResult {

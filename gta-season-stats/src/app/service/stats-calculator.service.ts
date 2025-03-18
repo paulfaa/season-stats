@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { IndividualResult, Player, Playlist, PodiumResult, PodiumResult as PodiumStat } from '../models';
 import { GoogleSheetsService } from './google-sheets.service';
-import { BehaviorSubject, filter, Observable, switchMap, tap } from 'rxjs';
+import { BehaviorSubject, filter, Observable, of, switchMap, tap } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
@@ -44,6 +44,10 @@ export class StatsCalculatorService {
       tap(() => this.updateAllIndividualStats()),
       switchMap(() => this.individualData$) 
     );
+  }
+
+  public getAllChartData(): Observable<any> {
+    return of("todo")
   }
 
   public updateAllIndividualStats(): void {

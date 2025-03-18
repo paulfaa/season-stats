@@ -12,6 +12,9 @@ import { ParallaxDirective } from './parallax.directive';
 import { StatsContainerComponent } from './stats-container/stats-container.component';
 import { PodiumFormatPipe } from './pipes/podium-format.pipe';
 import { MatDividerModule } from '@angular/material/divider';
+import { ChartContainerComponent } from './chart-container/chart-container.component';
+import { ChartComponent } from './chart/chart.component';
+//import { NgChartsModule } from 'ng2-charts';
 
 @NgModule({
   declarations: [
@@ -21,6 +24,8 @@ import { MatDividerModule } from '@angular/material/divider';
     ParallaxDirective,
     StatsContainerComponent,
     PodiumFormatPipe,
+    ChartContainerComponent,
+    ChartComponent,
   ],
   imports: [
     BrowserModule,
@@ -28,7 +33,8 @@ import { MatDividerModule } from '@angular/material/divider';
     AppRoutingModule,
     BrowserAnimationsModule,
     MatToolbarModule,
-    MatDividerModule
+    MatDividerModule,
+    //NgChartsModule
   ],
   providers: [],
   bootstrap: [AppComponent]
