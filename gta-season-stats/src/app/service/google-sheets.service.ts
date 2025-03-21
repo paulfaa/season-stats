@@ -46,7 +46,7 @@ export class GoogleSheetsService {
 
   private mergeData(playlists: any[], players: any[]): Playlist[] {
     return playlists.map(pl => ({
-      date: pl['Date'],
+      date: this.formatDate(pl['Date']),
       name: pl['Playlist_Name'],
       length: parseInt(pl['Count_Events']),
       players: players
@@ -57,6 +57,11 @@ export class GoogleSheetsService {
         }))
     }));
   }
+
+  private formatDate(serial: number): string {
+    const date = new Date((serial - 25569) * 86400000);
+    return date.toISOString().split('T')[0];
+}
 
   private base64ToArrayBuffer(base64: string): ArrayBuffer {
     const binaryString = atob(base64);

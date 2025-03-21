@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Observable } from 'rxjs';
 import { StatsCalculatorService } from '../service/stats-calculator.service';
-import { Chart } from 'chart.js';
+import { Chart, ChartData } from 'chart.js';
 
 @Component({
   selector: 'chart-container',
@@ -10,12 +10,12 @@ import { Chart } from 'chart.js';
 })
 export class ChartContainerComponent implements OnInit {
 
-  charts$: Observable<Chart[]> | undefined;
+  charts$: Observable<ChartData[]> | undefined;
 
   constructor(private statsCalculator: StatsCalculatorService) { }
 
   ngOnInit(): void {
-    this.charts$ = this.statsCalculator.getAllChartData();
+    this.charts$ = this.statsCalculator.chartData$;
   }
 
 }

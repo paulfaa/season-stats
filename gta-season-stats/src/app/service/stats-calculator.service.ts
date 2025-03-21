@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { IndividualResult, Player, Playlist, PodiumResult, PodiumResult as PodiumStat } from '../models';
 import { GoogleSheetsService } from './google-sheets.service';
 import { BehaviorSubject, filter, Observable, of, switchMap, tap } from 'rxjs';
+import { ChartData } from 'chart.js';
 
 @Injectable({
   providedIn: 'root'
@@ -14,6 +15,8 @@ export class StatsCalculatorService {
   public podiumData$ = this.podiumDataSubject.asObservable();
   private individualDataSubject = new BehaviorSubject<IndividualResult[]>([]);
   public individualData$ = this.individualDataSubject.asObservable();
+  private chartDataSubject = new BehaviorSubject<ChartData[]>([]);
+  public chartData$ = this.chartDataSubject.asObservable();
 
   constructor(private googleSheetsService: GoogleSheetsService) {
     this.fetchPlaylistData();
@@ -24,7 +27,8 @@ export class StatsCalculatorService {
       next: (data) => {
         this.playlistDataSubject.next(data);
         this.updateAllIndividualStats();
-        this.updateAllGroupStats();  // ✅ Now updates stats after data is loaded
+        this.updateAllGroupStats();
+        this.updateAllCharts();
       },
       error: (error) => console.error('Error fetching playlist data:', error)
     });
@@ -46,8 +50,50 @@ export class StatsCalculatorService {
     );
   }
 
-  public getAllChartData(): Observable<any> {
-    return of("todo")
+  private getAllChartData(): ChartData<'line'> {
+    const labels: string[] = [];
+    const wins: { [playerName: string]: number[] } = {};
+    const cumulativeWins: { [playerName: string]: number } = {};
+
+    this.playlistDataSubject.value.forEach((playlist) => {
+      const [year, month, day] = playlist.date.split('-'); // Split YYYY-MM-DD
+      labels.push(`${day}-${month}-${year}`);
+
+      const maxPoints = Math.max(...playlist.players.map(p => p.points));
+      const winners = playlist.players.filter(p => p.points === maxPoints);
+
+      winners.forEach(winner => {
+        if (!cumulativeWins[winner.name]) {
+          cumulativeWins[winner.name] = 0;
+          wins[winner.name] = [];
+        }
+        cumulativeWins[winner.name]++; 
+      });
+
+      Object.keys(cumulativeWins).forEach(player => {
+        wins[player] = wins[player] || [];
+        wins[player].push(cumulativeWins[player]);
+      });
+    });
+
+    var chart = {
+      labels,
+      datasets: Object.keys(wins).map(player => ({
+        label: player,
+        data: wins[player],
+        borderColor: this.getRandomColor(),
+        backgroundColor: this.getRandomColor(0.3),
+        fill: false,
+      }))
+    };
+    return chart;
+  }
+
+  private getRandomColor(opacity: number = 1): string {
+    const r = Math.floor(Math.random() * 255);
+    const g = Math.floor(Math.random() * 255);
+    const b = Math.floor(Math.random() * 255);
+    return `rgba(${r}, ${g}, ${b}, ${opacity})`;
   }
 
   public updateAllIndividualStats(): void {
@@ -73,6 +119,12 @@ export class StatsCalculatorService {
     stats.push(...this.calculateAverageWinMargins());
     stats.push(...this.calculateDedicationRates());
     this.podiumDataSubject.next(stats)
+  }
+
+  public updateAllCharts(): void {
+    const charts = [];
+    charts.push(this.getAllChartData());
+    this.chartDataSubject.next(charts);
   }
 
   private calculateTotalNumberOfPlaylists(): IndividualResult {
@@ -257,7 +309,7 @@ export class StatsCalculatorService {
       }));
 
     // Step 3: Sort by best average position (lowest value is better)
-    const bestAveragePositions = this.generateBestThreePodiumStat("Best Average Finishing Position", averagePositions);
+    const bestAveragePositions = this.generateBestThreePodiumStat("Best Average Finishing Position", averagePositions, true);
     const worstAveragePositions = this.generateWorstThreePodiumStat("Worst Average Finishing Position", averagePositions);
     return [bestAveragePositions, worstAveragePositions];
   }
@@ -293,7 +345,7 @@ export class StatsCalculatorService {
       }));
 
     const bestAverageWinMargin = this.generateBestThreePodiumStat("Best Average win margin", averageWinMargins);
-    const worstAverageWinMargin = this.generateWorstThreePodiumStat("Worst Average win margin", averageWinMargins);
+    const worstAverageWinMargin = this.generateWorstThreePodiumStat("Worst Average win margin", averageWinMargins, true);
     return [bestAverageWinMargin, worstAverageWinMargin];
   }
 
@@ -340,22 +392,24 @@ export class StatsCalculatorService {
       points: stats.totalPoints / stats.count  // Compute average
     }));
     const highestAveragePoints = this.generateBestThreePodiumStat("Highest Average Points", avgPointsArray);
-    const lowestAveragePoints = this.generateWorstThreePodiumStat("Lowest Average Points", avgPointsArray);
+    const lowestAveragePoints = this.generateWorstThreePodiumStat("Lowest Average Points", avgPointsArray, true);
     return [highestAveragePoints, lowestAveragePoints];
   }
 
-  private generateBestThreePodiumStat(podiumTitle: string, players: Player[]): PodiumStat {
+  private generateBestThreePodiumStat(podiumTitle: string, players: Player[], invertOrder?: boolean): PodiumStat {
     return {
       title: podiumTitle,
-      players: players.sort((a, b) => b.points - a.points).slice(0, 3)
+      players: players.sort((a, b) => b.points - a.points).slice(0, 3),
+      invertOrder: invertOrder
     };
   }
 
-  private generateWorstThreePodiumStat(podiumTitle: string, players: Player[]): PodiumStat {
+  private generateWorstThreePodiumStat(podiumTitle: string, players: Player[], invertOrder?: boolean): PodiumStat {
     return {
       title: podiumTitle,
       players: players.sort((a, b) => a.points - b.points).slice(0, 3),
-      isNegative: true
+      isNegative: true,
+      invertOrder: invertOrder
     };
   }
 

@@ -1,5 +1,9 @@
 <div class="chart-container">
-    <canvas  id="MyChart" >{{ chart }}</canvas>
+    <div class="scrollable-container">
+      <canvas baseChart
+        [data]="chartData"
+        [options]="lineChartOptions"
+        [type]="lineChartType">
+      </canvas>
+    </div>
 </div>
-
-<p>Chart works!</p>

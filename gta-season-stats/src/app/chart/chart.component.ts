@@ -1,5 +1,5 @@
-import { Component, OnInit } from '@angular/core';
-import { Chart } from 'chart.js';
+import { Component, Input, OnInit } from '@angular/core';
+import { ChartData, ChartOptions, ChartType } from 'chart.js';
 
 @Component({
   selector: 'app-chart',
@@ -10,38 +10,59 @@ export class ChartComponent implements OnInit {
 
   public chart: any;
 
+  @Input() chartData: ChartData | undefined;
+
   constructor() { }
 
-  ngOnInit(): void {
-    this.createChart();
-  }
+  ngOnInit(): void { }
 
-  createChart(){
-    this.chart = new Chart("MyChart", {
-      type: 'line', //this denotes tha type of chart
+  lineChartType: ChartType = 'line';
 
-      data: {// values on X-Axis
-        labels: ['2022-05-10', '2022-05-11', '2022-05-12','2022-05-13',
-                                 '2022-05-14', '2022-05-15', '2022-05-16','2022-05-17', ], 
-           datasets: [
-          {
-            label: "Sales",
-            data: ['467','576', '572', '79', '92',
-                                 '574', '573', '576'],
-            backgroundColor: 'blue'
-          },
-          {
-            label: "Profit",
-            data: ['542', '542', '536', '327', '17',
-                                     '0.00', '538', '541'],
-            backgroundColor: 'limegreen'
-          }  
-        ]
-      },
-      options: {
-        aspectRatio:2.5
+  lineChartOptions: ChartOptions = {
+    responsive: true,
+    interaction: {
+      mode: 'index',
+      intersect: false,
+    },
+    elements: {
+      point: {
+        radius: 0
       }
-    });
-  }
+    },
+    maintainAspectRatio: false,
+    scales: {
+      x: {
+        ticks: {
+          autoSkip: false
+        }
+      },
+      y: {
+        beginAtZero: true,
+        ticks: {
+          stepSize: 1,
+        }
+      }
+    }
+  };
+
+  lineChartData: ChartData<'line'> = {
+    labels: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October'],
+    datasets: [
+      {
+        label: 'Sales 2023',
+        data: [50, 100, 150, 200, 200, 300, 350, 350, 450, 500],
+        borderColor: 'blue',
+        backgroundColor: 'rgba(0, 0, 255, 0.3)',
+        fill: true
+      },
+      {
+        label: 'Sales 2024',
+        data: [80, 120, 180, 180, 180, 180, 400, 450, 500, 550],
+        borderColor: 'green',
+        backgroundColor: 'rgba(0, 255, 0, 0.3)',
+        fill: true
+      }
+    ]
+  };
 
 }
