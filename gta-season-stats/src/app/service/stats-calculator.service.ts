@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { IndividualResult, Player, Playlist, PodiumResult, PodiumResult as PodiumStat } from '../models';
 import { GoogleSheetsService } from './google-sheets.service';
-import { BehaviorSubject, filter, Observable, of, switchMap, tap } from 'rxjs';
+import { BehaviorSubject, filter, Observable, switchMap, tap } from 'rxjs';
 import { ChartData } from 'chart.js';
 
 @Injectable({
@@ -36,7 +36,7 @@ export class StatsCalculatorService {
 
   public getAllPodiumStats(): Observable<PodiumResult[]> {
     return this.playlistData$.pipe(
-      filter(data => data.length > 0), 
+      filter(data => data.length > 0),
       tap(() => this.updateAllGroupStats()),
       switchMap(() => this.podiumData$)
     );
@@ -44,13 +44,13 @@ export class StatsCalculatorService {
 
   public getAllIndividualStats(): Observable<IndividualResult[]> {
     return this.playlistData$.pipe(
-      filter(data => data.length > 0), 
+      filter(data => data.length > 0),
       tap(() => this.updateAllIndividualStats()),
-      switchMap(() => this.individualData$) 
+      switchMap(() => this.individualData$)
     );
   }
 
-  private getAllChartData(): ChartData<'line'> {
+  private generateTotalWinsChart(): ChartData<'line'> {
     const labels: string[] = [];
     const wins: { [playerName: string]: number[] } = {};
     const cumulativeWins: { [playerName: string]: number } = {};
@@ -59,15 +59,15 @@ export class StatsCalculatorService {
       const [year, month, day] = playlist.date.split('-'); // Split YYYY-MM-DD
       labels.push(`${day}-${month}-${year}`);
 
-      const maxPoints = Math.max(...playlist.players.map(p => p.points));
-      const winners = playlist.players.filter(p => p.points === maxPoints);
+      const maxPoints = Math.max(...playlist.players.map(p => p.totalPoints));
+      const winners = playlist.players.filter(p => p.totalPoints === maxPoints);
 
       winners.forEach(winner => {
         if (!cumulativeWins[winner.name]) {
           cumulativeWins[winner.name] = 0;
           wins[winner.name] = [];
         }
-        cumulativeWins[winner.name]++; 
+        cumulativeWins[winner.name]++;
       });
 
       Object.keys(cumulativeWins).forEach(player => {
@@ -81,6 +81,26 @@ export class StatsCalculatorService {
       datasets: Object.keys(wins).map(player => ({
         label: player,
         data: wins[player],
+        borderColor: this.getRandomColor(),
+        backgroundColor: this.getRandomColor(0.3),
+        fill: false,
+      }))
+    };
+    return chart;
+  }
+
+  private generateWinRateChart(): ChartData<'line'> {
+    const labels: string[] = [];
+    const winRates: { [playerName: string]: number[] } = {};
+    this.playlistDataSubject.value.forEach((playlist) => {
+      const [year, month, day] = playlist.date.split('-'); // Split YYYY-MM-DD
+      labels.push(`${day}-${month}-${year}`);
+    });
+    var chart = {
+      labels,
+      datasets: Object.keys(winRates).map(player => ({
+        label: player,
+        data: winRates[player],
         borderColor: this.getRandomColor(),
         backgroundColor: this.getRandomColor(0.3),
         fill: false,
@@ -111,7 +131,8 @@ export class StatsCalculatorService {
     stats.push(this.calculateMostWins());
     stats.push(this.calculateMostSecondPlaces());
     stats.push(this.calculateMostLastPlaces());
-    
+    stats.push(this.calculateAverageLossMargins())
+
     //methods returning multiple stats
     stats.push(...this.calculateWinRatios());
     stats.push(...this.calculateAverageFinishingPositions());
@@ -123,7 +144,7 @@ export class StatsCalculatorService {
 
   public updateAllCharts(): void {
     const charts = [];
-    charts.push(this.getAllChartData());
+    charts.push(this.generateTotalWinsChart());
     this.chartDataSubject.next(charts);
   }
 
@@ -151,7 +172,7 @@ export class StatsCalculatorService {
 
     const sortedDays = Object.entries(dayCounts).sort((a, b) => b[1] - a[1]);
     const mostPopularDay = sortedDays[0][0];
-    const sortedLeastPopular = Object.entries(dayCounts).sort((a, b) => a[1] - b[1]); 
+    const sortedLeastPopular = Object.entries(dayCounts).sort((a, b) => a[1] - b[1]);
     const leastPopularDay = sortedLeastPopular[0][0];
 
     return [{ title: 'Most Popular Day', subtitle: mostPopularDay }, { title: 'Least Popular Day', subtitle: leastPopularDay }];
@@ -169,7 +190,7 @@ export class StatsCalculatorService {
       if (this.playlistWasDraw(playlist)) {
         return;
       }
-      const winner = playlist.players[0].name; 
+      const winner = playlist.players[0].name;
 
       if (winner === currentWinner) {
         currentStreak++;
@@ -187,24 +208,40 @@ export class StatsCalculatorService {
     return { title: 'Longest Winning Streak:', subtitle: bestPlayer, value: longestStreak };
   }
 
+  /* private calculateMostPlaylistsLostInFinalRace(): PodiumResult {
+    const lossCounts: Record<string, number> = {};
+    this.playlistDataSubject.value.forEach(playlist => {
+      if (this.playlistWasDraw(playlist)) {
+        return
+      }
+      const maxPointsAvailable = playlist.players[0].totalPoints;
+      const minPointsAvailable = playlist.players[playlist.players.length - 1].totalPoints;
+
+      const winner = playlist.players[0];
+      
+    }
+  } */
+
   private calculateMostWins(): PodiumResult {
     const winCounts: Record<string, number> = {};
 
-    //ignore result if tied for first
     this.playlistDataSubject.value.forEach(playlist => {
-      if (playlist.players[0].points == playlist.players[1].points) {
-        return
+      var winners = [];
+      if(this.playlistWasDraw(playlist)){
+        winners.push(playlist.players[0]);
+        winners.push(playlist.players[1]);
       }
-      const winner = playlist.players[0];
-
-      winCounts[winner.name] =
-        (winCounts[winner.name] || 0) + 1;
+      else{
+        winners.push(playlist.players[0]);
+      }
+      winners.forEach(winner => {
+        winCounts[winner.name] = (winCounts[winner.name] || 0) + 1;
+      });
     });
 
-    // Step 2: Convert map to an array and sort it by count (descending)
     const sortedPlayers = Object.entries(winCounts)
-      .map(([name, count]) => ({ name, points: count }))
-      .sort((a, b) => b.points - a.points);
+      .map(([name, count]) => ({ name, totalPoints: count }))
+      .sort((a, b) => b.totalPoints - a.totalPoints);
 
     return this.generateBestThreePodiumStat("Most Wins", sortedPlayers);
   }
@@ -214,24 +251,20 @@ export class StatsCalculatorService {
 
     // Step 1: Count second-place finishes
     this.playlistDataSubject.value.forEach(playlist => {
-      if (playlist.players[0].points == playlist.players[1].points) {
-        for (var i = 0; i <= 1; i++) {
-          var secondPlacePlayer = playlist.players[i];
-          secondPlaceCounts[secondPlacePlayer.name] =
-            (secondPlaceCounts[secondPlacePlayer.name] || 0) + 1;
-        }
+      var secondPlacePlayer;
+      if(this.playlistWasDraw(playlist)){
+        secondPlacePlayer = playlist.players[2];
       }
-      else {
-        const secondPlacePlayer = playlist.players[playlist.players.length - 2];
-        secondPlaceCounts[secondPlacePlayer.name] =
-          (secondPlaceCounts[secondPlacePlayer.name] || 0) + 1;
+      else{
+        secondPlacePlayer = playlist.players[1];
       }
+      secondPlaceCounts[secondPlacePlayer.name] = (secondPlaceCounts[secondPlacePlayer.name] || 0) + 1;
     });
 
     // Step 2: Convert map to an array and sort it by count (descending)
     const sortedPlayers = Object.entries(secondPlaceCounts)
-      .map(([name, count]) => ({ name, points: count })) // 'points' represents second-place finishes
-      .sort((a, b) => b.points - a.points);
+      .map(([name, count]) => ({ name, totalPoints: count })) // 'points' represents second-place finishes
+      .sort((a, b) => b.totalPoints - a.totalPoints);
 
     return this.generateBestThreePodiumStat("Most Second Place Finishes", sortedPlayers);
   }
@@ -249,17 +282,19 @@ export class StatsCalculatorService {
 
     // Step 3: Convert map to an array and sort it by count (ascending)
     const sortedPlayers = Object.entries(lastPlaceCounts)
-      .map(([name, count]) => ({ name, points: count }))
-      .sort((a, b) => b.points - a.points);
+      .map(([name, count]) => ({ name, totalPoints: count }))
+      .sort((a, b) => b.totalPoints - a.totalPoints);
 
-    return this.generateBestThreePodiumStat("Most Last Place Finishes", sortedPlayers);
+    const result = this.generateBestThreePodiumStat("Most Last Place Finishes", sortedPlayers);
+    result.isNegative = true;
+    return result;
   }
 
   private calculateWinRatios(): PodiumResult[] {
     const playerStats: Record<string, { wins: number; appearances: number }> = {};
 
     this.playlistDataSubject.value.forEach(playlist => {
-      if(this.playlistWasDraw(playlist)){
+      if (this.playlistWasDraw(playlist)) {
         return
       }
 
@@ -279,7 +314,7 @@ export class StatsCalculatorService {
     const winRatios = Object.entries(playerStats)
       .map(([name, stats]) => ({
         name,
-        points: (stats.wins / stats.appearances) * 100 // Convert to percentage
+        totalPoints: (stats.wins / stats.appearances) * 100 // Convert to percentage
       }));
 
     const highestWinRatio = this.generateBestThreePodiumStat("Highest Win Ratio", winRatios);
@@ -305,12 +340,16 @@ export class StatsCalculatorService {
     const averagePositions = Object.entries(playerStats)
       .map(([name, stats]) => ({
         name,
-        points: stats.totalPosition / stats.appearances // Lower is better
+        totalPoints: stats.totalPosition / stats.appearances // Lower is better
       }));
 
-    // Step 3: Sort by best average position (lowest value is better)
-    const bestAveragePositions = this.generateBestThreePodiumStat("Best Average Finishing Position", averagePositions, true);
-    const worstAveragePositions = this.generateWorstThreePodiumStat("Worst Average Finishing Position", averagePositions);
+    const bestAveragePositions = {
+      title: "Best Average Finishing Position",
+      players: averagePositions.sort((a, b) => a.totalPoints - b.totalPoints),
+      invertOrder: false
+    };
+
+    const worstAveragePositions = this.generateWorstThreePodiumStat("Worst Average Finishing Position", averagePositions, true);
     return [bestAveragePositions, worstAveragePositions];
   }
 
@@ -322,14 +361,9 @@ export class StatsCalculatorService {
       if (this.playlistWasDraw(playlist)) {
         return
       }
-      const sortedPlayers = [...playlist.players].sort((a, b) => b.points - a.points);
-      const winner = sortedPlayers[0];
-      const secondPlace = sortedPlayers[1];
+      const winner = playlist.players[0];
+      const winMargin = winner.totalPoints - playlist.players[1].totalPoints;
 
-      // Calculate win margin
-      const winMargin = winner.points - secondPlace.points;
-
-      // Track stats
       if (!playerStats[winner.name]) {
         playerStats[winner.name] = { totalMargin: 0, wins: 0 };
       }
@@ -337,11 +371,10 @@ export class StatsCalculatorService {
       playerStats[winner.name].wins += 1;
     });
 
-    // Step 2: Compute average win margin
     const averageWinMargins = Object.entries(playerStats)
       .map(([name, stats]) => ({
         name,
-        points: stats.totalMargin / stats.wins // Average win margin
+        totalPoints: stats.totalMargin / stats.wins // Average win margin
       }));
 
     const bestAverageWinMargin = this.generateBestThreePodiumStat("Best Average win margin", averageWinMargins);
@@ -349,22 +382,45 @@ export class StatsCalculatorService {
     return [bestAverageWinMargin, worstAverageWinMargin];
   }
 
+  private calculateAverageLossMargins(): PodiumResult {
+    const totalLossMargins: Record<string, { totalLossMargin: number; appearances: number }> = {};
+    this.playlistDataSubject.value.forEach(playlist => {
+      if (this.playlistWasDraw(playlist)) {
+        return
+      }
+      const winningPoints = playlist.players[0].totalPoints;
+      for (var x = 1; x < playlist.players.length - 1; x++) {
+        const player = playlist.players[x];
+        const lossMargin = winningPoints - player.totalPoints;
+        if (!totalLossMargins[player.name]) {
+          totalLossMargins[player.name] = { totalLossMargin: 0, appearances: 0 };
+        }
+        totalLossMargins[player.name].totalLossMargin += lossMargin;
+        totalLossMargins[player.name].appearances += 1;
+      }
+    });
+    const averageLossMargins = Object.entries(totalLossMargins)
+      .map(([name, stats]) => ({
+        name,
+        totalPoints: stats.totalLossMargin / stats.appearances
+      }));
+    return this.generateWorstThreePodiumStat("Average Loss Margin", averageLossMargins)
+  }
+
   private calculateDedicationRates(): PodiumResult[] {
     const totalPlaylists = this.playlistDataSubject.value.length;
     const attendanceCounts: Record<string, number> = {};
 
-    // Step 1: Count the number of playlists each player participated in
     this.playlistDataSubject.value.forEach(playlist => {
       playlist.players.forEach(player => {
         attendanceCounts[player.name] = (attendanceCounts[player.name] || 0) + 1;
       });
     });
 
-    // Step 2: Convert to an array and calculate attendance percentage
     const attendanceRates = Object.entries(attendanceCounts)
       .map(([name, count]) => ({
         name,
-        points: (count / totalPlaylists) * 100  // Convert to percentage
+        totalPoints: (count / totalPlaylists) * 100  // Convert to percentage
       }));
 
     const mostDedicated = this.generateBestThreePodiumStat("Most Dedicated", attendanceRates);
@@ -381,7 +437,7 @@ export class StatsCalculatorService {
         if (!playerStats[player.name]) {
           playerStats[player.name] = { totalPoints: 0, count: 0 };
         }
-        playerStats[player.name].totalPoints += player.points;
+        playerStats[player.name].totalPoints += player.totalPoints;
         playerStats[player.name].count += 1;
       });
     });
@@ -389,7 +445,7 @@ export class StatsCalculatorService {
     // Step 2: Calculate average points per playlist
     const avgPointsArray = Object.entries(playerStats).map(([name, stats]) => ({
       name,
-      points: stats.totalPoints / stats.count  // Compute average
+      totalPoints: stats.totalPoints / stats.count  // Compute average
     }));
     const highestAveragePoints = this.generateBestThreePodiumStat("Highest Average Points", avgPointsArray);
     const lowestAveragePoints = this.generateWorstThreePodiumStat("Lowest Average Points", avgPointsArray, true);
@@ -399,7 +455,7 @@ export class StatsCalculatorService {
   private generateBestThreePodiumStat(podiumTitle: string, players: Player[], invertOrder?: boolean): PodiumStat {
     return {
       title: podiumTitle,
-      players: players.sort((a, b) => b.points - a.points).slice(0, 3),
+      players: players.sort((a, b) => b.totalPoints - a.totalPoints).slice(0, 3),
       invertOrder: invertOrder
     };
   }
@@ -407,13 +463,13 @@ export class StatsCalculatorService {
   private generateWorstThreePodiumStat(podiumTitle: string, players: Player[], invertOrder?: boolean): PodiumStat {
     return {
       title: podiumTitle,
-      players: players.sort((a, b) => a.points - b.points).slice(0, 3),
+      players: players.sort((a, b) => a.totalPoints - b.totalPoints).slice(0, 3),
       isNegative: true,
       invertOrder: invertOrder
     };
   }
 
   private playlistWasDraw(playlist: Playlist): boolean {
-    return playlist.players[0].points == playlist.players[1].points;
+    return playlist.players[0].totalPoints == playlist.players[1].totalPoints;
   }
 }

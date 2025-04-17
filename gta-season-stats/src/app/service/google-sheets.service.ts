@@ -53,7 +53,8 @@ export class GoogleSheetsService {
         .filter(p => p['Date'] === pl['Date'])
         .map(p => ({
           name: p['Username'],
-          points: parseInt(p['Points'])
+          secondLastEventPoints: parseInt(p['SecondLastEventPoints']),
+          totalPoints: parseInt(p['TotalPoints'])
         }))
     }));
   }

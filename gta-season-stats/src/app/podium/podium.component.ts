@@ -37,7 +37,7 @@ export class PodiumComponent implements OnInit {
   }
 
   private computePodiumHeights(): void {
-    const pointsArray = this.podiumData.map(player => player.points);
+    const pointsArray = this.podiumData.map(player => player.totalPoints);
     const maxPoints = Math.max(...pointsArray);
     const minPoints = Math.min(...pointsArray);
 
@@ -48,12 +48,12 @@ export class PodiumComponent implements OnInit {
 
       if (this.isNegative) {
         normalizedHeight = this.invertOrder
-          ? (player.points - minPoints) / (maxPoints - minPoints) // Inverted: Best gets highest
-          : (maxPoints - player.points) / (maxPoints - minPoints); // Standard: Best gets lowest
+          ? (player.totalPoints - minPoints) / (maxPoints - minPoints) // Inverted: Best gets highest
+          : (maxPoints - player.totalPoints) / (maxPoints - minPoints); // Standard: Best gets lowest
       } else {
         normalizedHeight = this.invertOrder
-          ? 1 - (player.points / maxPoints) // Inverted: Best gets lowest
-          : player.points / maxPoints; // Standard: Best gets highest
+          ? 1 - (player.totalPoints / maxPoints) // Inverted: Best gets lowest
+          : player.totalPoints / maxPoints; // Standard: Best gets highest
       }
       return Math.max(this.minHeight, normalizedHeight * (this.maxHeight - this.minHeight) + this.minHeight);
     }).filter((height): height is number => height !== undefined);
