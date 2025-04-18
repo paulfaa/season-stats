@@ -1,17 +1,16 @@
 <div class="podium-container">
-    <div *ngIf="podiumData[1]?.name" class="podium-item second" [style.height.px]="podiumHeights[1]" [ngClass]="{ 'negative': isNegative }">
-      <p class="username">{{ podiumData[1].name}}</p>
-      <p class="points">{{ podiumData[1].totalPoints| podiumFormat: podiumType }}</p>
-    </div>
-    
-    <div class="podium-item first" [style.height.px]="podiumHeights[0]" [ngClass]="{ 'negative': isNegative, 'gold': !isNegative }">
-      <p class="username">{{ podiumData[0].name}}</p>
-      <p class="points">{{ podiumData[0].totalPoints | podiumFormat: podiumType }}</p>
-    </div>
-    
-    <div *ngIf="podiumData[2]?.name" class="podium-item third" [style.height.px]="podiumHeights[2]" [ngClass]="{ 'negative': isNegative }">
-      <p class="username">{{ podiumData[2].name}}</p>
-      <p class="points">{{ podiumData[2].totalPoints | podiumFormat: podiumType }}</p>
-    </div>
+
+  <div *ngFor="let entry of podiumPositions" class="podium-item" [ngClass]="{
+         'first': entry.rank === 1,
+         'second': entry.rank === 2,
+         'third': entry.rank === 3,
+         'negative': isNegative,
+         'gold': !isNegative && entry.rank === 1
+       }" [style.height.px]="entry.height">
+
+    <p class="username">{{ entry.player.name }}</p>
+    <p class="points">{{ entry.player.totalPoints | podiumFormat: podiumType }}</p>
   </div>
-  <span class="podium-title">{{podiumTitle}}</span>
+
+</div>
+<span class="podium-title">{{podiumTitle}}</span>

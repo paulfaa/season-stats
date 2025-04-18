@@ -354,8 +354,11 @@ export class StatsCalculatorService {
         totalPoints: stats.totalPosition / stats.appearances
       }));
 
-    const bestAveragePositions = this.generateBestPodiumStat("Best Average Finishing Position", averagePositions)
-    const worstAveragePositions = this.generateWorstPodiumStat("Worst Average Finishing Position", averagePositions, true);
+    //The lower the average the better  
+    const bestAveragePositions = this.generateWorstPodiumStat("Best Average Finishing Position", averagePositions, true);
+    bestAveragePositions.isNegative = false;
+    const worstAveragePositions = this.generateBestPodiumStat("Worst Average Finishing Position", averagePositions);
+    worstAveragePositions.isNegative = true;
     return [bestAveragePositions, worstAveragePositions];
   }
 
@@ -383,7 +386,7 @@ export class StatsCalculatorService {
       }));
 
     const bestAverageWinMargin = this.generateBestPodiumStat("Best Average win margin", averageWinMargins);
-    const worstAverageWinMargin = this.generateWorstPodiumStat("Worst Average win margin", averageWinMargins, true);
+    const worstAverageWinMargin = this.generateWorstPodiumStat("Worst Average win margin", averageWinMargins);
     return [bestAverageWinMargin, worstAverageWinMargin];
   }
 
@@ -409,7 +412,9 @@ export class StatsCalculatorService {
         name,
         totalPoints: stats.totalLossMargin / stats.appearances
       }));
-    return this.generateWorstPodiumStat("Average Loss Margin", averageLossMargins)
+    const result = this.generateBestPodiumStat("Average Loss Margin", averageLossMargins);
+    result.isNegative = true;
+    return result;
   }
 
   private calculateDedicationRates(): PodiumResult[] {
@@ -451,7 +456,7 @@ export class StatsCalculatorService {
       totalPoints: stats.totalPoints / stats.count  // Compute average
     }));
     const highestAveragePoints = this.generateBestPodiumStat("Highest Average Points", avgPointsArray);
-    const lowestAveragePoints = this.generateWorstPodiumStat("Lowest Average Points", avgPointsArray, true);
+    const lowestAveragePoints = this.generateWorstPodiumStat("Lowest Average Points", avgPointsArray);
     return [highestAveragePoints, lowestAveragePoints];
   }
 

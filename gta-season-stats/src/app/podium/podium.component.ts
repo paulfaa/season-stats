@@ -13,14 +13,15 @@ export class PodiumComponent implements OnInit {
   @Input() isNegative: boolean | undefined;
   @Input() invertOrder: boolean | undefined;
 
-  maxHeight = 140;
-  minHeight = 80;
-  podiumHeights: number[] = [];
+  private maxHeight = 140;
+  private minHeight = 80;
+  private podiumHeights: number[] = [];
+  podiumPositions: { player: Player, rank: number, height: number }[] = [];
 
   constructor() { }
 
   ngOnInit(): void {
-    this.computePodiumHeights();
+    this.computePodiumPositions();
     const podiumItems = document.querySelectorAll('.podium-item');
     podiumItems.forEach(item => {
       const randomDelay = Math.random() * 2; // Random delay between 0s and 2s
@@ -36,6 +37,11 @@ export class PodiumComponent implements OnInit {
     return 'default';
   }
 
+  private computePodiumPositions(): void {
+    this.computePodiumHeights();
+    this.computeRanks();
+  }
+
   private computePodiumHeights(): void {
     const pointsArray = this.podiumData.map(player => player.totalPoints);
     const maxPoints = Math.max(...pointsArray);
@@ -47,16 +53,25 @@ export class PodiumComponent implements OnInit {
       var normalizedHeight: number;
 
       if (this.invertOrder) {
-        normalizedHeight = (player.totalPoints - minPoints) / (maxPoints - minPoints)
-          ? (player.totalPoints - minPoints) / (maxPoints - minPoints) // Inverted: Best gets highest
-          : (maxPoints - player.totalPoints) / (maxPoints - minPoints); // Standard: Best gets lowest
-      }
-      else {
-        normalizedHeight = this.invertOrder
-          ? 1 - (player.totalPoints / maxPoints) // Inverted: Best gets lowest
-          : player.totalPoints / maxPoints; // Standard: Best gets highest
+        normalizedHeight = 1 - (player.totalPoints - minPoints) / (maxPoints - minPoints);
+      } else {
+        normalizedHeight = (player.totalPoints - minPoints) / (maxPoints - minPoints);
       }
       return Math.max(this.minHeight, normalizedHeight * (this.maxHeight - this.minHeight) + this.minHeight);
-    }).filter((height): height is number => height !== undefined);
+    })
+  }
+
+  private computeRanks(): void {
+    const ranks: { player: Player, rank: number, height: number }[] = [];
+
+    this.podiumData.forEach((player, i) => {
+      const height = this.podiumHeights[i];
+      const rank = i > 0 && player.totalPoints === this.podiumData[i - 1].totalPoints
+        ? ranks[i - 1].rank
+        : i + 1;
+      ranks.push({ player, rank, height });
+    });
+
+    this.podiumPositions = ranks;
   }
 }
