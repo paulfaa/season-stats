@@ -46,11 +46,12 @@ export class PodiumComponent implements OnInit {
 
       var normalizedHeight: number;
 
-      if (this.isNegative) {
-        normalizedHeight = this.invertOrder
+      if (this.invertOrder) {
+        normalizedHeight = (player.totalPoints - minPoints) / (maxPoints - minPoints)
           ? (player.totalPoints - minPoints) / (maxPoints - minPoints) // Inverted: Best gets highest
           : (maxPoints - player.totalPoints) / (maxPoints - minPoints); // Standard: Best gets lowest
-      } else {
+      }
+      else {
         normalizedHeight = this.invertOrder
           ? 1 - (player.totalPoints / maxPoints) // Inverted: Best gets lowest
           : player.totalPoints / maxPoints; // Standard: Best gets highest

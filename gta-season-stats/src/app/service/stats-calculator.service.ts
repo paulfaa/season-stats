@@ -132,6 +132,8 @@ export class StatsCalculatorService {
     stats.push(this.calculateMostSecondPlaces());
     stats.push(this.calculateMostLastPlaces());
     stats.push(this.calculateAverageLossMargins())
+    const mostPlaylistsLost = this.calculateMostPlaylistsLostInFinalEvent();
+    mostPlaylistsLost != null && stats.push(mostPlaylistsLost);
 
     //methods returning multiple stats
     stats.push(...this.calculateWinRatios());
@@ -208,30 +210,57 @@ export class StatsCalculatorService {
     return { title: 'Longest Winning Streak:', subtitle: bestPlayer, value: longestStreak };
   }
 
-  /* private calculateMostPlaylistsLostInFinalRace(): PodiumResult {
+  private calculateMostPlaylistsLostInFinalEvent(): PodiumResult | undefined{
     const lossCounts: Record<string, number> = {};
     this.playlistDataSubject.value.forEach(playlist => {
-      if (this.playlistWasDraw(playlist)) {
-        return
-      }
-      const maxPointsAvailable = playlist.players[0].totalPoints;
-      const minPointsAvailable = playlist.players[playlist.players.length - 1].totalPoints;
-
       const winner = playlist.players[0];
-      
-    }
-  } */
+      const pointsAvailable: number[] = [];
+      var resultsInSecondLastEvent: Player[] = [];
+      playlist.players.forEach(player => {
+        const scoreInSecondLastEvent = player.totalPoints - player.pointsInSecondLastRace!;
+        if (player.pointsInSecondLastRace! > 1) {
+          pointsAvailable.push(player.pointsInSecondLastRace!)
+        }
+        resultsInSecondLastEvent.push({ name: player.name, totalPoints: scoreInSecondLastEvent })
+      });
+      resultsInSecondLastEvent.sort((a, b) => b.totalPoints - a.totalPoints);
+
+      const winners = [];
+      if(resultsInSecondLastEvent[0].totalPoints == resultsInSecondLastEvent[1].totalPoints) {
+        winners.push(resultsInSecondLastEvent[0]);
+        winners.push(resultsInSecondLastEvent[1]);
+      }
+      else {
+        winners.push(resultsInSecondLastEvent[0]);
+      }
+
+      const maxPointsAvailable = Math.max(...pointsAvailable);
+      const minPointsAvailable = Math.min(...pointsAvailable);
+      const pointsToBeat = winner.totalPoints - maxPointsAvailable + minPointsAvailable;
+
+      winners.forEach(player => {
+        if(winner.name == resultsInSecondLastEvent[0].name) {
+          return;
+        }
+        if (player.totalPoints + maxPointsAvailable > pointsToBeat) {
+          lossCounts[player.name] = (lossCounts[player.name] || 0) + 1;
+        }
+      })
+    });
+    const sortedPlayers = this.sortHighestToLowest(lossCounts)
+    return sortedPlayers.length > 0 ? this.generateWorstPodiumStat("Most playlists lost in final event", sortedPlayers) : undefined;
+  }
 
   private calculateMostWins(): PodiumResult {
     const winCounts: Record<string, number> = {};
 
     this.playlistDataSubject.value.forEach(playlist => {
       var winners = [];
-      if(this.playlistWasDraw(playlist)){
+      if (this.playlistWasDraw(playlist)) {
         winners.push(playlist.players[0]);
         winners.push(playlist.players[1]);
       }
-      else{
+      else {
         winners.push(playlist.players[0]);
       }
       winners.forEach(winner => {
@@ -239,59 +268,45 @@ export class StatsCalculatorService {
       });
     });
 
-    const sortedPlayers = Object.entries(winCounts)
-      .map(([name, count]) => ({ name, totalPoints: count }))
-      .sort((a, b) => b.totalPoints - a.totalPoints);
-
-    return this.generateBestThreePodiumStat("Most Wins", sortedPlayers);
+    const sortedPlayers = this.sortHighestToLowest(winCounts)
+    return this.generateBestPodiumStat("Most Wins", sortedPlayers);
   }
 
   private calculateMostSecondPlaces(): PodiumResult {
     const secondPlaceCounts: Record<string, number> = {};
 
-    // Step 1: Count second-place finishes
     this.playlistDataSubject.value.forEach(playlist => {
       var secondPlacePlayer;
-      if(this.playlistWasDraw(playlist)){
+      if (this.playlistWasDraw(playlist)) {
         secondPlacePlayer = playlist.players[2];
       }
-      else{
+      else {
         secondPlacePlayer = playlist.players[1];
       }
       secondPlaceCounts[secondPlacePlayer.name] = (secondPlaceCounts[secondPlacePlayer.name] || 0) + 1;
     });
 
-    // Step 2: Convert map to an array and sort it by count (descending)
-    const sortedPlayers = Object.entries(secondPlaceCounts)
-      .map(([name, count]) => ({ name, totalPoints: count })) // 'points' represents second-place finishes
-      .sort((a, b) => b.totalPoints - a.totalPoints);
-
-    return this.generateBestThreePodiumStat("Most Second Place Finishes", sortedPlayers);
+    const sortedPlayers = this.sortHighestToLowest(secondPlaceCounts);
+    return this.generateBestPodiumStat("Most Second Place Finishes", sortedPlayers);
   }
 
   private calculateMostLastPlaces(): PodiumResult {
-    // Step 1: Create a map to store last-place counts
     const lastPlaceCounts: Record<string, number> = {};
 
-    // Step 2: Count occurrences of last-place finishes
     this.playlistDataSubject.value.forEach(playlist => {
       const lastPlayer = playlist.players[playlist.players.length - 1];
-      // Increment their count
       lastPlaceCounts[lastPlayer.name] = (lastPlaceCounts[lastPlayer.name] || 0) + 1;
     });
 
-    // Step 3: Convert map to an array and sort it by count (ascending)
-    const sortedPlayers = Object.entries(lastPlaceCounts)
-      .map(([name, count]) => ({ name, totalPoints: count }))
-      .sort((a, b) => b.totalPoints - a.totalPoints);
+    const sortedPlayers = this.sortHighestToLowest(lastPlaceCounts);
 
-    const result = this.generateBestThreePodiumStat("Most Last Place Finishes", sortedPlayers);
+    const result = this.generateBestPodiumStat("Most Last Place Finishes", sortedPlayers);
     result.isNegative = true;
     return result;
   }
 
   private calculateWinRatios(): PodiumResult[] {
-    const playerStats: Record<string, { wins: number; appearances: number }> = {};
+    const winsAndAppearances: Record<string, { wins: number; appearances: number }> = {};
 
     this.playlistDataSubject.value.forEach(playlist => {
       if (this.playlistWasDraw(playlist)) {
@@ -299,64 +314,54 @@ export class StatsCalculatorService {
       }
 
       const winner = playlist.players[0];
-
       playlist.players.forEach(player => {
-        if (!playerStats[player.name]) {
-          playerStats[player.name] = { wins: 0, appearances: 0 };
+        if (!winsAndAppearances[player.name]) {
+          winsAndAppearances[player.name] = { wins: 0, appearances: 0 };
         }
-        playerStats[player.name].appearances += 1; // Count participation
+        winsAndAppearances[player.name].appearances += 1;
       });
 
-      playerStats[winner.name].wins += 1; // Count win
+      winsAndAppearances[winner.name].wins += 1;
     });
 
-    // Step 2: Compute win ratios
-    const winRatios = Object.entries(playerStats)
+    const winRatios = Object.entries(winsAndAppearances)
       .map(([name, stats]) => ({
         name,
-        totalPoints: (stats.wins / stats.appearances) * 100 // Convert to percentage
+        totalPoints: (stats.wins / stats.appearances) * 100
       }));
 
-    const highestWinRatio = this.generateBestThreePodiumStat("Highest Win Ratio", winRatios);
-    const lowestWinRatio = this.generateWorstThreePodiumStat("Lowest Win Ratio", winRatios);
+    const highestWinRatio = this.generateBestPodiumStat("Highest Win Ratio", winRatios);
+    const lowestWinRatio = this.generateWorstPodiumStat("Lowest Win Ratio", winRatios);
     return [highestWinRatio, lowestWinRatio];
   }
 
   private calculateAverageFinishingPositions(): PodiumResult[] {
     const playerStats: Record<string, { totalPosition: number; appearances: number }> = {};
 
-    // Step 1: Sum finishing positions and count appearances
     this.playlistDataSubject.value.forEach(playlist => {
       playlist.players.forEach((player, index) => {
         if (!playerStats[player.name]) {
           playerStats[player.name] = { totalPosition: 0, appearances: 0 };
         }
-        playerStats[player.name].totalPosition += (index + 1); // Position (1-based index)
+        playerStats[player.name].totalPosition += (index + 1);
         playerStats[player.name].appearances += 1;
       });
     });
 
-    // Step 2: Compute average finishing position
     const averagePositions = Object.entries(playerStats)
       .map(([name, stats]) => ({
         name,
-        totalPoints: stats.totalPosition / stats.appearances // Lower is better
+        totalPoints: stats.totalPosition / stats.appearances
       }));
 
-    const bestAveragePositions = {
-      title: "Best Average Finishing Position",
-      players: averagePositions.sort((a, b) => a.totalPoints - b.totalPoints),
-      invertOrder: false
-    };
-
-    const worstAveragePositions = this.generateWorstThreePodiumStat("Worst Average Finishing Position", averagePositions, true);
+    const bestAveragePositions = this.generateBestPodiumStat("Best Average Finishing Position", averagePositions)
+    const worstAveragePositions = this.generateWorstPodiumStat("Worst Average Finishing Position", averagePositions, true);
     return [bestAveragePositions, worstAveragePositions];
   }
 
   private calculateAverageWinMargins(): PodiumResult[] {
-    const playerStats: Record<string, { totalMargin: number; wins: number }> = {};
+    const totalWinMargins: Record<string, { totalWinMargin: number; wins: number }> = {};
 
-    // Step 1: Calculate win margins for each winner
     this.playlistDataSubject.value.forEach(playlist => {
       if (this.playlistWasDraw(playlist)) {
         return
@@ -364,21 +369,21 @@ export class StatsCalculatorService {
       const winner = playlist.players[0];
       const winMargin = winner.totalPoints - playlist.players[1].totalPoints;
 
-      if (!playerStats[winner.name]) {
-        playerStats[winner.name] = { totalMargin: 0, wins: 0 };
+      if (!totalWinMargins[winner.name]) {
+        totalWinMargins[winner.name] = { totalWinMargin: 0, wins: 0 };
       }
-      playerStats[winner.name].totalMargin += winMargin;
-      playerStats[winner.name].wins += 1;
+      totalWinMargins[winner.name].totalWinMargin += winMargin;
+      totalWinMargins[winner.name].wins += 1;
     });
 
-    const averageWinMargins = Object.entries(playerStats)
+    const averageWinMargins = Object.entries(totalWinMargins)
       .map(([name, stats]) => ({
         name,
-        totalPoints: stats.totalMargin / stats.wins // Average win margin
+        totalPoints: stats.totalWinMargin / stats.wins
       }));
 
-    const bestAverageWinMargin = this.generateBestThreePodiumStat("Best Average win margin", averageWinMargins);
-    const worstAverageWinMargin = this.generateWorstThreePodiumStat("Worst Average win margin", averageWinMargins, true);
+    const bestAverageWinMargin = this.generateBestPodiumStat("Best Average win margin", averageWinMargins);
+    const worstAverageWinMargin = this.generateWorstPodiumStat("Worst Average win margin", averageWinMargins, true);
     return [bestAverageWinMargin, worstAverageWinMargin];
   }
 
@@ -404,7 +409,7 @@ export class StatsCalculatorService {
         name,
         totalPoints: stats.totalLossMargin / stats.appearances
       }));
-    return this.generateWorstThreePodiumStat("Average Loss Margin", averageLossMargins)
+    return this.generateWorstPodiumStat("Average Loss Margin", averageLossMargins)
   }
 
   private calculateDedicationRates(): PodiumResult[] {
@@ -420,18 +425,17 @@ export class StatsCalculatorService {
     const attendanceRates = Object.entries(attendanceCounts)
       .map(([name, count]) => ({
         name,
-        totalPoints: (count / totalPlaylists) * 100  // Convert to percentage
+        totalPoints: (count / totalPlaylists) * 100
       }));
 
-    const mostDedicated = this.generateBestThreePodiumStat("Most Dedicated", attendanceRates);
-    const leastDedicated = this.generateWorstThreePodiumStat("Least Dedicated", attendanceRates);
+    const mostDedicated = this.generateBestPodiumStat("Most Dedicated", attendanceRates);
+    const leastDedicated = this.generateWorstPodiumStat("Least Dedicated", attendanceRates);
     return [mostDedicated, leastDedicated];
   }
 
   private calculateAverageScore(): PodiumResult[] {
     const playerStats: Record<string, { totalPoints: number; count: number }> = {};
 
-    // Step 1: Accumulate points and count appearances
     this.playlistDataSubject.value.forEach(playlist => {
       playlist.players.forEach(player => {
         if (!playerStats[player.name]) {
@@ -442,17 +446,22 @@ export class StatsCalculatorService {
       });
     });
 
-    // Step 2: Calculate average points per playlist
     const avgPointsArray = Object.entries(playerStats).map(([name, stats]) => ({
       name,
       totalPoints: stats.totalPoints / stats.count  // Compute average
     }));
-    const highestAveragePoints = this.generateBestThreePodiumStat("Highest Average Points", avgPointsArray);
-    const lowestAveragePoints = this.generateWorstThreePodiumStat("Lowest Average Points", avgPointsArray, true);
+    const highestAveragePoints = this.generateBestPodiumStat("Highest Average Points", avgPointsArray);
+    const lowestAveragePoints = this.generateWorstPodiumStat("Lowest Average Points", avgPointsArray, true);
     return [highestAveragePoints, lowestAveragePoints];
   }
 
-  private generateBestThreePodiumStat(podiumTitle: string, players: Player[], invertOrder?: boolean): PodiumStat {
+  private sortHighestToLowest(stats: Record<string, number>) {
+    return Object.entries(stats)
+      .map(([name, count]) => ({ name, totalPoints: count }))
+      .sort((a, b) => b.totalPoints - a.totalPoints);
+  }
+
+  private generateBestPodiumStat(podiumTitle: string, players: Player[], invertOrder?: boolean): PodiumStat {
     return {
       title: podiumTitle,
       players: players.sort((a, b) => b.totalPoints - a.totalPoints).slice(0, 3),
@@ -460,7 +469,7 @@ export class StatsCalculatorService {
     };
   }
 
-  private generateWorstThreePodiumStat(podiumTitle: string, players: Player[], invertOrder?: boolean): PodiumStat {
+  private generateWorstPodiumStat(podiumTitle: string, players: Player[], invertOrder?: boolean): PodiumStat {
     return {
       title: podiumTitle,
       players: players.sort((a, b) => a.totalPoints - b.totalPoints).slice(0, 3),
