@@ -1,3 +1,5 @@
+import { ChartData, ChartOptions } from "chart.js";
+
 export interface Player {
     name: string;
     totalPoints: number;
@@ -23,4 +25,10 @@ export interface IndividualResult {
     subtitle?: string;
     player?: Player;
     value?: number;
+}
+
+export interface ChartResult {
+    chartData: ChartData;
+    chartOptions: ChartOptions;
+    title: string;
 }

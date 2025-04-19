@@ -1,14 +1,21 @@
 .chart-container {
-    width: 100%;
-    overflow-x: auto;
-    white-space: nowrap;
-    padding-bottom: 10px;
-  }
-  
-  .scrollable-container {
-    height: 550px;
-    width: 1200px;
-    min-width: 100%;
-    padding: 25px;
-  }
-  
+  width: 100%;
+  overflow-x: auto;
+  white-space: nowrap;
+  padding-bottom: 10px;
+}
+
+.scrollable-container {
+  height: 550px;
+  width: 1200px;
+  min-width: 100%;
+  padding: 25px;
+}
+
+.chart-title {
+  display: flex;
+  justify-content: center;
+  font-size: x-large;
+  padding-top: 15px;
+  padding-bottom: 55px;
+}

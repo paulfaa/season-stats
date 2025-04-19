@@ -2,7 +2,6 @@ import { Injectable } from '@angular/core';
 import { IndividualResult, Player, Playlist, PodiumResult, PodiumResult as PodiumStat } from '../models';
 import { GoogleSheetsService } from './google-sheets.service';
 import { BehaviorSubject, filter, Observable, switchMap, tap } from 'rxjs';
-import { ChartData } from 'chart.js';
 
 @Injectable({
   providedIn: 'root'
@@ -15,8 +14,6 @@ export class StatsCalculatorService {
   public podiumData$ = this.podiumDataSubject.asObservable();
   private individualDataSubject = new BehaviorSubject<IndividualResult[]>([]);
   public individualData$ = this.individualDataSubject.asObservable();
-  private chartDataSubject = new BehaviorSubject<ChartData[]>([]);
-  public chartData$ = this.chartDataSubject.asObservable();
 
   constructor(private googleSheetsService: GoogleSheetsService) {
     this.fetchPlaylistData();
@@ -28,7 +25,6 @@ export class StatsCalculatorService {
         this.playlistDataSubject.next(data);
         this.updateAllIndividualStats();
         this.updateAllGroupStats();
-        this.updateAllCharts();
       },
       error: (error) => console.error('Error fetching playlist data:', error)
     });
@@ -48,110 +44,6 @@ export class StatsCalculatorService {
       tap(() => this.updateAllIndividualStats()),
       switchMap(() => this.individualData$)
     );
-  }
-
-  private generateTotalWinsChart(): ChartData<'line'> {
-    const labels: string[] = [];
-    const wins: { [playerName: string]: number[] } = {};
-    const cumulativeWins: { [playerName: string]: number } = {};
-
-    this.playlistDataSubject.value.forEach((playlist) => {
-      const [year, month, day] = playlist.date.split('-'); // Split YYYY-MM-DD
-      labels.push(`${day}-${month}-${year}`);
-
-      const maxPoints = Math.max(...playlist.players.map(p => p.totalPoints));
-      const winners = playlist.players.filter(p => p.totalPoints === maxPoints);
-
-      winners.forEach(winner => {
-        if (!cumulativeWins[winner.name]) {
-          cumulativeWins[winner.name] = 0;
-          wins[winner.name] = [];
-        }
-        cumulativeWins[winner.name]++;
-      });
-
-      Object.keys(cumulativeWins).forEach(player => {
-        wins[player] = wins[player] || [];
-        wins[player].push(cumulativeWins[player]);
-      });
-    });
-
-    var chart = {
-      labels,
-      datasets: Object.keys(wins).map(player => ({
-        label: player,
-        data: wins[player],
-        borderColor: this.getRandomColor(),
-        backgroundColor: this.getRandomColor(0.3),
-        fill: false,
-      }))
-    };
-    return chart;
-  }
-
-  private generateWinRateChart(): ChartData<'line'> {
-    type PlayerWinStats = {
-      winRate: number[];
-      winCount: number;
-      gamesPlayed: number;
-    };
-
-    const playerStats: Record<string, PlayerWinStats> = {};
-    const labels: string[] = [];
-
-    this.playlistDataSubject.value.forEach((playlist, index) => {
-      const [year, month, day] = playlist.date.split('-');
-      labels.push(`${day}-${month}-${year}`);
-
-      const maxPoints = Math.max(...playlist.players.map(p => p.totalPoints));
-      const winners = playlist.players.filter(p => p.totalPoints === maxPoints);
-
-      playlist.players.forEach(player => {
-        const name = player.name;
-
-        if (!(name in playerStats)) {
-          playerStats[name] = {
-            winRate: [],
-            winCount: 0,
-            gamesPlayed: 0
-          };
-        }
-
-        playerStats[name].gamesPlayed += 1;
-
-        if (winners.some(w => w.name === name)) {
-          playerStats[name].winCount += 1;
-        }
-
-        const currentRate = playerStats[name].winCount / playerStats[name].gamesPlayed;
-        playerStats[name].winRate.push(+currentRate.toFixed(2));
-      });
-
-      Object.keys(playerStats).forEach(name => {
-        if (!playlist.players.some(p => p.name === name)) {
-          const prev = playerStats[name].winRate[index - 1] ?? 0;
-          playerStats[name].winRate.push(prev);
-        }
-      });
-    });
-
-    return {
-      labels,
-      datasets: Object.keys(playerStats).map(player => ({
-        label: player,
-        data: playerStats[player].winRate,
-        borderColor: this.getRandomColor(),
-        backgroundColor: this.getRandomColor(0.3),
-        fill: false,
-      }))
-    };
-  }
-
-  private getRandomColor(opacity: number = 1): string {
-    const r = Math.floor(Math.random() * 255);
-    const g = Math.floor(Math.random() * 255);
-    const b = Math.floor(Math.random() * 255);
-    return `rgba(${r}, ${g}, ${b}, ${opacity})`;
   }
 
   public updateAllIndividualStats(): void {
@@ -180,13 +72,6 @@ export class StatsCalculatorService {
     stats.push(...this.calculateAverageWinMargins());
     stats.push(...this.calculateDedicationRates());
     this.podiumDataSubject.next(stats)
-  }
-
-  public updateAllCharts(): void {
-    const charts = [];
-    charts.push(this.generateTotalWinsChart());
-    charts.push(this.generateWinRateChart())
-    this.chartDataSubject.next(charts);
   }
 
   private calculateTotalNumberOfPlaylists(): IndividualResult {

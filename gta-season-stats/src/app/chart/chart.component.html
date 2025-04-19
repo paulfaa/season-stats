@@ -1,9 +1,11 @@
 <div class="chart-container">
     <div class="scrollable-container">
       <canvas baseChart
-        [data]="chartData"
-        [options]="lineChartOptions"
+        [data]="chartData?.chartData"
+        [options]="chartData?.chartOptions"
         [type]="lineChartType">
       </canvas>
     </div>
 </div>
+
+<span class="chart-title">{{chartData?.title}}</span>
