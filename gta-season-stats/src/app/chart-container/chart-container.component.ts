@@ -17,5 +17,4 @@ export class ChartContainerComponent implements OnInit {
   ngOnInit(): void {
     this.charts$ = this.statsCalculator.chartData$;
   }
-
 }

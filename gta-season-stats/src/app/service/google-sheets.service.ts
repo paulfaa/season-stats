@@ -9,6 +9,7 @@ import { Playlist } from '../models';
 })
 export class GoogleSheetsService {
   private static readonly SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQAZGEvx2dZEIRC7rmpoV_Zqz0RAJhZ8rI5OnVOcVege6Oni9A7KDK2fN9R98Q1UJRcZLlMn639gjvL/pub?output=xlsx';
+  public lastRefreshed: string = '';
 
   constructor(private http: HttpClient) {}
 
@@ -19,6 +20,7 @@ export class GoogleSheetsService {
     if (lastUpdate && storedData && Date.now() - parseInt(lastUpdate) < 1000 * 60 * 60) {
       console.info('Using cached data');
       const arrayBuffer = this.base64ToArrayBuffer(storedData);
+      this.lastRefreshed = lastUpdate;
       return of(this.parseExcel(arrayBuffer));
     }
     else {
@@ -26,7 +28,9 @@ export class GoogleSheetsService {
       return this.http.get(GoogleSheetsService.SHEET_URL, { responseType: 'arraybuffer' }).pipe(
         tap(data => {
           localStorage.setItem('sheetsData', this.arrayBufferToBase64(data));
-          localStorage.setItem('lastUpdate', Date.now().toString());
+          const currentDate = Date.now().toString();
+          this.lastRefreshed = currentDate;
+          localStorage.setItem('lastUpdate', currentDate);
         }),
         map(data => this.parseExcel(data))
       );

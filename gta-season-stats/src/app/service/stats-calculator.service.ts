@@ -90,23 +90,61 @@ export class StatsCalculatorService {
   }
 
   private generateWinRateChart(): ChartData<'line'> {
+    type PlayerWinStats = {
+      winRate: number[];
+      winCount: number;
+      gamesPlayed: number;
+    };
+
+    const playerStats: Record<string, PlayerWinStats> = {};
     const labels: string[] = [];
-    const winRates: { [playerName: string]: number[] } = {};
-    this.playlistDataSubject.value.forEach((playlist) => {
-      const [year, month, day] = playlist.date.split('-'); // Split YYYY-MM-DD
+
+    this.playlistDataSubject.value.forEach((playlist, index) => {
+      const [year, month, day] = playlist.date.split('-');
       labels.push(`${day}-${month}-${year}`);
+
+      const maxPoints = Math.max(...playlist.players.map(p => p.totalPoints));
+      const winners = playlist.players.filter(p => p.totalPoints === maxPoints);
+
+      playlist.players.forEach(player => {
+        const name = player.name;
+
+        if (!(name in playerStats)) {
+          playerStats[name] = {
+            winRate: [],
+            winCount: 0,
+            gamesPlayed: 0
+          };
+        }
+
+        playerStats[name].gamesPlayed += 1;
+
+        if (winners.some(w => w.name === name)) {
+          playerStats[name].winCount += 1;
+        }
+
+        const currentRate = playerStats[name].winCount / playerStats[name].gamesPlayed;
+        playerStats[name].winRate.push(+currentRate.toFixed(2));
+      });
+
+      Object.keys(playerStats).forEach(name => {
+        if (!playlist.players.some(p => p.name === name)) {
+          const prev = playerStats[name].winRate[index - 1] ?? 0;
+          playerStats[name].winRate.push(prev);
+        }
+      });
     });
-    var chart = {
+
+    return {
       labels,
-      datasets: Object.keys(winRates).map(player => ({
+      datasets: Object.keys(playerStats).map(player => ({
         label: player,
-        data: winRates[player],
+        data: playerStats[player].winRate,
         borderColor: this.getRandomColor(),
         backgroundColor: this.getRandomColor(0.3),
         fill: false,
       }))
     };
-    return chart;
   }
 
   private getRandomColor(opacity: number = 1): string {
@@ -147,11 +185,12 @@ export class StatsCalculatorService {
   public updateAllCharts(): void {
     const charts = [];
     charts.push(this.generateTotalWinsChart());
+    charts.push(this.generateWinRateChart())
     this.chartDataSubject.next(charts);
   }
 
   private calculateTotalNumberOfPlaylists(): IndividualResult {
-    return { title: 'Total Number of Playlists', value: this.playlistDataSubject.value.length }
+    return { title: 'Total Playlists', value: this.playlistDataSubject.value.length }
   }
 
   private calculateAveragePlaylistLength(): IndividualResult {
@@ -210,7 +249,7 @@ export class StatsCalculatorService {
     return { title: 'Longest Winning Streak:', subtitle: bestPlayer, value: longestStreak };
   }
 
-  private calculateMostPlaylistsLostInFinalEvent(): PodiumResult | undefined{
+  private calculateMostPlaylistsLostInFinalEvent(): PodiumResult | undefined {
     const lossCounts: Record<string, number> = {};
     this.playlistDataSubject.value.forEach(playlist => {
       const winner = playlist.players[0];
@@ -226,7 +265,7 @@ export class StatsCalculatorService {
       resultsInSecondLastEvent.sort((a, b) => b.totalPoints - a.totalPoints);
 
       const winners = [];
-      if(resultsInSecondLastEvent[0].totalPoints == resultsInSecondLastEvent[1].totalPoints) {
+      if (resultsInSecondLastEvent[0].totalPoints == resultsInSecondLastEvent[1].totalPoints) {
         winners.push(resultsInSecondLastEvent[0]);
         winners.push(resultsInSecondLastEvent[1]);
       }
@@ -239,7 +278,7 @@ export class StatsCalculatorService {
       const pointsToBeat = winner.totalPoints - maxPointsAvailable + minPointsAvailable;
 
       winners.forEach(player => {
-        if(winner.name == resultsInSecondLastEvent[0].name) {
+        if (winner.name == resultsInSecondLastEvent[0].name) {
           return;
         }
         if (player.totalPoints + maxPointsAvailable > pointsToBeat) {
@@ -248,7 +287,7 @@ export class StatsCalculatorService {
       })
     });
     const sortedPlayers = this.sortHighestToLowest(lossCounts)
-    return sortedPlayers.length > 0 ? this.generateWorstPodiumStat("Most playlists lost in final event", sortedPlayers) : undefined;
+    return sortedPlayers.length > 0 ? this.generateBottomThreePodium("Most playlists lost in final event", sortedPlayers) : undefined;
   }
 
   private calculateMostWins(): PodiumResult {
@@ -269,7 +308,7 @@ export class StatsCalculatorService {
     });
 
     const sortedPlayers = this.sortHighestToLowest(winCounts)
-    return this.generateBestPodiumStat("Most Wins", sortedPlayers);
+    return this.generateTopThreePodium("Most Wins", sortedPlayers);
   }
 
   private calculateMostSecondPlaces(): PodiumResult {
@@ -287,7 +326,7 @@ export class StatsCalculatorService {
     });
 
     const sortedPlayers = this.sortHighestToLowest(secondPlaceCounts);
-    return this.generateBestPodiumStat("Most Second Place Finishes", sortedPlayers);
+    return this.generateTopThreePodium("Most Second Place Finishes", sortedPlayers);
   }
 
   private calculateMostLastPlaces(): PodiumResult {
@@ -300,7 +339,7 @@ export class StatsCalculatorService {
 
     const sortedPlayers = this.sortHighestToLowest(lastPlaceCounts);
 
-    const result = this.generateBestPodiumStat("Most Last Place Finishes", sortedPlayers);
+    const result = this.generateTopThreePodium("Most Last Place Finishes", sortedPlayers);
     result.isNegative = true;
     return result;
   }
@@ -330,8 +369,8 @@ export class StatsCalculatorService {
         totalPoints: (stats.wins / stats.appearances) * 100
       }));
 
-    const highestWinRatio = this.generateBestPodiumStat("Highest Win Ratio", winRatios);
-    const lowestWinRatio = this.generateWorstPodiumStat("Lowest Win Ratio", winRatios);
+    const highestWinRatio = this.generateTopThreePodium("Highest Win Ratio", winRatios);
+    const lowestWinRatio = this.generateBottomThreePodium("Lowest Win Ratio", winRatios);
     return [highestWinRatio, lowestWinRatio];
   }
 
@@ -355,9 +394,9 @@ export class StatsCalculatorService {
       }));
 
     //The lower the average the better  
-    const bestAveragePositions = this.generateWorstPodiumStat("Best Average Finishing Position", averagePositions, true);
+    const bestAveragePositions = this.generateBottomThreePodium("Best Average Finishing Position", averagePositions, true);
     bestAveragePositions.isNegative = false;
-    const worstAveragePositions = this.generateBestPodiumStat("Worst Average Finishing Position", averagePositions);
+    const worstAveragePositions = this.generateTopThreePodium("Worst Average Finishing Position", averagePositions);
     worstAveragePositions.isNegative = true;
     return [bestAveragePositions, worstAveragePositions];
   }
@@ -385,8 +424,8 @@ export class StatsCalculatorService {
         totalPoints: stats.totalWinMargin / stats.wins
       }));
 
-    const bestAverageWinMargin = this.generateBestPodiumStat("Best Average win margin", averageWinMargins);
-    const worstAverageWinMargin = this.generateWorstPodiumStat("Worst Average win margin", averageWinMargins);
+    const bestAverageWinMargin = this.generateTopThreePodium("Best Average Win Margin", averageWinMargins);
+    const worstAverageWinMargin = this.generateBottomThreePodium("Worst Average Win Margin", averageWinMargins);
     return [bestAverageWinMargin, worstAverageWinMargin];
   }
 
@@ -412,7 +451,7 @@ export class StatsCalculatorService {
         name,
         totalPoints: stats.totalLossMargin / stats.appearances
       }));
-    const result = this.generateBestPodiumStat("Average Loss Margin", averageLossMargins);
+    const result = this.generateTopThreePodium("Average Loss Margin", averageLossMargins);
     result.isNegative = true;
     return result;
   }
@@ -433,8 +472,8 @@ export class StatsCalculatorService {
         totalPoints: (count / totalPlaylists) * 100
       }));
 
-    const mostDedicated = this.generateBestPodiumStat("Most Dedicated", attendanceRates);
-    const leastDedicated = this.generateWorstPodiumStat("Least Dedicated", attendanceRates);
+    const mostDedicated = this.generateTopThreePodium("Most Dedicated", attendanceRates);
+    const leastDedicated = this.generateBottomThreePodium("Least Dedicated", attendanceRates);
     return [mostDedicated, leastDedicated];
   }
 
@@ -455,8 +494,8 @@ export class StatsCalculatorService {
       name,
       totalPoints: stats.totalPoints / stats.count  // Compute average
     }));
-    const highestAveragePoints = this.generateBestPodiumStat("Highest Average Points", avgPointsArray);
-    const lowestAveragePoints = this.generateWorstPodiumStat("Lowest Average Points", avgPointsArray);
+    const highestAveragePoints = this.generateTopThreePodium("Highest Average Points", avgPointsArray);
+    const lowestAveragePoints = this.generateBottomThreePodium("Lowest Average Points", avgPointsArray);
     return [highestAveragePoints, lowestAveragePoints];
   }
 
@@ -466,7 +505,7 @@ export class StatsCalculatorService {
       .sort((a, b) => b.totalPoints - a.totalPoints);
   }
 
-  private generateBestPodiumStat(podiumTitle: string, players: Player[], invertOrder?: boolean): PodiumStat {
+  private generateTopThreePodium(podiumTitle: string, players: Player[], invertOrder?: boolean): PodiumStat {
     return {
       title: podiumTitle,
       players: players.sort((a, b) => b.totalPoints - a.totalPoints).slice(0, 3),
@@ -474,7 +513,7 @@ export class StatsCalculatorService {
     };
   }
 
-  private generateWorstPodiumStat(podiumTitle: string, players: Player[], invertOrder?: boolean): PodiumStat {
+  private generateBottomThreePodium(podiumTitle: string, players: Player[], invertOrder?: boolean): PodiumStat {
     return {
       title: podiumTitle,
       players: players.sort((a, b) => a.totalPoints - b.totalPoints).slice(0, 3),

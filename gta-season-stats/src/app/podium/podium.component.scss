@@ -3,7 +3,7 @@
   justify-content: center;
   align-items: flex-end;
   text-align: center;
-  padding-top: 100px;
+  padding-top: 150px;
 
   .podium-item {
     display: flex;
@@ -70,7 +70,7 @@
   }
 }
 
-.gold {
+.podium-item.first:not(.negative) {
   background: linear-gradient(110deg, #FFD700 20%, #fffacdb2 50%, #FFD700 60%);
   background-size: 200% 200%;
   animation-delay: calc(var(--random-delay) * 1s);
