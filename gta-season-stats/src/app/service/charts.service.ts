@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { ChartData, ChartOptions, ChartType } from 'chart.js';
+import { ChartOptions } from 'chart.js';
 import { BehaviorSubject } from 'rxjs';
 import { StatsCalculatorService } from './stats-calculator.service';
 import { ChartResult, Playlist } from '../models';
@@ -13,6 +13,7 @@ export class ChartsService {
   public playlistData$ = this.playlistDataSubject.asObservable();
   private chartDataSubject = new BehaviorSubject<ChartResult[]>([]);
   public chartData$ = this.chartDataSubject.asObservable();
+  private allPlayers: string[] = ['BarizztaButzy', 'mikc95', 'meas_taibhse', 'iiCiaran', 'cooooney95', 'kendy232', 'hurling1', 'jackw2610'];
 
   constructor(private statsCalculatorService: StatsCalculatorService) {
     this.statsCalculatorService.playlistData$.subscribe({
@@ -32,8 +33,7 @@ export class ChartsService {
 
   private generateTotalWinsChart(): ChartResult {
     const labels: string[] = [];
-    const wins: { [playerName: string]: number[] } = {};
-    const cumulativeWins: { [playerName: string]: number } = {};
+    const cumulativeWins: { [playerName: string]: number[] } = {};
     const totalWinsChartOptions: ChartOptions = {
       responsive: true,
       interaction: {
@@ -66,6 +66,13 @@ export class ChartsService {
             text: 'Total Wins'
           }
         }
+      },
+      plugins: {
+        tooltip: {
+          callbacks: {
+            labelColor: (context) => this.getLabelColor(context),
+          }
+        }
       }
     };
 
@@ -76,28 +83,28 @@ export class ChartsService {
       const maxPoints = Math.max(...playlist.players.map(p => p.totalPoints));
       const winners = playlist.players.filter(p => p.totalPoints === maxPoints);
 
-      winners.forEach(winner => {
-        if (!cumulativeWins[winner.name]) {
-          cumulativeWins[winner.name] = 0;
-          wins[winner.name] = [];
+      this.allPlayers.forEach(player => {
+        if (!cumulativeWins[player]) {
+          cumulativeWins[player] = [];
         }
-        cumulativeWins[winner.name]++;
-      });
-
-      Object.keys(cumulativeWins).forEach(player => {
-        wins[player] = wins[player] || [];
-        wins[player].push(cumulativeWins[player]);
+        const currentWins = cumulativeWins[player][cumulativeWins[player].length - 1] || 0;
+        if (winners.some(w => w.name === player)) {
+          cumulativeWins[player].push(currentWins + 1);
+        }
+        else {
+          cumulativeWins[player].push(currentWins);
+        }
       });
     });
 
     const chart = {
       labels,
-      datasets: Object.keys(wins).map(player => ({
+      datasets: Object.keys(cumulativeWins).map(player => ({
         label: player,
-        data: wins[player],
-        borderColor: this.getRandomColor(),
-        backgroundColor: this.getRandomColor(0.3),
-        fill: false,
+        data: cumulativeWins[player],
+        borderColor: this.playerColors[player],
+        backgroundColor: this.playerColors[player],
+        fill: false
       }))
     };
     return {
@@ -146,6 +153,7 @@ export class ChartsService {
         },
         tooltip: {
           callbacks: {
+            labelColor: (context) => this.getLabelColor(context),
             label: function (context) {
               return `${context.dataset.label}: ${(context.parsed.y * 100).toFixed(1)}%`;
             }
@@ -153,36 +161,34 @@ export class ChartsService {
         }
       }
     };
-    
+
     this.playlistDataSubject.value.forEach((playlist, index) => {
       const [year, month, day] = playlist.date.split('-');
       labels.push(`${day}-${month}-${year}`);
 
       const maxPoints = Math.max(...playlist.players.map(p => p.totalPoints));
       const winners = playlist.players.filter(p => p.totalPoints === maxPoints);
-      
-      playlist.players.forEach(player => {
-        const name = player.name;
 
-        if (!(name in playerStats)) {
-          playerStats[name] = {
+      this.allPlayers.forEach(playerName => {
+        if (!(playerName in playerStats)) {
+          playerStats[playerName] = {
             winRate: [],
             winCount: 0,
             gamesPlayed: 0
           };
         }
 
-        playerStats[name].gamesPlayed += 1;
+        playerStats[playerName].gamesPlayed += 1;
 
-        if (winners.some(w => w.name === name)) {
-          playerStats[name].winCount += 1;
+        if (winners.some(w => w.name === playerName)) {
+          playerStats[playerName].winCount += 1;
         }
 
-        const currentRate = playerStats[name].winCount / playerStats[name].gamesPlayed;
-        playerStats[name].winRate.push(+currentRate.toFixed(2));
+        const currentRate = playerStats[playerName].winCount / playerStats[playerName].gamesPlayed;
+        playerStats[playerName].winRate.push(+currentRate.toFixed(2));
       });
 
-      Object.keys(playerStats).forEach(name => {
+      this.allPlayers.forEach(name => {
         if (!playlist.players.some(p => p.name === name)) {
           const prev = playerStats[name].winRate[index - 1] ?? 0;
           playerStats[name].winRate.push(prev);
@@ -195,8 +201,8 @@ export class ChartsService {
       datasets: Object.keys(playerStats).map(player => ({
         label: player,
         data: playerStats[player].winRate,
-        borderColor: this.getRandomColor(),
-        backgroundColor: this.getRandomColor(0.3),
+        borderColor: this.playerColors[player],
+        backgroundColor: this.playerColors[player],
         fill: false,
       }))
     };
@@ -207,10 +213,23 @@ export class ChartsService {
     };
   }
 
-  private getRandomColor(opacity: number = 1): string {
-    const r = Math.floor(Math.random() * 255);
-    const g = Math.floor(Math.random() * 255);
-    const b = Math.floor(Math.random() * 255);
-    return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+  private playerColors: { [name: string]: string } = {
+    'BarizztaButzy': 'rgb(173, 10, 202)',
+    'mikc95': 'rgb(234, 234, 4)',
+    'meas_taibhse': 'rgb(231, 228, 229)',
+    'iiCiaran': 'rgb(238, 31, 52)',
+    'cooooney95': 'rgb(255, 86, 218)',
+    'kendy232': 'rgb(17, 229, 45)',
+    'hurling1': 'rgb(249, 151, 5)',
+    'jackw2610': 'rgb(0, 0, 0)'
+  };
+
+  private getLabelColor(context: any): { borderColor: string; backgroundColor: string } {
+    const label = context.dataset.label || '';
+    const color = this.playerColors[label] || '#aaa';
+    return {
+      borderColor: color,
+      backgroundColor: color
+    };
   }
 }

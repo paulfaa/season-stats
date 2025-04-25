@@ -3,7 +3,7 @@ import { ChartData, ChartOptions } from "chart.js";
 export interface Player {
     name: string;
     totalPoints: number;
-    pointsInSecondLastRace?: number;
+    pointsInLastRace?: number;
 }
   
 export interface Playlist {

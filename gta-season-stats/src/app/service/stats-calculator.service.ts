@@ -139,23 +139,23 @@ export class StatsCalculatorService {
     this.playlistDataSubject.value.forEach(playlist => {
       const winner = playlist.players[0];
       const pointsAvailable: number[] = [];
-      var resultsInSecondLastEvent: Player[] = [];
+      var resultsInLastEvent: Player[] = [];
       playlist.players.forEach(player => {
-        const scoreInSecondLastEvent = player.totalPoints - player.pointsInSecondLastRace!;
-        if (player.pointsInSecondLastRace! > 1) {
-          pointsAvailable.push(player.pointsInSecondLastRace!)
+        const scoreInSecondLastEvent = player.totalPoints - player.pointsInLastRace!;
+        if (player.pointsInLastRace! > 1) {
+          pointsAvailable.push(player.pointsInLastRace!)
         }
-        resultsInSecondLastEvent.push({ name: player.name, totalPoints: scoreInSecondLastEvent })
+        resultsInLastEvent.push({ name: player.name, totalPoints: scoreInSecondLastEvent })
       });
-      resultsInSecondLastEvent.sort((a, b) => b.totalPoints - a.totalPoints);
+      resultsInLastEvent.sort((a, b) => b.totalPoints - a.totalPoints);
 
       const winners = [];
-      if (resultsInSecondLastEvent[0].totalPoints == resultsInSecondLastEvent[1].totalPoints) {
-        winners.push(resultsInSecondLastEvent[0]);
-        winners.push(resultsInSecondLastEvent[1]);
+      if (resultsInLastEvent[0].totalPoints == resultsInLastEvent[1].totalPoints) {
+        winners.push(resultsInLastEvent[0]);
+        winners.push(resultsInLastEvent[1]);
       }
       else {
-        winners.push(resultsInSecondLastEvent[0]);
+        winners.push(resultsInLastEvent[0]);
       }
 
       const maxPointsAvailable = Math.max(...pointsAvailable);
@@ -163,7 +163,7 @@ export class StatsCalculatorService {
       const pointsToBeat = winner.totalPoints - maxPointsAvailable + minPointsAvailable;
 
       winners.forEach(player => {
-        if (winner.name == resultsInSecondLastEvent[0].name) {
+        if (winner.name == resultsInLastEvent[0].name) {
           return;
         }
         if (player.totalPoints + maxPointsAvailable > pointsToBeat) {
@@ -393,7 +393,15 @@ export class StatsCalculatorService {
   private generateTopThreePodium(podiumTitle: string, players: Player[], invertOrder?: boolean): PodiumStat {
     return {
       title: podiumTitle,
-      players: players.sort((a, b) => b.totalPoints - a.totalPoints).slice(0, 3),
+      players: players
+        .map(player => ({
+          ...player,
+          totalPoints: Number.isInteger(player.totalPoints)
+            ? player.totalPoints
+            : parseFloat(player.totalPoints.toFixed(2))
+        }))
+        .sort((a, b) => b.totalPoints - a.totalPoints)
+        .slice(0, 3),
       invertOrder: invertOrder
     };
   }
@@ -401,9 +409,17 @@ export class StatsCalculatorService {
   private generateBottomThreePodium(podiumTitle: string, players: Player[], invertOrder?: boolean): PodiumStat {
     return {
       title: podiumTitle,
-      players: players.sort((a, b) => a.totalPoints - b.totalPoints).slice(0, 3),
-      isNegative: true,
-      invertOrder: invertOrder
+      players: players
+        .map(player => ({
+          ...player,
+          totalPoints: Number.isInteger(player.totalPoints)
+            ? player.totalPoints
+            : parseFloat(player.totalPoints.toFixed(2))
+        }))
+        .sort((a, b) => a.totalPoints - b.totalPoints)
+        .slice(0, 3),
+      invertOrder: invertOrder,
+      isNegative: true
     };
   }
 
