@@ -61,6 +61,7 @@ export class StatsCalculatorService {
     stats.push(this.calculateMostWins());
     stats.push(this.calculateMostSecondPlaces());
     stats.push(this.calculateMostLastPlaces());
+    stats.push(this.calculateMostDraws());
     stats.push(this.calculateAverageLossMargins())
     const mostPlaylistsLost = this.calculateMostPlaylistsLostInFinalEvent();
     mostPlaylistsLost != null && stats.push(mostPlaylistsLost);
@@ -74,18 +75,22 @@ export class StatsCalculatorService {
     this.podiumDataSubject.next(stats)
   }
 
+  private toTwoDecimalPlaces(num: number): number {
+    return Number.isInteger(num) ? num : parseFloat(num.toFixed(2));
+  }
+
   private calculateTotalNumberOfPlaylists(): IndividualResult {
     return { title: 'Total Playlists', value: this.playlistDataSubject.value.length }
   }
 
   private calculateAveragePlaylistLength(): IndividualResult {
     const avgLength = this.playlistDataSubject.value.reduce((acc, playlist) => acc + playlist.length, 0) / this.playlistDataSubject.value.length;
-    return { title: 'Average Playlist Length', value: avgLength }
+    return { title: 'Average Playlist Length', value: this.toTwoDecimalPlaces(avgLength) }
   }
 
   private calculateAverageSquadSize(): IndividualResult {
     const avgSize = this.playlistDataSubject.value.reduce((acc, playlist) => acc + playlist.players.length, 0) / this.playlistDataSubject.value.length;
-    return { title: 'Average Squad Size', value: avgSize }
+    return { title: 'Average Squad Size', value: this.toTwoDecimalPlaces(avgSize) }
   }
 
   private calculateMostPopularDays(): IndividualResult[] {
@@ -137,13 +142,12 @@ export class StatsCalculatorService {
   private calculateMostPlaylistsLostInFinalEvent(): PodiumResult | undefined {
     const lossCounts: Record<string, number> = {};
     this.playlistDataSubject.value.forEach(playlist => {
-      const winner = playlist.players[0];
       const pointsAvailable: number[] = [];
       var resultsInLastEvent: Player[] = [];
       playlist.players.forEach(player => {
-        const scoreInSecondLastEvent = player.totalPoints - player.pointsInLastRace!;
-        if (player.pointsInLastRace! > 1) {
-          pointsAvailable.push(player.pointsInLastRace!)
+        const scoreInSecondLastEvent = player.totalPoints - player.lastEventPoints!;
+        if (player.lastEventPoints! > 1) {
+          pointsAvailable.push(player.lastEventPoints!)
         }
         resultsInLastEvent.push({ name: player.name, totalPoints: scoreInSecondLastEvent })
       });
@@ -160,19 +164,28 @@ export class StatsCalculatorService {
 
       const maxPointsAvailable = Math.max(...pointsAvailable);
       const minPointsAvailable = Math.min(...pointsAvailable);
+      const winner = playlist.players[0];
       const pointsToBeat = winner.totalPoints - maxPointsAvailable + minPointsAvailable;
 
       winners.forEach(player => {
         if (winner.name == resultsInLastEvent[0].name) {
           return;
         }
-        if (player.totalPoints + maxPointsAvailable > pointsToBeat) {
+        if (player.totalPoints + maxPointsAvailable >= pointsToBeat) {
           lossCounts[player.name] = (lossCounts[player.name] || 0) + 1;
         }
       })
     });
+
     const sortedPlayers = this.sortHighestToLowest(lossCounts)
-    return sortedPlayers.length > 0 ? this.generateBottomThreePodium("Most playlists lost in final event", sortedPlayers) : undefined;
+    if (sortedPlayers.length > 0) {
+      const result = this.generateTopThreePodium("Most playlists lost in final event", sortedPlayers);
+      result.isNegative = true;
+      return result;
+    }
+    else {
+      return undefined;
+    }
   }
 
   private calculateMostWins(): PodiumResult {
@@ -181,8 +194,7 @@ export class StatsCalculatorService {
     this.playlistDataSubject.value.forEach(playlist => {
       var winners = [];
       if (this.playlistWasDraw(playlist)) {
-        winners.push(playlist.players[0]);
-        winners.push(playlist.players[1]);
+        return;
       }
       else {
         winners.push(playlist.players[0]);
@@ -225,6 +237,23 @@ export class StatsCalculatorService {
     const sortedPlayers = this.sortHighestToLowest(lastPlaceCounts);
 
     const result = this.generateTopThreePodium("Most Last Place Finishes", sortedPlayers);
+    result.isNegative = true;
+    return result;
+  }
+
+  private calculateMostDraws(): PodiumResult {
+    const drawCounts: Record<string, number> = {};
+    this.playlistDataSubject.value.forEach(playlist => {
+      const maxPoints = Math.max(...playlist.players.map(p => p.totalPoints));
+      const winners = playlist.players.filter(p => p.totalPoints === maxPoints);
+      if (winners.length > 1) {
+        winners.forEach(winner => {
+          drawCounts[winner.name] = (drawCounts[winner.name] || 0) + 1;
+        });
+      }
+    })
+    const sortedPlayers = this.sortHighestToLowest(drawCounts);
+    const result = this.generateTopThreePodium("Most Draws", sortedPlayers);
     result.isNegative = true;
     return result;
   }

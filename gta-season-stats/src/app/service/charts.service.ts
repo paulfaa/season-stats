@@ -78,7 +78,7 @@ export class ChartsService {
 
     this.playlistDataSubject.value.forEach((playlist) => {
       const [year, month, day] = playlist.date.split('-'); // Split YYYY-MM-DD
-      labels.push(`${day}-${month}-${year}`);
+      labels.push(`${day}-${month}`);
 
       const maxPoints = Math.max(...playlist.players.map(p => p.totalPoints));
       const winners = playlist.players.filter(p => p.totalPoints === maxPoints);
@@ -164,7 +164,7 @@ export class ChartsService {
 
     this.playlistDataSubject.value.forEach((playlist, index) => {
       const [year, month, day] = playlist.date.split('-');
-      labels.push(`${day}-${month}-${year}`);
+      labels.push(`${day}-${month}`);
 
       const maxPoints = Math.max(...playlist.players.map(p => p.totalPoints));
       const winners = playlist.players.filter(p => p.totalPoints === maxPoints);
