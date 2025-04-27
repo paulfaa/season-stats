@@ -15,6 +15,6 @@ export class ChartContainerComponent implements OnInit {
   constructor(private chartsService: ChartsService) { }
 
   ngOnInit(): void {
-    this.charts$ = this.chartsService.chartData$;
+    this.charts$ = this.chartsService.getAllCharts();
   }
 }

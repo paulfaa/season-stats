@@ -1,26 +1,22 @@
 import { Injectable } from '@angular/core';
 import { ChartOptions } from 'chart.js';
-import { BehaviorSubject } from 'rxjs';
-import { StatsCalculatorService } from './stats-calculator.service';
+import { BehaviorSubject, Observable, switchMap, tap } from 'rxjs';
 import { ChartResult, Playlist } from '../models';
+import { PlaylistDataService } from './playlist-data.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ChartsService {
 
-  private playlistDataSubject = new BehaviorSubject<Playlist[]>([]);
-  public playlistData$ = this.playlistDataSubject.asObservable();
   private chartDataSubject = new BehaviorSubject<ChartResult[]>([]);
   public chartData$ = this.chartDataSubject.asObservable();
   private allPlayers: string[] = ['BarizztaButzy', 'mikc95', 'meas_taibhse', 'iiCiaran', 'cooooney95', 'kendy232', 'hurling1', 'jackw2610'];
+  private playlistData: Playlist[] = [];
 
-  constructor(private statsCalculatorService: StatsCalculatorService) {
-    this.statsCalculatorService.playlistData$.subscribe({
-      next: (data) => {
-        this.playlistDataSubject.next(data);
-        this.generateAllCharts();
-      }
+  constructor(private playlistDataService: PlaylistDataService) {
+    this.playlistDataService.playlistData$.subscribe(data => {
+      this.playlistData = data;
     });
   }
 
@@ -29,6 +25,13 @@ export class ChartsService {
     charts.push(this.generateTotalWinsChart());
     charts.push(this.generateWinRateChart())
     this.chartDataSubject.next(charts);
+  }
+
+  public getAllCharts(): Observable<ChartResult[]> {
+    return this.playlistDataService.playlistData$.pipe(
+      tap(() => this.generateAllCharts()),
+      switchMap(() => this.chartData$)
+    );
   }
 
   private generateTotalWinsChart(): ChartResult {
@@ -76,7 +79,7 @@ export class ChartsService {
       }
     };
 
-    this.playlistDataSubject.value.forEach((playlist) => {
+    this.playlistData.forEach((playlist) => {
       const [year, month, day] = playlist.date.split('-'); // Split YYYY-MM-DD
       labels.push(`${day}-${month}`);
 
@@ -167,7 +170,7 @@ export class ChartsService {
       }
     };
 
-    this.playlistDataSubject.value.forEach((playlist, index) => {
+    this.playlistData.forEach((playlist, index) => {
       const [year, month, day] = playlist.date.split('-');
       labels.push(`${day}-${month}`);
 
