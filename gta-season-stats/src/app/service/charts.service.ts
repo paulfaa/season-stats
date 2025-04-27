@@ -81,7 +81,12 @@ export class ChartsService {
       labels.push(`${day}-${month}`);
 
       const maxPoints = Math.max(...playlist.players.map(p => p.totalPoints));
-      const winners = playlist.players.filter(p => p.totalPoints === maxPoints);
+      var winners = playlist.players.filter(p => p.totalPoints === maxPoints);
+
+      //If draw, no one wins
+      if (winners.length > 1) {
+        winners = []
+      }
 
       this.allPlayers.forEach(player => {
         if (!cumulativeWins[player]) {

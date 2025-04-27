@@ -52,6 +52,7 @@ export class StatsCalculatorService {
     stats.push(this.calculateAveragePlaylistLength());
     stats.push(this.calculateAverageSquadSize());
     stats.push(...this.calculateMostPopularDays());
+    stats.push(this.calculateMostPlaylistsInOneWeek());
     stats.push(this.calculateLongestWinningStreak());
     this.individualDataSubject.next(stats);
   }
@@ -109,18 +110,60 @@ export class StatsCalculatorService {
     return [{ title: 'Most Popular Day', subtitle: mostPopularDay }, { title: 'Least Popular Day', subtitle: leastPopularDay }];
   }
 
+  private calculateMostPlaylistsInOneWeek(): IndividualResult {
+    const weekCounts: Record<string, number> = {};
+    const playlists = this.playlistDataSubject.value.map(playlist => ({
+      ...playlist,
+      dateObj: new Date(playlist.date)
+    }));
+
+    const startOfYear = new Date('2025-01-01');
+    const endOfYear = new Date('2025-12-31');
+
+    while (startOfYear.getDay() !== 1) {
+      startOfYear.setDate(startOfYear.getDate() + 1);
+    }
+
+    let currentWeekStart = new Date(startOfYear);
+
+    while (currentWeekStart <= endOfYear) {
+      const currentWeekEnd = new Date(currentWeekStart);
+      currentWeekEnd.setDate(currentWeekStart.getDate() + 6);
+
+      const weekKey = `${currentWeekStart.toLocaleDateString('en-CA')} - ${currentWeekEnd.toLocaleDateString('en-CA')}`;
+
+      weekCounts[weekKey] = playlists.filter(({ dateObj }) =>
+        dateObj >= currentWeekStart && dateObj <= currentWeekEnd
+      ).length;
+
+      currentWeekStart.setDate(currentWeekStart.getDate() + 7);
+    }
+
+    const [mostPlaylistsWeek, mostPlaylistsCount] = Object.entries(weekCounts)
+      .sort(([, countA], [, countB]) => countB - countA)[0];
+
+    const [weekStartStr, weekEndStr] = mostPlaylistsWeek.split(' - ');
+    const formattedWeekRange = `${new Date(weekStartStr).toLocaleDateString('en-US', { month: 'long', day: 'numeric' })} - ${new Date(weekEndStr).toLocaleDateString('en-US', { month: 'long', day: 'numeric' })}`;
+
+    return { title: 'Most Playlists in One Week', subtitle: formattedWeekRange, value: mostPlaylistsCount };
+  }
+
   private calculateLongestWinningStreak(): IndividualResult {
-    this.playlistDataSubject.value.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    const sortedPlaylists = [...this.playlistDataSubject.value].sort(
+      (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+    );
 
     let longestStreak = 0;
     let currentStreak = 0;
     let currentWinner = "";
-    let bestPlayer = "";
+    let bestPlayers: string[] = [];
 
-    this.playlistDataSubject.value.forEach(playlist => {
+    sortedPlaylists.forEach(playlist => {
       if (this.playlistWasDraw(playlist)) {
+        currentStreak = 0;
         return;
       }
+
       const winner = playlist.players[0].name;
 
       if (winner === currentWinner) {
@@ -132,10 +175,16 @@ export class StatsCalculatorService {
 
       if (currentStreak > longestStreak) {
         longestStreak = currentStreak;
-        bestPlayer = currentWinner;
+        bestPlayers = [currentWinner];
+      }
+      else if (currentStreak === longestStreak) {
+        if (!bestPlayers.includes(currentWinner)) {
+          bestPlayers.push(currentWinner);
+        }
       }
     });
 
+    const bestPlayer = bestPlayers.length > 1 ? bestPlayers.join(', ') : bestPlayers[0];
     return { title: 'Longest Winning Streak:', subtitle: bestPlayer, value: longestStreak };
   }
 
@@ -143,38 +192,35 @@ export class StatsCalculatorService {
     const lossCounts: Record<string, number> = {};
     this.playlistDataSubject.value.forEach(playlist => {
       const pointsAvailable: number[] = [];
-      var resultsInLastEvent: Player[] = [];
+      var standingsInSecondLastEvent: Player[] = [];
       playlist.players.forEach(player => {
-        const scoreInSecondLastEvent = player.totalPoints - player.lastEventPoints!;
+        const totalPointsInSecondLastEvent = player.totalPoints - player.lastEventPoints!;
         if (player.lastEventPoints! > 1) {
           pointsAvailable.push(player.lastEventPoints!)
         }
-        resultsInLastEvent.push({ name: player.name, totalPoints: scoreInSecondLastEvent })
+        standingsInSecondLastEvent.push({ name: player.name, totalPoints: totalPointsInSecondLastEvent })
       });
-      resultsInLastEvent.sort((a, b) => b.totalPoints - a.totalPoints);
+      standingsInSecondLastEvent.sort((a, b) => b.totalPoints - a.totalPoints);
 
-      const winners = [];
-      if (resultsInLastEvent[0].totalPoints == resultsInLastEvent[1].totalPoints) {
-        winners.push(resultsInLastEvent[0]);
-        winners.push(resultsInLastEvent[1]);
+      var leaderInSecondLastEvent: Player;
+      if (standingsInSecondLastEvent[0].totalPoints == standingsInSecondLastEvent[1].totalPoints) {
+        return
       }
       else {
-        winners.push(resultsInLastEvent[0]);
+        leaderInSecondLastEvent = standingsInSecondLastEvent[0];
       }
 
       const maxPointsAvailable = Math.max(...pointsAvailable);
       const minPointsAvailable = Math.min(...pointsAvailable);
-      const winner = playlist.players[0];
-      const pointsToBeat = winner.totalPoints - maxPointsAvailable + minPointsAvailable;
-
-      winners.forEach(player => {
-        if (winner.name == resultsInLastEvent[0].name) {
-          return;
-        }
-        if (player.totalPoints + maxPointsAvailable >= pointsToBeat) {
-          lossCounts[player.name] = (lossCounts[player.name] || 0) + 1;
-        }
-      })
+      const overallWinner = playlist.players[0];
+      const pointsToBeat = overallWinner.totalPoints - maxPointsAvailable + minPointsAvailable;
+      const leaderName = leaderInSecondLastEvent.name;
+      if (leaderName == overallWinner.name) {
+        return;
+      }
+      if (leaderInSecondLastEvent.totalPoints + maxPointsAvailable > pointsToBeat) {
+        lossCounts[leaderName] = (lossCounts[leaderName] || 0) + 1;
+      }
     });
 
     const sortedPlayers = this.sortHighestToLowest(lossCounts)
