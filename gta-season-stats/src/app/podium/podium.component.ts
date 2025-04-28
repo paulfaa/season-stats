@@ -9,6 +9,7 @@ import { Player } from '../models';
 export class PodiumComponent implements OnInit {
   @Input() podiumData: Player[] = [];
   @Input() podiumTitle: string = "";
+  @Input() subtitle?: string;
   @Input() startPosition: number = 0;
   @Input() isNegative: boolean | undefined;
   @Input() invertOrder: boolean | undefined;

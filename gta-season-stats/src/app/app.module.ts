@@ -14,6 +14,7 @@ import { MatDividerModule } from '@angular/material/divider';
 import { ChartContainerComponent } from './chart-container/chart-container.component';
 import { ChartComponent } from './chart/chart.component';
 import { NgChartsModule } from 'ng2-charts';
+import { UpdateDateComponent } from './update-date/update-date.component';
 
 @NgModule({
   declarations: [
@@ -25,6 +26,7 @@ import { NgChartsModule } from 'ng2-charts';
     PodiumFormatPipe,
     ChartContainerComponent,
     ChartComponent,
+    UpdateDateComponent,
   ],
   imports: [
     BrowserModule,

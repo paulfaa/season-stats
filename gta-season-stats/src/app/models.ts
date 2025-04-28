@@ -15,6 +15,7 @@ export interface Playlist {
 
 export interface PodiumResult {
     title: string;
+    subtitle?: string;
     players: Player[];
     isNegative?: boolean;
     invertOrder?: boolean;

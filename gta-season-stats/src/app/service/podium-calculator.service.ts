@@ -30,9 +30,9 @@ export class PodiumCalculatorService {
   public updateAllPodiums(): void {
     const stats = [];
     stats.push(this.calculateMostWins());
+    stats.push(this.calculateMostDraws());
     stats.push(this.calculateMostSecondPlaces());
     stats.push(this.calculateMostLastPlaces());
-    stats.push(this.calculateMostDraws());
     stats.push(this.calculateAverageLossMargins())
     const mostPlaylistsLost = this.calculateMostPlaylistsLostInFinalEvent();
     mostPlaylistsLost != null && stats.push(mostPlaylistsLost);
@@ -83,8 +83,9 @@ export class PodiumCalculatorService {
 
     const sortedPlayers = this.sortHighestToLowest(lossCounts)
     if (sortedPlayers.length > 0) {
-      const result = this.generateTopThreePodium("Most playlists lost in final event", sortedPlayers);
+      const result = this.generateTopThreePodium("Most playlists bottled", sortedPlayers);
       result.isNegative = true;
+      result.subtitle = "leading the playlist in final event and lost";
       return result;
     }
     else {
@@ -212,15 +213,16 @@ export class PodiumCalculatorService {
       }));
 
     //The lower the average the better  
-    const bestAveragePositions = this.generateBottomThreePodium("Best Average Finishing Position", averagePositions, true);
+    const bestAveragePositions = this.generateBottomThreePodium("Highest Average Finishing Position", averagePositions, true);
     bestAveragePositions.isNegative = false;
-    const worstAveragePositions = this.generateTopThreePodium("Worst Average Finishing Position", averagePositions);
+    const worstAveragePositions = this.generateTopThreePodium("Lowest Average Finishing Position", averagePositions);
     worstAveragePositions.isNegative = true;
     return [bestAveragePositions, worstAveragePositions];
   }
 
   private calculateAverageWinMargins(): PodiumResult[] {
     const totalWinMargins: Record<string, { totalWinMargin: number; wins: number }> = {};
+    const subtitle = "points finished ahead of second place";
 
     this.playlistData.forEach(playlist => {
       if (Utils.playlistWasDraw(playlist)) {
@@ -243,7 +245,9 @@ export class PodiumCalculatorService {
       }));
 
     const bestAverageWinMargin = this.generateTopThreePodium("Best Average Win Margin", averageWinMargins);
+    bestAverageWinMargin.subtitle = subtitle;
     const worstAverageWinMargin = this.generateBottomThreePodium("Worst Average Win Margin", averageWinMargins);
+    worstAverageWinMargin.subtitle = subtitle;
     return [bestAverageWinMargin, worstAverageWinMargin];
   }
 
@@ -269,7 +273,8 @@ export class PodiumCalculatorService {
         name,
         totalPoints: stats.totalLossMargin / stats.appearances
       }));
-    const result = this.generateTopThreePodium("Average Loss Margin", averageLossMargins);
+    const result = this.generateTopThreePodium("Highest Average Loss Margin", averageLossMargins);
+    result.subtitle = "points difference to playlist winner"
     result.isNegative = true;
     return result;
   }
@@ -277,6 +282,7 @@ export class PodiumCalculatorService {
   private calculateDedicationRates(): PodiumResult[] {
     const totalPlaylists = this.playlistData.length;
     const attendanceCounts: Record<string, number> = {};
+    const subtitle = "total participation in all playlists";
 
     this.playlistData.forEach(playlist => {
       playlist.players.forEach(player => {
@@ -291,7 +297,9 @@ export class PodiumCalculatorService {
       }));
 
     const mostDedicated = this.generateTopThreePodium("Most Dedicated", attendanceRates);
+    mostDedicated.subtitle = subtitle;
     const leastDedicated = this.generateBottomThreePodium("Least Dedicated", attendanceRates);
+    leastDedicated.subtitle = subtitle;
     return [mostDedicated, leastDedicated];
   }
 

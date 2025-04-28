@@ -52,12 +52,24 @@
   }
 }
 
-.podium-title {
+.podium-description {
   display: flex;
+  flex-direction: column;
   justify-content: center;
-  font-size: x-large;
   padding-top: 15px;
   padding-bottom: 55px;
+}
+
+.title {
+  display: flex;
+  font-size: x-large;
+  justify-content: center;
+}
+
+.subtitle {
+  display: flex;
+  font-size: medium;
+  justify-content: center;
 }
 
 @keyframes shine {

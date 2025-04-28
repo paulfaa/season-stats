@@ -12,4 +12,9 @@
   </div>
 
 </div>
-<span class="podium-title">{{podiumTitle}}</span>
+<div class="podium-description">
+  <span class="title">{{podiumTitle}}</span>
+  <span class="subtitle" *ngIf="subtitle">
+    ({{subtitle}})
+  </span>
+</div>

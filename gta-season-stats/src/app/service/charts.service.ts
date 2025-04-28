@@ -3,6 +3,7 @@ import { ChartOptions } from 'chart.js';
 import { BehaviorSubject, Observable, switchMap, tap } from 'rxjs';
 import { ChartResult, Playlist } from '../models';
 import { PlaylistDataService } from './playlist-data.service';
+import { Plugin } from 'chart.js';
 
 @Injectable({
   providedIn: 'root'
@@ -23,7 +24,7 @@ export class ChartsService {
   public generateAllCharts(): void {
     const charts = [];
     charts.push(this.generateTotalWinsChart());
-    charts.push(this.generateWinRateChart())
+    //charts.push(this.generateWinRateChart())
     this.chartDataSubject.next(charts);
   }
 
@@ -240,4 +241,21 @@ export class ChartsService {
       backgroundColor: color
     };
   }
+
+  JitterPlugin: Plugin = {
+    id: 'jitterPlugin',
+    beforeDatasetsDraw(chart) {
+      const offsetPixels = 2; // Adjust this for more/less separation
+      chart.data.datasets.forEach((dataset, datasetIndex) => {
+        const meta = chart.getDatasetMeta(datasetIndex);
+        if (!meta.hidden) {
+          meta.data.forEach((point) => {
+            if (point && point.y !== undefined) {
+              point.y -= offsetPixels * datasetIndex;
+            }
+          });
+        }
+      });
+    }
+  };
 }
