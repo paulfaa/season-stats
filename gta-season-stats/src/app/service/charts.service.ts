@@ -123,6 +123,30 @@ export class ChartsService {
     };
   }
 
+ /*  private generateAverageFinishingPositionChart(): ChartResult {
+
+    const playerStats: Record<string, { averagePosition: number[]; allPositions: number[]; appearances: number }> = {};
+    const labels: string[] = [];
+
+    this.playlistData.forEach((playlist) => {
+      const [year, month, day] = playlist.date.split('-');
+      labels.push(`${day}-${month}`);
+
+    });
+
+    this.allPlayers.forEach(playerName => {
+      if (!(playerName in finishingPositions)) {
+        finishingPositions[playerName] = {
+          finishingPositions: [],
+          gamesPlayed: 0
+        };
+      }
+      const position = 
+      finishingPositions[playerName].gamesPlayed += 1;
+
+    });
+  } */
+
   private generateWinRateChart(): ChartResult {
     type PlayerWinStats = {
       winRate: number[];
@@ -242,20 +266,5 @@ export class ChartsService {
     };
   }
 
-  JitterPlugin: Plugin = {
-    id: 'jitterPlugin',
-    beforeDatasetsDraw(chart) {
-      const offsetPixels = 2; // Adjust this for more/less separation
-      chart.data.datasets.forEach((dataset, datasetIndex) => {
-        const meta = chart.getDatasetMeta(datasetIndex);
-        if (!meta.hidden) {
-          meta.data.forEach((point) => {
-            if (point && point.y !== undefined) {
-              point.y -= offsetPixels * datasetIndex;
-            }
-          });
-        }
-      });
-    }
-  };
+
 }

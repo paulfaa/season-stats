@@ -117,16 +117,23 @@ export class PodiumCalculatorService {
     const secondPlaceCounts: Record<string, number> = {};
 
     this.playlistData.forEach(playlist => {
-      var secondPlacePlayer;
-      if (Utils.playlistWasDraw(playlist)) {
-        secondPlacePlayer = playlist.players[2];
+      const winningScore = playlist.players[0].totalPoints;
+      const winners = this.getPlayersWithScore(winningScore, playlist.players);
+      if (winners.length > 1) {
+        winners.forEach(winner => {
+          secondPlaceCounts[winner.name] = (secondPlaceCounts[winner.name] || 0) + 1
+        })
       }
       else {
-        secondPlacePlayer = playlist.players[1];
+        const winnerRemoved = playlist.players.slice(1);
+        const secondPlaceScore = winnerRemoved[0].totalPoints;
+        const secondPlacePlayers = this.getPlayersWithScore(secondPlaceScore, winnerRemoved);
+        secondPlacePlayers.forEach(player => {
+          secondPlaceCounts[player.name] = (secondPlaceCounts[player.name] || 0) + 1
+        }
+        )
       }
-      secondPlaceCounts[secondPlacePlayer.name] = (secondPlaceCounts[secondPlacePlayer.name] || 0) + 1;
     });
-
     const sortedPlayers = this.sortHighestToLowest(secondPlaceCounts);
     return this.generateTopThreePodium("Most Second Place Finishes", sortedPlayers);
   }
@@ -197,11 +204,20 @@ export class PodiumCalculatorService {
     const playerStats: Record<string, { totalPosition: number; appearances: number }> = {};
 
     this.playlistData.forEach(playlist => {
+      let currentPosition = 1; 
+      let tieCount = 0;
       playlist.players.forEach((player, index) => {
+        if (index > 0 && player.totalPoints === playlist.players[index - 1].totalPoints) {
+          tieCount++;
+        } else {
+          currentPosition += tieCount;
+          tieCount = 0;
+          currentPosition = index + 1;
+        }
         if (!playerStats[player.name]) {
           playerStats[player.name] = { totalPosition: 0, appearances: 0 };
         }
-        playerStats[player.name].totalPosition += (index + 1);
+        playerStats[player.name].totalPosition += currentPosition;
         playerStats[player.name].appearances += 1;
       });
     });
@@ -362,5 +378,15 @@ export class PodiumCalculatorService {
       invertOrder: invertOrder,
       isNegative: true
     };
+  }
+
+  private getPlayersWithScore(score: number, playersToSearch: Player[]): Player[] {
+    var foundPlayers: Player[] = [];
+    playersToSearch.forEach(player => {
+      if (player.totalPoints == score) {
+        foundPlayers.push(player);
+      }
+    })
+    return foundPlayers;
   }
 }
