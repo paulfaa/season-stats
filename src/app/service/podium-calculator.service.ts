@@ -29,6 +29,7 @@ export class PodiumCalculatorService {
 
   public updateAllPodiums(): void {
     const stats = [];
+    stats.push(this.calculateFlights());
     stats.push(this.calculateMostWins());
     stats.push(this.calculateMostDraws());
     stats.push(this.calculateMostSecondPlaces());
@@ -91,6 +92,15 @@ export class PodiumCalculatorService {
     else {
       return undefined;
     }
+  }
+
+  private calculateFlights(): PodiumResult {
+    const flightCounts: Record<string, number> = {};
+    flightCounts["mikc95"] = 1;
+    const sortedPlayers = this.sortHighestToLowest(flightCounts)
+    const podium = this.generateTopThreePodium("Most Flights To Switzerland", sortedPlayers);
+    podium.subtitle = "cause he couldn't handle the smoke"
+    return podium;
   }
 
   private calculateMostWins(): PodiumResult {

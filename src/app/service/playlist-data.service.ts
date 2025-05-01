@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, interval, Subject, takeUntil } from 'rxjs';
 import { Playlist } from '../models';
 import { GoogleSheetsService } from './google-sheets.service';
 
@@ -13,7 +13,22 @@ export class PlaylistDataService {
   private lastPlaylistDateSubject = new BehaviorSubject<Date | undefined>(undefined);
   public lastPlaylistDate$ = this.lastPlaylistDateSubject.asObservable();
 
+  private destroy$ = new Subject<void>();
+  private TWELVE_HOURS_IN_MS: number = 12 * 60 * 60 * 1000;
+
   constructor(private googleSheetsService: GoogleSheetsService) {
+    this.fetchAndUpdatePlaylistData();
+    interval(this.TWELVE_HOURS_IN_MS)
+    .pipe(takeUntil(this.destroy$)) 
+    .subscribe(() => this.fetchAndUpdatePlaylistData());
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  private fetchAndUpdatePlaylistData(): void {
     this.googleSheetsService.fetchSheetsPlaylistData().subscribe({
       next: data => {
         this.playlistDataSubject.next(data);
@@ -21,10 +36,6 @@ export class PlaylistDataService {
       },
       error: err => console.error('Error fetching data from Google Sheets', err)
     });
-  }
-
-  public getPlaylistDataSnapshot(): Playlist[] {
-    return this.playlistDataSubject.value;
   }
 
   private updateLastPlaylistDate(playlists: Playlist[]): void {
