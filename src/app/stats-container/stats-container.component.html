@@ -1,18 +1,18 @@
 <div class="stats-container">
-    <app-number-display 
-      *ngFor="let number of individualStats$ | async" 
-      [individualResult]="number">
-    </app-number-display>
+  <app-number-display 
+    *ngFor="let number of individualStats$ | async" 
+    [individualResult]="number">
+  </app-number-display>
 
-    <mat-divider></mat-divider>
+  <mat-divider></mat-divider>
 
-    <app-podium 
-      *ngFor="let podium of podiumStats$ | async" 
-      [podiumTitle]="podium.title"
-      [subtitle]="podium.subtitle" 
-      [podiumData]="podium.players"
-      [isNegative]="podium.isNegative"
-      [invertOrder]="podium.invertOrder"
-      >
-    </app-podium>
-  </div>
+  <app-podium 
+    *ngFor="let podium of podiumStats$ | async" 
+    [podiumTitle]="podium.title"
+    [subtitle]="podium.subtitle" 
+    [podiumData]="podium.players"
+    [isNegative]="podium.isNegative"
+    [invertOrder]="podium.invertOrder"
+    >
+  </app-podium>
+</div>

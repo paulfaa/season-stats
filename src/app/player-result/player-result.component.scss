@@ -1,0 +1,22 @@
+.player-result {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-left: 10px;
+    padding-bottom: 10px;
+    padding: 5px;
+    min-width: 30px;
+}
+
+.player-result-name {
+    justify-content: center;
+    align-items: center;
+    font-weight: bold;
+    font-weight: 525;
+}
+
+.player-result-points {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}

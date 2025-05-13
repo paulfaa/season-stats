@@ -15,6 +15,12 @@ import { ChartContainerComponent } from './chart-container/chart-container.compo
 import { ChartComponent } from './chart/chart.component';
 import { NgChartsModule } from 'ng2-charts';
 import { UpdateDateComponent } from './update-date/update-date.component';
+import { LeaderboardContainerComponent } from './leaderboard-container/leaderboard-container.component';
+import { ShortNamePipe } from './pipes/name-format.pipe';
+import { RaceResultContainerComponent } from './race-result-container/race-result-container.component';
+import { PlayerResultComponent } from './player-result/player-result.component';
+import { PlayerResultsContainerComponent } from './player-results-container/player-results-container.component';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 @NgModule({
   declarations: [
@@ -24,9 +30,14 @@ import { UpdateDateComponent } from './update-date/update-date.component';
     ParallaxDirective,
     StatsContainerComponent,
     PodiumFormatPipe,
+    ShortNamePipe,
     ChartContainerComponent,
     ChartComponent,
     UpdateDateComponent,
+    LeaderboardContainerComponent,
+    RaceResultContainerComponent,
+    PlayerResultComponent,
+    PlayerResultsContainerComponent,
   ],
   imports: [
     BrowserModule,
@@ -34,7 +45,8 @@ import { UpdateDateComponent } from './update-date/update-date.component';
     BrowserAnimationsModule,
     MatToolbarModule,
     MatDividerModule,
-    NgChartsModule
+    NgChartsModule,
+    MatProgressSpinnerModule
   ],
   providers: [],
   bootstrap: [AppComponent]

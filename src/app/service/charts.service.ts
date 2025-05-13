@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { ChartOptions } from 'chart.js';
 import { BehaviorSubject, Observable, switchMap, tap } from 'rxjs';
-import { ChartResult, Playlist } from '../models';
+import { ChartResult, playerColors, Playlist } from '../models';
 import { PlaylistDataService } from './playlist-data.service';
 import { Plugin } from 'chart.js';
 
@@ -12,6 +12,7 @@ export class ChartsService {
 
   private chartDataSubject = new BehaviorSubject<ChartResult[]>([]);
   public chartData$ = this.chartDataSubject.asObservable();
+  //move array to models file
   private allPlayers: string[] = ['BarizztaButzy', 'mikc95', 'meas_taibhse', 'iiCiaran', 'cooooney95', 'kendy232', 'hurling1', 'jackw2610'];
   private playlistData: Playlist[] = [];
 
@@ -111,8 +112,8 @@ export class ChartsService {
       datasets: Object.keys(cumulativeWins).map(player => ({
         label: player,
         data: cumulativeWins[player],
-        borderColor: this.playerColors[player],
-        backgroundColor: this.playerColors[player],
+        borderColor: playerColors[player],
+        backgroundColor: playerColors[player],
         fill: false
       }))
     };
@@ -234,8 +235,8 @@ export class ChartsService {
       datasets: Object.keys(playerStats).map(player => ({
         label: player,
         data: playerStats[player].winRate,
-        borderColor: this.playerColors[player],
-        backgroundColor: this.playerColors[player],
+        borderColor: playerColors[player],
+        backgroundColor: playerColors[player],
         fill: false,
       }))
     };
@@ -246,20 +247,9 @@ export class ChartsService {
     };
   }
 
-  private playerColors: { [name: string]: string } = {
-    'BarizztaButzy': 'rgb(173, 10, 202)',
-    'mikc95': 'rgb(234, 234, 4)',
-    'meas_taibhse': 'rgb(231, 228, 229)',
-    'iiCiaran': 'rgb(238, 31, 52)',
-    'cooooney95': 'rgb(255, 86, 218)',
-    'kendy232': 'rgb(17, 229, 45)',
-    'hurling1': 'rgb(249, 151, 5)',
-    'jackw2610': 'rgb(0, 0, 0)'
-  };
-
   private getLabelColor(context: any): { borderColor: string; backgroundColor: string } {
     const label = context.dataset.label || '';
-    const color = this.playerColors[label] || '#aaa';
+    const color = playerColors[label] || '#aaa';
     return {
       borderColor: color,
       backgroundColor: color

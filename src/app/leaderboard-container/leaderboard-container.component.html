@@ -1,0 +1,37 @@
+<ng-container *ngIf="(results$ | async)?.races?.length && (results$ | async)!.races!.length > 0; else loading">
+    <div>
+        Points awarded according to F1 scoring system:
+        <div>25, 18, 15, 12, 10, 8, 6, 4, 2, 1</div>
+        <br>
+        <!-- <div>Bonus points are awarded based on</div> -->
+    </div>
+
+    <div class="leaderboard">
+        <h1>Leaderboard</h1>
+        <player-result *ngFor="let player of leaderboard$ | async" 
+        [playerName]="player.playerName"
+        [points]="player.points">
+        </player-result>
+    </div>
+
+    <mat-divider></mat-divider>
+
+    <div class="race-breakdown">
+        <h1>History</h1>
+        <player-results-container
+            *ngFor="let race of (results$ | async)?.races"
+            [date]="race.date"
+            [results]="race.players"
+        >
+        </player-results-container>
+    </div>
+</ng-container>
+
+<ng-template #loading>
+  <div class="loading">
+    <h1>loading...</h1>
+    <div class="loading-spinner">
+      <mat-spinner [strokeWidth]="15" [diameter]="200"></mat-spinner>
+    </div>
+  </div>
+</ng-template>

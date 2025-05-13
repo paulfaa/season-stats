@@ -1,0 +1,11 @@
+<p>race-result-container works!</p>
+<div class="race-result-container">
+    <!-- observable is an array containing arrays -->
+    <div *ngFor="let resultArray of raceResults$ | async">
+        <!-- check if nested ngFor also needs async pipe-->
+        <player-results-container *ngFor="let array of resultArray"
+        [date]="array.date"
+        [results]="array.players"
+        ></player-results-container>
+    </div>
+</div>
