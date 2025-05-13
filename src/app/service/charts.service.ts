@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { ChartOptions } from 'chart.js';
 import { BehaviorSubject, Observable, switchMap, tap } from 'rxjs';
-import { ChartResult, playerColors, Playlist } from '../models';
+import { ChartResult, playerColors, Playlist, allNames } from '../models';
 import { PlaylistDataService } from './playlist-data.service';
 import { Plugin } from 'chart.js';
 
@@ -13,7 +13,7 @@ export class ChartsService {
   private chartDataSubject = new BehaviorSubject<ChartResult[]>([]);
   public chartData$ = this.chartDataSubject.asObservable();
   //move array to models file
-  private allPlayers: string[] = ['BarizztaButzy', 'mikc95', 'meas_taibhse', 'iiCiaran', 'cooooney95', 'kendy232', 'hurling1', 'jackw2610'];
+  private allPlayers = allNames;
   private playlistData: Playlist[] = [];
 
   constructor(private playlistDataService: PlaylistDataService) {

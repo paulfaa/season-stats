@@ -284,7 +284,7 @@ export class PodiumCalculatorService {
         return
       }
       const winningPoints = playlist.players[0].totalPoints;
-      for (var x = 1; x < playlist.players.length - 1; x++) {
+      for (var x = 1; x < playlist.players.length; x++) {
         const player = playlist.players[x];
         const lossMargin = winningPoints - player.totalPoints;
         if (!totalLossMargins[player.name]) {
@@ -306,12 +306,17 @@ export class PodiumCalculatorService {
   }
 
   private calculateDedicationRates(): PodiumResult[] {
+    const galwayboy7JoinDate = new Date("2025-05-12");
     const totalPlaylists = this.playlistData.length;
+    const galwayboy7Playlists = this.playlistData.filter(playlist => new Date(playlist.date) >= galwayboy7JoinDate).length;
     const attendanceCounts: Record<string, number> = {};
     const subtitle = "total participation in all playlists";
 
     this.playlistData.forEach(playlist => {
       playlist.players.forEach(player => {
+        if (player.name === "galwayboy7" && new Date(playlist.date) < galwayboy7JoinDate) {
+          return;
+        }
         attendanceCounts[player.name] = (attendanceCounts[player.name] || 0) + 1;
       });
     });
@@ -319,7 +324,7 @@ export class PodiumCalculatorService {
     const attendanceRates = Object.entries(attendanceCounts)
       .map(([name, count]) => ({
         name,
-        totalPoints: (count / totalPlaylists) * 100
+        totalPoints: (count / (name === "galwayboy7" ? galwayboy7Playlists : totalPlaylists)) * 100
       }));
 
     const mostDedicated = this.generateTopThreePodium("Most Dedicated", attendanceRates);
