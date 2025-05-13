@@ -306,15 +306,14 @@ export class PodiumCalculatorService {
   }
 
   private calculateDedicationRates(): PodiumResult[] {
-    const galwayboy7JoinDate = new Date("2025-05-12");
+    const galwayboy7JoinDate = new Date("2025-05-12T00:00:00Z");
     const totalPlaylists = this.playlistData.length;
-    const galwayboy7Playlists = 1;
     const attendanceCounts: Record<string, number> = {};
     const subtitle = "total participation in playlists since joining";
 
     this.playlistData.forEach(playlist => {
       playlist.players.forEach(player => {
-        if (player.name === "galwayboy7" && new Date(playlist.date) < galwayboy7JoinDate) {
+        if (player.name === "galwayboy7" && new Date(playlist.date + "T00:00:00Z") < galwayboy7JoinDate) {
           return;
         }
         attendanceCounts[player.name] = (attendanceCounts[player.name] || 0) + 1;
@@ -322,17 +321,13 @@ export class PodiumCalculatorService {
     });
 
     const attendanceRates = Object.entries(attendanceCounts).map(([name, count]) => {
-      const total = name === "galwayboy7" ? galwayboy7Playlists : totalPlaylists;
+      const total = name === "galwayboy7" ? 1 : totalPlaylists;
       const totalPoints = (count / total) * 100;
     
       return { name, totalPoints };
     });
-    attendanceRates.forEach(rate => {
-      if (rate.name === 'galwayboy7') {
-        rate.totalPoints = 100;
-      }
-    });
 
+    console.log("debug: ", attendanceRates);
 
     const mostDedicated = this.generateTopThreePodium("Most Dedicated", attendanceRates);
     mostDedicated.subtitle = subtitle;

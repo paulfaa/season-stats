@@ -59,5 +59,5 @@ export const playerColors: { [name: string]: string } = {
     'kendy232': 'rgb(17, 229, 45)',
     'hurling1': 'rgb(249, 151, 5)',
     'jackw2610': 'rgb(0, 0, 0)',
-    'galwayboy7': 'rgb(20, 192, 245)',
+    'galwayboy7': 'rgb(20, 192, 245)'
 };
