@@ -310,7 +310,7 @@ export class PodiumCalculatorService {
     const totalPlaylists = this.playlistData.length;
     const galwayboy7Playlists = this.playlistData.filter(playlist => new Date(playlist.date) >= galwayboy7JoinDate).length;
     const attendanceCounts: Record<string, number> = {};
-    const subtitle = "total participation in all playlists";
+    const subtitle = "total participation in playlists since joining";
 
     this.playlistData.forEach(playlist => {
       playlist.players.forEach(player => {
@@ -321,11 +321,12 @@ export class PodiumCalculatorService {
       });
     });
 
-    const attendanceRates = Object.entries(attendanceCounts)
-      .map(([name, count]) => ({
-        name,
-        totalPoints: (count / (name === "galwayboy7" ? galwayboy7Playlists : totalPlaylists)) * 100
-      }));
+    const attendanceRates = Object.entries(attendanceCounts).map(([name, count]) => {
+      const total = name === "galwayboy7" ? galwayboy7Playlists : totalPlaylists;
+      const totalPoints = (count / total) * 100;
+    
+      return { name, totalPoints };
+    });
 
     const mostDedicated = this.generateTopThreePodium("Most Dedicated", attendanceRates);
     mostDedicated.subtitle = subtitle;
