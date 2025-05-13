@@ -308,7 +308,7 @@ export class PodiumCalculatorService {
   private calculateDedicationRates(): PodiumResult[] {
     const galwayboy7JoinDate = new Date("2025-05-12");
     const totalPlaylists = this.playlistData.length;
-    const galwayboy7Playlists = this.playlistData.filter(playlist => new Date(playlist.date) >= galwayboy7JoinDate).length;
+    const galwayboy7Playlists = 1;
     const attendanceCounts: Record<string, number> = {};
     const subtitle = "total participation in playlists since joining";
 

@@ -34,7 +34,7 @@ export class StatsCalculatorService {
     stats.push(this.calculateAverageSquadSize());
     stats.push(...this.calculateMostPopularDays());
     stats.push(this.calculateMostPlaylistsInOneWeek());
-    stats.push(this.calculateLongestWinningStreak());
+    //stats.push(this.calculateLongestWinningStreak()); //needs fix
     this.individualDataSubject.next(stats);
   }
 
