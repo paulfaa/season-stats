@@ -1,0 +1,12 @@
+<div class="player-result" 
+    [style.color]="textColour"
+    [style.backgroundColor]="backgroundColour"
+    [style.opacity]="opacity"
+    > 
+    <div class="player-result-name">{{ playerName | shortName }}</div>
+    <div class="player-result-points">{{ points > 0 ? points : ' - ' }}</div>
+    <img *ngIf="showImage"
+        class="team-logo" 
+        [src]="imagePath" 
+        >
+</div>

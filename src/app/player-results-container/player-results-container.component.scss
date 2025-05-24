@@ -1,0 +1,14 @@
+.results-container {
+    display: flex;
+    padding: 3px;
+    justify-content: space-between;
+}
+
+.date-display {
+    min-width: 50px;
+    align-content: center;
+}
+
+.results-placeholder {
+    display: flex;
+}

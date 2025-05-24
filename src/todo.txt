@@ -1,0 +1,2 @@
+Add 2 header tabs
+Add angular routing (/stats and /leaderboard routes)

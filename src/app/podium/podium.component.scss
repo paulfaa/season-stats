@@ -1,0 +1,105 @@
+.podium-container {
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  text-align: center;
+  padding-top: 150px;
+
+  .podium-item {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: center;
+    padding: 10px;
+    border-radius: 10px 10px 0 0;
+    width: 90px;
+
+    &.first {
+      background-color: #FFD700;
+      animation-delay: calc(var(--random-delay) * 1s);
+      height: 120px;
+    }
+
+    &.second {
+      background-color: #C0C0C0;
+      height: 100px;
+    }
+
+    &.third {
+      background-color: #CD7F32;
+      height: 80px;
+    }
+
+    &.negative.first {
+      background-color: #e9350d;
+    }
+
+    &.negative.second {
+      background-color: #f5670f;
+    }
+
+    &.negative.third {
+      background-color: #de9104;
+    }
+
+    .username {
+      font-weight: 595;
+    }
+
+    .points {
+      font-size: 14px;
+    }
+  }
+}
+
+.podium-description {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding-top: 15px;
+  padding-bottom: 55px;
+}
+
+.title {
+  display: flex;
+  font-size: x-large;
+  justify-content: center;
+}
+
+.subtitle {
+  display: flex;
+  font-size: medium;
+  justify-content: center;
+}
+
+@keyframes shine {
+  0% {
+    background-position: 0% 50%;
+  }
+
+  100% {
+    background-position: 100% 50%;
+  }
+}
+
+.podium-item.first:not(.negative) {
+  background: linear-gradient(110deg, #FFD700 20%, #fffacdb2 50%, #FFD700 60%);
+  background-size: 200% 200%;
+  animation-delay: calc(var(--random-delay) * 1s);
+  animation: shine 2s linear infinite alternate;
+}
+
+@keyframes vibrate-1 {
+  0% { transform: translate(0); }
+  20% { transform: translate(-0px, 2px); }
+  40% { transform: translate(2px, 0px); }
+  60% { transform: translate(-2px, 0px); }
+  80% { transform: translate(2px, 2px); }
+  100% { transform: translate(0); }
+}
+
+.podium-item.negative.first {
+  background: #e9350d important;
+  -webkit-animation: vibrate-1 0.6s linear infinite both;
+  animation: vibrate-1 0.6s linear infinite both;
+}

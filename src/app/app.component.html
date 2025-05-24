@@ -1,0 +1,19 @@
+<mat-toolbar>
+  <mat-toolbar-row>
+    <span id="main-title">GTA Wrapped</span>
+  </mat-toolbar-row>
+  
+  <mat-toolbar-row>
+    <span id="sub-title">2025</span>
+  </mat-toolbar-row>
+</mat-toolbar>
+
+<mat-tab-group mat-stretch-tabs="false" mat-align-tabs="center" (selectedIndexChange)="onTabChange($event)">
+  <mat-tab label="Stats"></mat-tab>
+  <mat-tab label="Charts"></mat-tab>
+  <mat-tab label="Leaderboard"></mat-tab>
+</mat-tab-group>
+
+<router-outlet></router-outlet>
+
+<update-date></update-date>

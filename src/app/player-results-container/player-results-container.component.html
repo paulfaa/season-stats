@@ -1,0 +1,7 @@
+<div class="results-container">
+    <div class="date-display"> {{date | date: 'd MMM'}}</div>
+    <div class="results-placeholder">
+        <player-result *ngFor="let result of results" [playerName]="result.playerName" [points]="result.points">
+        </player-result>
+    </div>
+</div>
