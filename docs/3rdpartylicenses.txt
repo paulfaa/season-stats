@@ -60,6 +60,9 @@ THE SOFTWARE.
 @angular/platform-browser
 MIT
 
+@angular/router
+MIT
+
 @kurkle/color
 MIT
 The MIT License (MIT)
