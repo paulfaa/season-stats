@@ -1,6 +1,5 @@
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
-
 import { AppComponent } from './app.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { MatToolbarModule } from '@angular/material/toolbar';
@@ -17,10 +16,13 @@ import { NgChartsModule } from 'ng2-charts';
 import { UpdateDateComponent } from './update-date/update-date.component';
 import { LeaderboardContainerComponent } from './leaderboard-container/leaderboard-container.component';
 import { ShortNamePipe } from './pipes/name-format.pipe';
-import { RaceResultContainerComponent } from './race-result-container/race-result-container.component';
 import { PlayerResultComponent } from './player-result/player-result.component';
 import { PlayerResultsContainerComponent } from './player-results-container/player-results-container.component';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { AppRoutingModule } from './app-routing.module';
+import { MatTabsModule } from '@angular/material/tabs';
+import { MatTableModule } from '@angular/material/table';
+import { MatCardModule } from '@angular/material/card';
 
 @NgModule({
   declarations: [
@@ -35,18 +37,21 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
     ChartComponent,
     UpdateDateComponent,
     LeaderboardContainerComponent,
-    RaceResultContainerComponent,
     PlayerResultComponent,
     PlayerResultsContainerComponent,
   ],
   imports: [
     BrowserModule,
+    AppRoutingModule,
     HttpClientModule,
     BrowserAnimationsModule,
     MatToolbarModule,
     MatDividerModule,
     NgChartsModule,
-    MatProgressSpinnerModule
+    MatProgressSpinnerModule,
+    MatTabsModule,
+    MatTableModule,
+    MatCardModule
   ],
   providers: [],
   bootstrap: [AppComponent]

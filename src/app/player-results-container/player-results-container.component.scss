@@ -1,10 +1,11 @@
 .results-container {
     display: flex;
     padding: 3px;
+    justify-content: space-between;
 }
 
 .date-display {
-    min-width: 70px;
+    min-width: 50px;
     align-content: center;
 }
 

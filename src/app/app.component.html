@@ -8,10 +8,12 @@
   </mat-toolbar-row>
 </mat-toolbar>
 
-<!-- <leaderboard-container></leaderboard-container> -->
+<mat-tab-group mat-stretch-tabs="false" mat-align-tabs="center" (selectedIndexChange)="onTabChange($event)">
+  <mat-tab label="Stats"></mat-tab>
+  <mat-tab label="Charts"></mat-tab>
+  <mat-tab label="Leaderboard"></mat-tab>
+</mat-tab-group>
 
-<stats-container></stats-container>
-
-<chart-container></chart-container>
+<router-outlet></router-outlet>
 
 <update-date></update-date>

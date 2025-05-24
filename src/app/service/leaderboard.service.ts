@@ -70,7 +70,7 @@ export class LeaderboardService {
   
         const playerResult: PlayerResult = {
           playerName: player.name,
-          points: this.calculatePoints(index, numberOfDrivers)
+          points: this.calculatePoints(index)
         };
         currentResults.push(playerResult);
       });
@@ -94,12 +94,11 @@ export class LeaderboardService {
   private generateOverallLeaderboard(): PlayerResult[] {
     const pointsPerPlayer: Record<string, number> = {};
     this.playlistData.forEach(playlist => {
-      const numberOfDrivers = playlist.players.length;
       playlist.players.forEach((player, index) => {
         if (!pointsPerPlayer[player.name]) {
           pointsPerPlayer[player.name] = 0;
         }
-        pointsPerPlayer[player.name] = player.totalPoints + this.calculatePoints(index, numberOfDrivers)
+        pointsPerPlayer[player.name] += this.calculatePoints(index)
       });
     });
     const totalResults = Object.entries(pointsPerPlayer).map(([playerName, points]) => ({
@@ -109,15 +108,7 @@ export class LeaderboardService {
     return totalResults;
   }
 
-  private calculatePoints(finishingPosition: number, numberOfPlayers: number) {
-    const pointsArray = [25, 18, 15, 12, 10, 8, 6, 4]; //check if better to declare as static constant
-    var bonus = 0
-    if (numberOfPlayers > 4) {
-      if(finishingPosition <= 3) {
-        bonus = numberOfPlayers - 4;
-      }
-    }
-    const basePoints = pointsArray[finishingPosition];
-    return basePoints + bonus;
+  private calculatePoints(finishingPosition: number) {
+    return this.pointsMap.get(finishingPosition) || 0;
   }
 }

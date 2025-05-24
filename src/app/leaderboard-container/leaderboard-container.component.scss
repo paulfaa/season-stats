@@ -15,3 +15,25 @@ h1 {
     margin-bottom: 600px;
     margin-top: 200px;
 }
+
+.mat-card-title {
+    font-size: 14px;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+table.mat-table th, 
+table.mat-table td {
+  width: 10%; /* Adjust this value as needed */
+  text-align: center; /* Optional: Center-align content */
+}
+
+table.mat-table th:first-of-type, 
+table.mat-table td:first-of-type, 
+table.mat-table th:last-of-type, 
+table.mat-table td:last-of-type {
+  padding-left: 0; /* Remove padding from the first column */
+  padding-right: 0; /* Remove padding from the last column */
+}

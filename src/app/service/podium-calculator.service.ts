@@ -4,6 +4,7 @@ import { BehaviorSubject, filter, Observable, switchMap, tap } from 'rxjs';
 import { Utils } from '../util/utils';
 import { PlaylistDataService } from './playlist-data.service';
 import { DateTime } from 'luxon';
+import { stat } from 'fs';
 
 @Injectable({
   providedIn: 'root'
@@ -31,6 +32,7 @@ export class PodiumCalculatorService {
   public updateAllPodiums(): void {
     const stats = [];
     stats.push(this.calculateFlights());
+    stats.push(this.calculateMostUninstalls());
     stats.push(this.calculateMostWins());
     stats.push(this.calculateMostDraws());
     stats.push(this.calculateMostSecondPlaces());
@@ -38,6 +40,7 @@ export class PodiumCalculatorService {
     stats.push(this.calculateAverageLossMargins())
     const mostPlaylistsLost = this.calculateMostPlaylistsLostInFinalEvent();
     mostPlaylistsLost != null && stats.push(mostPlaylistsLost);
+    //stats.push(this.lostMostChancesToWin());
 
     //methods returning multiple stats
     stats.push(...this.calculateWinRatios());
@@ -95,12 +98,80 @@ export class PodiumCalculatorService {
     }
   }
 
+/*   private lostMostChancesToWin(): PodiumResult {
+    const lossCounts: Record<string, number> = {};
+  
+    this.playlistData.forEach(playlist => {
+      const players = [...playlist.players];
+      if (players.length === 0) return;
+  
+      const finalEventPoints = players
+        .map(p => p.lastEventPoints!)
+        .filter(p => p > 0)
+        .sort((a, b) => b - a); // e.g., [25, 18, 15, 12, ...]
+  
+      for (const candidate of players) {
+        const actualIndex = players.findIndex(p => p.name === candidate.name);
+        const actualPoints = candidate.lastEventPoints!;
+        const positionNow = finalEventPoints.indexOf(actualPoints);
+  
+        // Try placing candidate in every better finishing position
+        for (let newPosition = 0; newPosition < positionNow; newPosition++) {
+          const simulatedOrder = [...players];
+  
+          // Move candidate to better position
+          simulatedOrder.splice(actualIndex, 1); // remove candidate
+          simulatedOrder.splice(newPosition, 0, candidate); // insert at new position
+  
+          const newEventPoints = simulatedOrder.map((_, i) => finalEventPoints[i]);
+  
+          // Recalculate total points with simulated final event results
+          const simulatedTotals = simulatedOrder.map((p, i) => {
+            const originalTotal = p.totalPoints;
+            const originalLastPoints = p.lastEventPoints!;
+            const newLastPoints = newEventPoints[i];
+  
+            return {
+              name: p.name,
+              total: originalTotal - originalLastPoints + newLastPoints,
+            };
+          });
+  
+          simulatedTotals.sort((a, b) => b.total - a.total);
+          const topTotal = simulatedTotals[0].total;
+          const winners = simulatedTotals.filter(p => p.total === topTotal).map(p => p.name);
+  
+          if (winners.length === 1 && winners[0] === candidate.name) {
+            lossCounts[candidate.name] = (lossCounts[candidate.name] || 0) + 1;
+            break; // Only count once per playlist
+          }
+        }
+      }
+    });
+  
+    const sortedLosses = this.sortHighestToLowest(lossCounts);
+    const podium = this.generateTopThreePodium("Could have won playlist in final race", sortedLosses);
+    podium.subtitle = "but didn't";
+    podium.isNegative = true;
+    return podium;
+  } */
+  
   private calculateFlights(): PodiumResult {
     const flightCounts: Record<string, number> = {};
     flightCounts["mikc95"] = 1;
     const sortedPlayers = this.sortHighestToLowest(flightCounts)
     const podium = this.generateTopThreePodium("Most Flights To Switzerland", sortedPlayers);
     podium.subtitle = "cause he couldn't handle the smoke"
+    return podium;
+  }
+
+  private calculateMostUninstalls(): PodiumResult {
+    const uninstallCounts: Record<string, number> = {};
+    uninstallCounts["BarizztaButzy"] = 4;
+    const sortedPlayers = this.sortHighestToLowest(uninstallCounts)
+    const podium = this.generateTopThreePodium("Most times GTA uninstalled", sortedPlayers);
+    podium.subtitle = "i'm never playing this bullshit game again";
+    podium.isNegative = true;
     return podium;
   }
 
@@ -121,7 +192,9 @@ export class PodiumCalculatorService {
     });
 
     const sortedPlayers = this.sortHighestToLowest(winCounts)
-    return this.generateTopThreePodium("Most Wins", sortedPlayers);
+    const podium = this.generateTopThreePodium("Most Wins", sortedPlayers);
+    podium.subtitle = "wachow";
+    return podium;
   }
 
   private calculateMostSecondPlaces(): PodiumResult {
@@ -160,6 +233,7 @@ export class PodiumCalculatorService {
     const sortedPlayers = this.sortHighestToLowest(lastPlaceCounts);
 
     const result = this.generateTopThreePodium("Most Last Place Finishes", sortedPlayers);
+    result.subtitle = "king of the sewers";
     result.isNegative = true;
     return result;
   }

@@ -1,10 +1,19 @@
 <ng-container *ngIf="(results$ | async)?.races?.length && (results$ | async)!.races!.length > 0; else loading">
-    <div>
-        Points awarded according to F1 scoring system:
-        <div>25, 18, 15, 12, 10, 8, 6, 4, 2, 1</div>
-        <br>
-        <!-- <div>Bonus points are awarded based on</div> -->
-    </div>
+  <mat-card>
+    <mat-card-title>Points awarded based on F1 scoring:</mat-card-title>
+    <mat-card-content>
+      <table mat-table [dataSource]="f1PointsRow" class="mat-elevation-z2" style="width: 100%;">
+
+        <ng-container *ngFor="let column of displayedColumns" [matColumnDef]="column">
+          <th mat-header-cell *matHeaderCellDef> {{ column }} </th>
+          <td mat-cell *matCellDef="let row"> {{ row[column] }} </td>
+        </ng-container>
+      
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+      </table>
+    </mat-card-content>
+  </mat-card>
 
     <div class="leaderboard">
         <h1>Leaderboard</h1>
@@ -16,7 +25,7 @@
 
     <mat-divider></mat-divider>
 
-    <div class="race-breakdown">
+    <div class="race-breakdown" style="overflow-x: auto;">
         <h1>History</h1>
         <player-results-container
             *ngFor="let race of (results$ | async)?.races"
