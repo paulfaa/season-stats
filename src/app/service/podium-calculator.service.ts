@@ -385,6 +385,9 @@ export class PodiumCalculatorService {
     const totalPlaylists = this.playlistData.length;
     const attendanceCounts: Record<string, number> = {};
     const subtitle = "total participation in playlists since joining";
+    const galwayboy7Playlists = this.playlistData.filter(
+      playlist => new Date(playlist.date + "T00:00:00Z") >= galwayboy7JoinDate
+    ).length;
 
     this.playlistData.forEach(playlist => {
       playlist.players.forEach(player => {
@@ -396,7 +399,7 @@ export class PodiumCalculatorService {
     });
 
     const attendanceRates = Object.entries(attendanceCounts).map(([name, count]) => {
-      const total = name === "galwayboy7" ? 1 : totalPlaylists;
+      const total = name === "galwayboy7" ? galwayboy7Playlists : totalPlaylists;
       const totalPoints = (count / total) * 100;
     
       return { name, totalPoints };

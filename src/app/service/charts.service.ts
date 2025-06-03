@@ -3,7 +3,6 @@ import { ChartOptions } from 'chart.js';
 import { BehaviorSubject, Observable, switchMap, tap } from 'rxjs';
 import { ChartResult, playerColors, Playlist, allNames } from '../models';
 import { PlaylistDataService } from './playlist-data.service';
-import { Plugin } from 'chart.js';
 
 @Injectable({
   providedIn: 'root'
@@ -12,8 +11,6 @@ export class ChartsService {
 
   private chartDataSubject = new BehaviorSubject<ChartResult[]>([]);
   public chartData$ = this.chartDataSubject.asObservable();
-  //move array to models file
-  private allPlayers = allNames;
   private playlistData: Playlist[] = [];
 
   constructor(private playlistDataService: PlaylistDataService) {
@@ -25,6 +22,7 @@ export class ChartsService {
   public generateAllCharts(): void {
     const charts = [];
     charts.push(this.generateTotalWinsChart());
+    charts.push(this.generateTotalAppearancesChart());
     //charts.push(this.generateWinRateChart())
     this.chartDataSubject.next(charts);
   }
@@ -93,7 +91,7 @@ export class ChartsService {
         winners = []
       }
 
-      this.allPlayers.forEach(player => {
+      allNames.forEach(player => {
         if (!cumulativeWins[player]) {
           cumulativeWins[player] = [];
         }
@@ -121,6 +119,93 @@ export class ChartsService {
       chartData: chart,
       chartOptions: totalWinsChartOptions,
       title: 'Total Wins'
+    };
+  }
+
+  private generateTotalAppearancesChart(): ChartResult {
+    const labels: string[] = [];
+    const appearances: { [playerName: string]: number[] } = {};
+    const totalAppearancesChartOptions: ChartOptions = {
+      responsive: true,
+      interaction: {
+        mode: 'index',
+        intersect: false,
+      },
+      elements: {
+        point: {
+          radius: 0
+        }
+      },
+      maintainAspectRatio: false,
+      scales: {
+        x: {
+          ticks: {
+            autoSkip: false
+          },
+          title: {
+            display: true,
+            text: 'Playlist Date'
+          }
+        },
+        y: {
+          beginAtZero: true,
+          ticks: {
+            stepSize: 1,
+          },
+          title: {
+            display: true,
+            text: 'Total Appearances'
+          }
+        }
+      },
+      plugins: {
+        tooltip: {
+          callbacks: {
+            labelColor: (context) => this.getLabelColor(context),
+            label: function (context) {
+              return context.parsed.y === 0 ? '' : `${context.dataset.label}: ${context.parsed.y}`;
+            }
+          }
+        }
+      }
+    };
+
+    this.playlistData.forEach((playlist) => {
+      const [year, month, day] = playlist.date.split('-'); // Split YYYY-MM-DD
+      labels.push(`${day}-${month}`);
+
+      playlist.players.forEach(player => {
+        const name = player.name;
+        if (!appearances[name]) {
+          appearances[name] = [];
+        }
+        const currentAppearances = appearances[name][appearances[name].length - 1] || 0;
+        appearances[name].push(currentAppearances + 1);
+      });
+
+      allNames.forEach(player => {
+        if (!playlist.players.some(p => p.name === player)) {
+          const currentAppearances = appearances[player]?.[appearances[player].length - 1] || 0;
+          appearances[player] = appearances[player] || [];
+          appearances[player].push(currentAppearances);
+        }
+      });
+    });
+
+    const chart = {
+      labels,
+      datasets: Object.keys(appearances).map(player => ({
+        label: player,
+        data: appearances[player],
+        borderColor: playerColors[player],
+        backgroundColor: playerColors[player],
+        fill: false
+      }))
+    };
+    return {
+      chartData: chart,
+      chartOptions: totalAppearancesChartOptions,
+      title: 'Total Appearances'
     };
   }
 
@@ -203,7 +288,7 @@ export class ChartsService {
       const maxPoints = Math.max(...playlist.players.map(p => p.totalPoints));
       const winners = playlist.players.filter(p => p.totalPoints === maxPoints);
 
-      this.allPlayers.forEach(playerName => {
+      allNames.forEach(playerName => {
         if (!(playerName in playerStats)) {
           playerStats[playerName] = {
             winRate: [],
@@ -222,7 +307,7 @@ export class ChartsService {
         playerStats[playerName].winRate.push(+currentRate.toFixed(2));
       });
 
-      this.allPlayers.forEach(name => {
+      allNames.forEach(name => {
         if (!playlist.players.some(p => p.name === name)) {
           const prev = playerStats[name].winRate[index - 1] ?? 0;
           playerStats[name].winRate.push(prev);
