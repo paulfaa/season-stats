@@ -44,7 +44,6 @@ export class GoogleSheetsService {
     const playersSheet = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[1]]);
 
     const result = this.mergeData(playlistsSheet, playersSheet);
-    console.log(result);
     return result;
   }
 

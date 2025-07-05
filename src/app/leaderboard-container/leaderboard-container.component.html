@@ -17,10 +17,11 @@
 
     <div class="leaderboard">
         <h1>Leaderboard</h1>
-        <player-result *ngFor="let player of leaderboard$ | async" 
+        <leaderboard-result *ngFor="let player of leaderboard$ | async; let i = index"  
         [playerName]="player.playerName"
-        [points]="player.points">
-        </player-result>
+        [points]="player.points"
+        [position]="i + 1">
+        </leaderboard-result>
     </div>
 
     <mat-divider></mat-divider>

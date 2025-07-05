@@ -38,6 +38,7 @@ export class PodiumCalculatorService {
     stats.push(this.calculateMostSecondPlaces());
     stats.push(this.calculateMostLastPlaces());
     stats.push(this.calculateAverageLossMargins())
+    stats.push(this.calculateLongestLosingStreak());
     const mostPlaylistsLost = this.calculateMostPlaylistsLostInFinalEvent();
     mostPlaylistsLost != null && stats.push(mostPlaylistsLost);
     //stats.push(this.lostMostChancesToWin());
@@ -380,6 +381,53 @@ export class PodiumCalculatorService {
     return result;
   }
 
+  private calculateLongestLosingStreak(): PodiumResult {
+    const losingStreaks: Record<string, number> = {};
+    const maxLosingStreaks: Record<string, number> = {};
+
+    // Get all unique player names
+    const allPlayers = Array.from(
+      new Set(this.playlistData.flatMap(pl => pl.players.map(p => p.name)))
+    );
+
+    // Initialize streaks for all players
+    allPlayers.forEach(name => {
+      losingStreaks[name] = 0;
+      maxLosingStreaks[name] = 0;
+    });
+
+    this.playlistData.forEach(playlist => {
+      const winnerName = playlist.players[0].name;
+      // Set of players present in this playlist
+      const present = new Set(playlist.players.map(p => p.name));
+
+      allPlayers.forEach(name => {
+        if (present.has(name)) {
+          if (name === winnerName) {
+            losingStreaks[name] = 0; // Reset for winner
+          } else {
+            losingStreaks[name] = (losingStreaks[name] || 0) + 1;
+          }
+          // Track max streak
+          if (losingStreaks[name] > (maxLosingStreaks[name] || 0)) {
+            maxLosingStreaks[name] = losingStreaks[name];
+          }
+        }
+        // If not present, do not change their streak
+      });
+    });
+
+    const sortedStreaks = Object.entries(maxLosingStreaks)
+      .map(([name, streak]) => ({ name, totalPoints: streak }))
+      .sort((a, b) => b.totalPoints - a.totalPoints);
+
+    console.log(sortedStreaks);
+    const podium = this.generateTopThreePodium("Longest Losing Streak", sortedStreaks);
+    podium.subtitle = "most playlists lost in a row";
+    podium.isNegative = true;
+    return podium;
+  }
+
   private calculateDedicationRates(): PodiumResult[] {
     const galwayboy7JoinDate = new Date("2025-05-12T00:00:00Z");
     const totalPlaylists = this.playlistData.length;
@@ -404,8 +452,6 @@ export class PodiumCalculatorService {
     
       return { name, totalPoints };
     });
-
-    console.log("debug: ", attendanceRates);
 
     const mostDedicated = this.generateTopThreePodium("Most Dedicated", attendanceRates);
     mostDedicated.subtitle = subtitle;

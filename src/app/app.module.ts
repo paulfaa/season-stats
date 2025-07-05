@@ -23,6 +23,7 @@ import { AppRoutingModule } from './app-routing.module';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatTableModule } from '@angular/material/table';
 import { MatCardModule } from '@angular/material/card';
+import { LeaderboardResultComponent } from './leaderboard-result/leaderboard-result.component';
 
 @NgModule({
   declarations: [
@@ -39,6 +40,7 @@ import { MatCardModule } from '@angular/material/card';
     LeaderboardContainerComponent,
     PlayerResultComponent,
     PlayerResultsContainerComponent,
+    LeaderboardResultComponent,
   ],
   imports: [
     BrowserModule,
