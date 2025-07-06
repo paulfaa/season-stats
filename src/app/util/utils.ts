@@ -1,4 +1,4 @@
-import { playerColors, Playlist } from "../models";
+import { PLAYER_COLOURS, Playlist } from "../models";
 
 export class Utils {
 
@@ -11,7 +11,7 @@ export class Utils {
     }
 
     static getCorrespondingColour(name: string): string {
-        const colour = playerColors[name];
+        const colour = PLAYER_COLOURS[name];
         if(colour == undefined){
             return 'browm'
         }

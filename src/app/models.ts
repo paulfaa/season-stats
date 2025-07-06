@@ -48,9 +48,9 @@ export interface RaceResults {
     races: RaceResult[];
 }
 
-export const allNames = ['BarizztaButzy', 'mikc95', 'meas_taibhse', 'iiCiaran', 'cooooney95', 'kendy232', 'hurling1', 'jackw2610', 'galwayboy7'];
+export const ALL_NAMES = ['BarizztaButzy', 'mikc95', 'meas_taibhse', 'iiCiaran', 'cooooney95', 'kendy232', 'hurling1', 'jackw2610', 'galwayboy7'];
 
-export const playerColors: { [name: string]: string } = {
+export const PLAYER_COLOURS: { [name: string]: string } = {
     'BarizztaButzy': 'rgb(173, 10, 202)',
     'mikc95': 'rgb(234, 234, 4)',
     'meas_taibhse': 'rgb(231, 228, 229)',

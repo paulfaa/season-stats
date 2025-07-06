@@ -1,28 +1,39 @@
 .leaderboard-result {
     display: flex;
-    flex-direction: column;
+    flex-direction: row; /* Horizontal layout */
     align-items: center;
-    padding-left: 10px;
-    padding-bottom: 10px;
+    height: 60px;
     padding: 5px;
     min-width: 30px;
-    height: 60px;
     overflow: hidden;
-    position: relative
+    position: relative;
 }
 
 .leaderboard-result-name {
-    justify-content: center;
-    align-items: center;
-    font-weight: bold;
     font-weight: 525;
     font-size: 16px;
 }
 
 .leaderboard-result-points {
+    font-size: 14px;
+}
+
+.leaderboard-result-position {
+    font-size: 14px;
+    font-weight: bold;
+    height: 90%;
     display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 10px;
+}
+
+.leaderboard-result-content {
+    display: flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
+    flex: 1;
 }
 
 .team-logo {
@@ -32,8 +43,4 @@
     position: absolute;
     right: 20px;
     bottom: -30px;
-}
-
-.leaderboard-result-position {
-    
 }

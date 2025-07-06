@@ -32,8 +32,5 @@ export class LeaderboardContainerComponent implements OnInit {
   ngOnInit(): void {
     this.results$ = this.leaderboardService.getRaceBreakdown();
     this.leaderboard$ = this.leaderboardService.getOverallLeaderboard();
-    this.leaderboard$?.subscribe(data => {
-      console.log('Leaderboard data:', data);
-    });
   }
 }

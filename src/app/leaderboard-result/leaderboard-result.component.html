@@ -1,14 +1,18 @@
 <div class="leaderboard-result" 
     [style.color]="textColour"
-    [style.backgroundColor]="backgroundColour"
+    [style.background]="gradientBackground"
     >
     <div class="leaderboard-result-position">
         {{ position + "."}}
     </div> 
-    <div class="leaderboard-result-name">
-        {{ playerName }}
+    <div class="leaderboard-result-content">
+        <div class="leaderboard-result-name">
+            {{ playerName }}
+        </div>
+        <div class="leaderboard-result-points">
+            {{ points }}
+        </div>
     </div>
-    <div class="leaderboard-result-points">{{ points }}</div>
     <img *ngIf="showImage"
         class="team-logo" 
         [src]="imagePath" 

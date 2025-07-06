@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, filter, Observable, switchMap, tap } from 'rxjs';
-import { allNames, Player, PlayerResult, Playlist, RaceResults } from '../models';
+import { ALL_NAMES, Player, PlayerResult, Playlist, RaceResults } from '../models';
 import { PlaylistDataService } from './playlist-data.service';
 
 @Injectable({
@@ -56,7 +56,7 @@ export class LeaderboardService {
   
     this.playlistData.forEach(element => {
       const date = new Date(element.date);
-      const missingNames = [...allNames];
+      const missingNames = [...ALL_NAMES];
       const currentResults: PlayerResult[] = [];
       const numberOfDrivers = element.players.length;
   

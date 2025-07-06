@@ -1,28 +1,43 @@
-import { Injectable } from '@angular/core';
+import { Injectable, OnDestroy } from '@angular/core';
 import { ChartOptions } from 'chart.js';
-import { BehaviorSubject, Observable, switchMap, tap } from 'rxjs';
-import { ChartResult, playerColors, Playlist, allNames } from '../models';
+import { BehaviorSubject, Subscription, Observable, switchMap, tap } from 'rxjs';
+import { ChartResult, RaceResults, PLAYER_COLOURS, Playlist, ALL_NAMES } from '../models';
 import { PlaylistDataService } from './playlist-data.service';
+import { LeaderboardService } from './leaderboard.service';
 
 @Injectable({
   providedIn: 'root'
 })
-export class ChartsService {
+export class ChartsService implements OnDestroy {
 
+  private subscriptions = new Subscription();
   private chartDataSubject = new BehaviorSubject<ChartResult[]>([]);
   public chartData$ = this.chartDataSubject.asObservable();
   private playlistData: Playlist[] = [];
+  private raceResults: RaceResults | undefined;
 
-  constructor(private playlistDataService: PlaylistDataService) {
-    this.playlistDataService.playlistData$.subscribe(data => {
-      this.playlistData = data;
-    });
+  constructor(private playlistDataService: PlaylistDataService, private leaderboardService: LeaderboardService) {
+    this.subscriptions.add(
+      this.playlistDataService.playlistData$.subscribe(data => {
+        this.playlistData = data;
+      })
+    );
+    this.subscriptions.add(
+      this.leaderboardService.raceBreakdown$.subscribe(data => {
+        this.raceResults = data;
+      })
+    );
+  }
+
+  ngOnDestroy() {
+    this.subscriptions.unsubscribe();
   }
 
   public generateAllCharts(): void {
     const charts = [];
     charts.push(this.generateTotalWinsChart());
     charts.push(this.generateTotalAppearancesChart());
+    charts.push(this.generateChampionshipPointsChart());
     //charts.push(this.generateWinRateChart())
     this.chartDataSubject.next(charts);
   }
@@ -35,7 +50,7 @@ export class ChartsService {
   }
 
   private generateTotalWinsChart(): ChartResult {
-    const labels: string[] = [];
+    const labels = this.generateDateLabels();
     const cumulativeWins: { [playerName: string]: number[] } = {};
     const totalWinsChartOptions: ChartOptions = {
       responsive: true,
@@ -80,9 +95,6 @@ export class ChartsService {
     };
 
     this.playlistData.forEach((playlist) => {
-      const [year, month, day] = playlist.date.split('-'); // Split YYYY-MM-DD
-      labels.push(`${day}-${month}`);
-
       const maxPoints = Math.max(...playlist.players.map(p => p.totalPoints));
       var winners = playlist.players.filter(p => p.totalPoints === maxPoints);
 
@@ -91,7 +103,7 @@ export class ChartsService {
         winners = []
       }
 
-      allNames.forEach(player => {
+      ALL_NAMES.forEach(player => {
         if (!cumulativeWins[player]) {
           cumulativeWins[player] = [];
         }
@@ -110,8 +122,8 @@ export class ChartsService {
       datasets: Object.keys(cumulativeWins).map(player => ({
         label: player,
         data: cumulativeWins[player],
-        borderColor: playerColors[player],
-        backgroundColor: playerColors[player],
+        borderColor: PLAYER_COLOURS[player],
+        backgroundColor: PLAYER_COLOURS[player],
         fill: false
       }))
     };
@@ -123,7 +135,7 @@ export class ChartsService {
   }
 
   private generateTotalAppearancesChart(): ChartResult {
-    const labels: string[] = [];
+    const labels = this.generateDateLabels();
     const appearances: { [playerName: string]: number[] } = {};
     const totalAppearancesChartOptions: ChartOptions = {
       responsive: true,
@@ -171,9 +183,6 @@ export class ChartsService {
     };
 
     this.playlistData.forEach((playlist) => {
-      const [year, month, day] = playlist.date.split('-'); // Split YYYY-MM-DD
-      labels.push(`${day}-${month}`);
-
       playlist.players.forEach(player => {
         const name = player.name;
         if (!appearances[name]) {
@@ -183,7 +192,7 @@ export class ChartsService {
         appearances[name].push(currentAppearances + 1);
       });
 
-      allNames.forEach(player => {
+      ALL_NAMES.forEach(player => {
         if (!playlist.players.some(p => p.name === player)) {
           const currentAppearances = appearances[player]?.[appearances[player].length - 1] || 0;
           appearances[player] = appearances[player] || [];
@@ -197,8 +206,8 @@ export class ChartsService {
       datasets: Object.keys(appearances).map(player => ({
         label: player,
         data: appearances[player],
-        borderColor: playerColors[player],
-        backgroundColor: playerColors[player],
+        borderColor: PLAYER_COLOURS[player],
+        backgroundColor: PLAYER_COLOURS[player],
         fill: false
       }))
     };
@@ -209,29 +218,104 @@ export class ChartsService {
     };
   }
 
- /*  private generateAverageFinishingPositionChart(): ChartResult {
+  /*  private generateAverageFinishingPositionChart(): ChartResult {
+ 
+     const playerStats: Record<string, { averagePosition: number[]; allPositions: number[]; appearances: number }> = {};
+     const labels: string[] = [];
+ 
+     this.playlistData.forEach((playlist) => {
+       const [year, month, day] = playlist.date.split('-');
+       labels.push(`${day}-${month}`);
+ 
+     });
+ 
+     this.allPlayers.forEach(playerName => {
+       if (!(playerName in finishingPositions)) {
+         finishingPositions[playerName] = {
+           finishingPositions: [],
+           gamesPlayed: 0
+         };
+       }
+       const position = 
+       finishingPositions[playerName].gamesPlayed += 1;
+ 
+     });
+   } */
 
-    const playerStats: Record<string, { averagePosition: number[]; allPositions: number[]; appearances: number }> = {};
-    const labels: string[] = [];
+  private generateChampionshipPointsChart(): ChartResult {
+    const labels = this.generateDateLabels();
+    const playerStats = this.mapBreakdownToChartData(this.raceResults!);
 
-    this.playlistData.forEach((playlist) => {
-      const [year, month, day] = playlist.date.split('-');
-      labels.push(`${day}-${month}`);
-
-    });
-
-    this.allPlayers.forEach(playerName => {
-      if (!(playerName in finishingPositions)) {
-        finishingPositions[playerName] = {
-          finishingPositions: [],
-          gamesPlayed: 0
-        };
+    const championshipPointsChartOptions: ChartOptions = {
+      responsive: true,
+      interaction: {
+        mode: 'index',
+        intersect: false,
+      },
+      elements: {
+        point: {
+          radius: 0
+        }
+      },
+      maintainAspectRatio: false,
+      scales: {
+        x: {
+          ticks: {
+            autoSkip: false
+          },
+          title: {
+            display: true,
+            text: 'Playlist Date'
+          }
+        },
+        y: {
+          beginAtZero: true,
+          title: {
+            display: true,
+            text: 'Total Points'
+          }
+        }
+      },
+      plugins: {
+        tooltip: {
+          callbacks: {
+            labelColor: (context) => this.getLabelColor(context),
+          }
+        }
       }
-      const position = 
-      finishingPositions[playerName].gamesPlayed += 1;
+    };
 
+    const chart = {
+      labels,
+      datasets: Object.keys(playerStats).map(player => ({
+        label: player,
+        data: playerStats[player],
+        borderColor: PLAYER_COLOURS[player],
+        backgroundColor: PLAYER_COLOURS[player],
+        fill: false
+      }))
+    };
+    return {
+      chartData: chart,
+      chartOptions: championshipPointsChartOptions,
+      title: 'Total Points'
+    };
+  }
+
+  private mapBreakdownToChartData(breakdown: RaceResults): Record<string, number[]> {
+    const championshipPoints: Record<string, number[]> = {};
+    breakdown.races.forEach(race => {
+      race.players.forEach(player => {
+        const name = player.playerName;
+        if (!championshipPoints[name]) {
+          championshipPoints[name] = [];
+        }
+        const points = championshipPoints[name][championshipPoints[name].length - 1] || 0;
+        championshipPoints[name].push(points + player.points);
+      });
     });
-  } */
+    return championshipPoints;
+  }
 
   private generateWinRateChart(): ChartResult {
     type PlayerWinStats = {
@@ -241,7 +325,7 @@ export class ChartsService {
     };
 
     const playerStats: Record<string, PlayerWinStats> = {};
-    const labels: string[] = [];
+    const labels = this.generateDateLabels();
 
     const winRateChartOptions: ChartOptions<'line'> = {
       responsive: true,
@@ -282,13 +366,10 @@ export class ChartsService {
     };
 
     this.playlistData.forEach((playlist, index) => {
-      const [year, month, day] = playlist.date.split('-');
-      labels.push(`${day}-${month}`);
-
       const maxPoints = Math.max(...playlist.players.map(p => p.totalPoints));
       const winners = playlist.players.filter(p => p.totalPoints === maxPoints);
 
-      allNames.forEach(playerName => {
+      ALL_NAMES.forEach(playerName => {
         if (!(playerName in playerStats)) {
           playerStats[playerName] = {
             winRate: [],
@@ -307,7 +388,7 @@ export class ChartsService {
         playerStats[playerName].winRate.push(+currentRate.toFixed(2));
       });
 
-      allNames.forEach(name => {
+      ALL_NAMES.forEach(name => {
         if (!playlist.players.some(p => p.name === name)) {
           const prev = playerStats[name].winRate[index - 1] ?? 0;
           playerStats[name].winRate.push(prev);
@@ -320,8 +401,8 @@ export class ChartsService {
       datasets: Object.keys(playerStats).map(player => ({
         label: player,
         data: playerStats[player].winRate,
-        borderColor: playerColors[player],
-        backgroundColor: playerColors[player],
+        borderColor: PLAYER_COLOURS[player],
+        backgroundColor: PLAYER_COLOURS[player],
         fill: false,
       }))
     };
@@ -332,14 +413,21 @@ export class ChartsService {
     };
   }
 
+  private generateDateLabels(): string[] {
+    const labels: string[] = [];
+    this.playlistData.forEach((playlist) => {
+      const [year, month, day] = playlist.date.split('-'); // Split YYYY-MM-DD
+      labels.push(`${day}-${month}`);
+    });
+    return labels;
+  }
+
   private getLabelColor(context: any): { borderColor: string; backgroundColor: string } {
     const label = context.dataset.label || '';
-    const color = playerColors[label] || '#aaa';
+    const color = PLAYER_COLOURS[label] || '#aaa';
     return {
       borderColor: color,
       backgroundColor: color
     };
   }
-
-
 }
