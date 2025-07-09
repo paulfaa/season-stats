@@ -22,7 +22,7 @@ export class LeaderboardResultComponent implements OnInit {
     if (this.playerName === 'jackw2610') {
       this.textColour = 'white';
     }
-    if (this.playerName === 'cooooney95' || this.playerName === 'hurling1') {
+    if (this.playerName === 'cooooney95' || this.playerName === 'hurling1' || this.playerName === 'BarizztaButzy') {
       this.imagePath = 'assets/special.png';
       this.showImage = true;
     }
@@ -44,7 +44,7 @@ export class LeaderboardResultComponent implements OnInit {
 
   get gradientBackground(): string {
     const base = this.backgroundColour;
-    const darker = this.darkenRGBColor(base, 20);
+    const darker = this.darkenRGBColor(base, 15);
     return `linear-gradient(to left, ${darker}, ${base})`;
   }
 }

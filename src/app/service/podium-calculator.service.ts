@@ -33,11 +33,11 @@ export class PodiumCalculatorService {
     const stats = [];
     stats.push(this.calculateFlights());
     stats.push(this.calculateMostUninstalls());
+    stats.push(this.calculateLongestAppearanceStreak());
     stats.push(this.calculateMostWins());
     stats.push(this.calculateMostDraws());
     stats.push(this.calculateMostSecondPlaces());
     stats.push(this.calculateMostLastPlaces());
-    stats.push(this.calculateAverageLossMargins())
     stats.push(this.calculateLongestLosingStreak());
     const mostPlaylistsLost = this.calculateMostPlaylistsLostInFinalEvent();
     mostPlaylistsLost != null && stats.push(mostPlaylistsLost);
@@ -48,6 +48,7 @@ export class PodiumCalculatorService {
     stats.push(...this.calculateAverageFinishingPositions());
     stats.push(...this.calculateAverageScore());
     stats.push(...this.calculateAverageWinMargins());
+    stats.push(...this.calculateAverageLossMargins())
     stats.push(...this.calculateDedicationRates());
     this.podiumDataSubject.next(stats)
   }
@@ -286,6 +287,39 @@ export class PodiumCalculatorService {
     return [highestWinRatio, lowestWinRatio];
   }
 
+  private calculateLongestAppearanceStreak(): PodiumResult {
+    const appearanceStreaks: Record<string, number> = {};
+    const maxAppearanceStreaks: Record<string, number> = {};
+    const allPlayers = Array.from(
+      new Set(this.playlistData.flatMap(pl => pl.players.map(p => p.name)))
+    );
+
+    allPlayers.forEach(name => {
+      appearanceStreaks[name] = 0;
+      maxAppearanceStreaks[name] = 0;
+    });
+    this.playlistData.forEach(playlist => {
+      const present = new Set(playlist.players.map(p => p.name));
+
+      allPlayers.forEach(name => {
+        if (present.has(name)) {
+          appearanceStreaks[name] += 1;
+          if (appearanceStreaks[name] > maxAppearanceStreaks[name]) {
+            maxAppearanceStreaks[name] = appearanceStreaks[name];
+          }
+        } else {
+          appearanceStreaks[name] = 0;
+        }
+      });
+    });
+    const sortedStreaks = Object.entries(maxAppearanceStreaks)
+      .map(([name, streak]) => ({ name, totalPoints: streak }))
+      .sort((a, b) => b.totalPoints - a.totalPoints);
+    const podium = this.generateTopThreePodium("Longest Appearance Streak", sortedStreaks);
+    podium.subtitle = "most nights on in a row";
+    return podium;
+  }
+
   private calculateAverageFinishingPositions(): PodiumResult[] {
     const playerStats: Record<string, { totalPosition: number; appearances: number }> = {};
 
@@ -353,14 +387,15 @@ export class PodiumCalculatorService {
     return [bestAverageWinMargin, worstAverageWinMargin];
   }
 
-  private calculateAverageLossMargins(): PodiumResult {
+  private calculateAverageLossMargins(): PodiumResult[] {
     const totalLossMargins: Record<string, { totalLossMargin: number; appearances: number }> = {};
+    var index = 1;
     this.playlistData.forEach(playlist => {
-      if (Utils.playlistWasDraw(playlist)) {
-        return
-      }
       const winningPoints = playlist.players[0].totalPoints;
-      for (var x = 1; x < playlist.players.length; x++) {
+      if (Utils.playlistWasDraw(playlist)) {
+        index = 0;
+      }
+      for (var x = index; x < playlist.players.length; x++) {
         const player = playlist.players[x];
         const lossMargin = winningPoints - player.totalPoints;
         if (!totalLossMargins[player.name]) {
@@ -375,22 +410,23 @@ export class PodiumCalculatorService {
         name,
         totalPoints: stats.totalLossMargin / stats.appearances
       }));
-    const result = this.generateTopThreePodium("Highest Average Loss Margin", averageLossMargins);
-    result.subtitle = "points difference to playlist winner"
-    result.isNegative = true;
-    return result;
+    const worstAverageLossMargins = this.generateTopThreePodium("Highest Average Loss Margin", averageLossMargins);
+    worstAverageLossMargins.subtitle = "points finished behind playlist winner"
+    worstAverageLossMargins.isNegative = true;
+    const bestAverageLossMargins = this.generateBottomThreePodium("Lowest Average Loss Margin", averageLossMargins);
+    bestAverageLossMargins.subtitle = "points finished behind playlist winner";
+    bestAverageLossMargins.isNegative = false;
+    return [worstAverageLossMargins, bestAverageLossMargins];
   }
 
   private calculateLongestLosingStreak(): PodiumResult {
     const losingStreaks: Record<string, number> = {};
     const maxLosingStreaks: Record<string, number> = {};
 
-    // Get all unique player names
     const allPlayers = Array.from(
       new Set(this.playlistData.flatMap(pl => pl.players.map(p => p.name)))
     );
 
-    // Initialize streaks for all players
     allPlayers.forEach(name => {
       losingStreaks[name] = 0;
       maxLosingStreaks[name] = 0;
@@ -398,22 +434,19 @@ export class PodiumCalculatorService {
 
     this.playlistData.forEach(playlist => {
       const winnerName = playlist.players[0].name;
-      // Set of players present in this playlist
       const present = new Set(playlist.players.map(p => p.name));
 
       allPlayers.forEach(name => {
         if (present.has(name)) {
           if (name === winnerName) {
-            losingStreaks[name] = 0; // Reset for winner
+            losingStreaks[name] = 0;
           } else {
             losingStreaks[name] = (losingStreaks[name] || 0) + 1;
           }
-          // Track max streak
           if (losingStreaks[name] > (maxLosingStreaks[name] || 0)) {
             maxLosingStreaks[name] = losingStreaks[name];
           }
         }
-        // If not present, do not change their streak
       });
     });
 
