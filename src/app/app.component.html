@@ -1,19 +1,36 @@
-<mat-toolbar>
-  <mat-toolbar-row>
-    <span id="main-title">GTA Wrapped</span>
-  </mat-toolbar-row>
-  
-  <mat-toolbar-row>
-    <span id="sub-title">2025</span>
-  </mat-toolbar-row>
-</mat-toolbar>
+<div class="sticky">
+  <mat-toolbar>
+    <mat-toolbar-row>
+      <span id="main-title">GTA Wrapped 2025</span>
+    </mat-toolbar-row>
+  </mat-toolbar>
 
-<mat-tab-group mat-stretch-tabs="false" mat-align-tabs="center" (selectedIndexChange)="onTabChange($event)">
-  <mat-tab label="Stats"></mat-tab>
-  <mat-tab label="Charts"></mat-tab>
-  <mat-tab label="Leaderboard"></mat-tab>
-</mat-tab-group>
+  <mat-tab-group mat-stretch-tabs="false" mat-align-tabs="center"
+    (selectedIndexChange)="onTabChange($event)">
+    <mat-tab>
+      <ng-template mat-tab-label>
+        <mat-icon>bar_chart</mat-icon>
+        Podiums
+      </ng-template>
+    </mat-tab>
+    <mat-tab>
+      <ng-template mat-tab-label>
+        <mat-icon>show_chart</mat-icon>
+        Charts
+      </ng-template>
+    </mat-tab>
+    <mat-tab>
+      <ng-template mat-tab-label>
+        <mat-icon>format_list_numbered</mat-icon>
+        Leaderboard
+      </ng-template>
+    </mat-tab>
+  </mat-tab-group>
+</div>
 
 <router-outlet></router-outlet>
 
 <update-date></update-date>
+
+
+<!-- <mat-icon> show_chart</mat-icon> -->
