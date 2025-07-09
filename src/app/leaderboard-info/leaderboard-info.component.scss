@@ -1,0 +1,27 @@
+table.mat-table th,
+table.mat-table td {
+    width: 10%;
+    text-align: center;
+}
+
+table.mat-table th:first-of-type,
+table.mat-table td:first-of-type,
+table.mat-table th:last-of-type,
+table.mat-table td:last-of-type {
+    padding-left: 0;
+    padding-right: 0;
+}
+
+.dialog-actions-right {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.dialog-header {
+    margin-bottom: 25px;
+}
+
+button {
+  font-size: 1.2em;
+  padding: 0.5em 1em;
+}

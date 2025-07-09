@@ -23,7 +23,10 @@ import { AppRoutingModule } from './app-routing.module';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatTableModule } from '@angular/material/table';
 import { MatCardModule } from '@angular/material/card';
+import { MatIconModule } from '@angular/material/icon';
+import { MatDialogModule } from '@angular/material/dialog';
 import { LeaderboardResultComponent } from './leaderboard-result/leaderboard-result.component';
+import { LeaderboardInfoComponent } from './leaderboard-info/leaderboard-info.component';
 
 @NgModule({
   declarations: [
@@ -41,6 +44,7 @@ import { LeaderboardResultComponent } from './leaderboard-result/leaderboard-res
     PlayerResultComponent,
     PlayerResultsContainerComponent,
     LeaderboardResultComponent,
+    LeaderboardInfoComponent,
   ],
   imports: [
     BrowserModule,
@@ -53,7 +57,9 @@ import { LeaderboardResultComponent } from './leaderboard-result/leaderboard-res
     MatProgressSpinnerModule,
     MatTabsModule,
     MatTableModule,
-    MatCardModule
+    MatCardModule,
+    MatIconModule,
+    MatDialogModule
   ],
   providers: [],
   bootstrap: [AppComponent]

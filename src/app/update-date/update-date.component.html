@@ -1,3 +1,12 @@
 <div id="date-display">
-    <p>Last updated: {{ lastUpdateDate$ | async | date }}</p>
+  <ng-container *ngIf="lastUpdateDate$ | async as lastUpdateDate; else loading">
+    <p>
+      Last updated: {{ lastUpdateDate | date }}
+    </p>
+  </ng-container>
+  <ng-template #loading>
+    <p>
+      Last updated: loading...
+    </p>
+  </ng-template>
 </div>
