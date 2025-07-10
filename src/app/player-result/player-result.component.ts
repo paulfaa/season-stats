@@ -1,8 +1,11 @@
 import { Component, ElementRef, Input, OnInit, Renderer2 } from '@angular/core';
 import { Utils } from '../util/utils';
+import { ShortNamePipe } from '../pipes/name-format.pipe';
 
 @Component({
   selector: 'player-result',
+  standalone: true,
+  imports: [ShortNamePipe],
   templateUrl: './player-result.component.html',
   styleUrls: ['./player-result.component.scss']
 })

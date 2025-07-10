@@ -1,7 +1,8 @@
 import { Directive, ElementRef, HostListener, Input, AfterViewInit } from '@angular/core';
 
 @Directive({
-  selector: '[parallax]'
+  selector: '[parallax]',
+  standalone: true
 })
 export class ParallaxDirective implements AfterViewInit {
 

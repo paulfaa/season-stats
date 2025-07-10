@@ -1,8 +1,12 @@
 import { Component, Input, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { Player } from '../models';
+import { PodiumFormatPipe } from '../pipes/podium-format.pipe';
 
 @Component({
   selector: 'app-podium',
+  standalone: true,
+  imports: [CommonModule, PodiumFormatPipe],
   templateUrl: './podium.component.html',
   styleUrls: ['./podium.component.scss']
 })

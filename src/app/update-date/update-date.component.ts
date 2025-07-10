@@ -1,9 +1,12 @@
 import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { PlaylistDataService } from '../service/playlist-data.service';
 import { Observable } from 'rxjs';
 
 @Component({
   selector: 'update-date',
+  standalone: true,
+  imports: [CommonModule],
   templateUrl: './update-date.component.html',
   styleUrls: ['./update-date.component.scss']
 })

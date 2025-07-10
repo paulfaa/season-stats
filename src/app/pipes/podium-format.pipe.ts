@@ -1,7 +1,8 @@
 import { Pipe, PipeTransform } from '@angular/core';
 
 @Pipe({
-  name: 'podiumFormat'
+  name: 'podiumFormat',
+  standalone: true
 })
 export class PodiumFormatPipe implements PipeTransform {
     transform(value: number, type: 'points' | 'percentage' | 'ordinal' | 'default' = 'default'): string {

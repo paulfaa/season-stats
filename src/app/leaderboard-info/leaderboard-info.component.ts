@@ -1,7 +1,13 @@
 import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { MatDialogModule } from '@angular/material/dialog';
+import { MatTableModule } from '@angular/material/table';
+import { MatButtonModule } from '@angular/material/button';
 
 @Component({
   selector: 'app-leaderboard-info',
+  standalone: true,
+  imports: [CommonModule, MatDialogModule, MatTableModule, MatButtonModule],
   templateUrl: './leaderboard-info.component.html',
   styleUrls: ['./leaderboard-info.component.scss']
 })

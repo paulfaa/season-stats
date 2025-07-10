@@ -1,8 +1,11 @@
 import { Component, ElementRef, Input, OnInit, Renderer2 } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { Utils } from '../util/utils';
 
 @Component({
   selector: 'leaderboard-result',
+  standalone: true,
+  imports: [CommonModule],
   templateUrl: './leaderboard-result.component.html',
   styleUrls: ['./leaderboard-result.component.scss']
 })
