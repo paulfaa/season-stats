@@ -1,6 +1,6 @@
 .leaderboard-result {
     display: flex;
-    flex-direction: row; /* Horizontal layout */
+    flex-direction: row;
     align-items: center;
     height: 60px;
     padding: 5px;
@@ -43,4 +43,14 @@
     position: absolute;
     right: 20px;
     bottom: -30px;
+}
+
+@keyframes spin {
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+.team-logo.spin {
+    animation: spin 1.5s linear infinite;
 }

@@ -14,7 +14,8 @@
         </div>
     </div>
     <img *ngIf="showImage"
-        class="team-logo" 
+        class="team-logo"
+        [ngClass]="{ spin: playerName === 'BarizztaButzy' }" 
         [src]="imagePath" 
         >
 </div>
