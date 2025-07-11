@@ -4,11 +4,12 @@ import { Observable } from 'rxjs';
 import { ChartsService } from '../service/charts.service';
 import { ChartResult } from '../models';
 import { ChartComponent } from '../chart/chart.component';
+import { LoadingSpinnerComponent } from "../loading-spinner/loading-spinner.component";
 
 @Component({
   selector: 'chart-container',
   standalone: true,
-  imports: [CommonModule, ChartComponent],
+  imports: [CommonModule, ChartComponent, LoadingSpinnerComponent],
   templateUrl: './chart-container.component.html',
   styleUrls: ['./chart-container.component.scss']
 })

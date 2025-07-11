@@ -1,4 +1,10 @@
-<div class="chart-container">
-  <app-chart *ngFor="let chart of charts$ | async" [chartData]="chart">
-  </app-chart>
-</div>
+<ng-container *ngIf="(charts$ | async)?.length; else loading">
+  <div class="chart-container">
+    <app-chart *ngFor="let chart of charts$ | async" [chartData]="chart">
+    </app-chart>
+  </div>
+</ng-container>
+
+<ng-template #loading>
+  <loading-spinner></loading-spinner>
+</ng-template>

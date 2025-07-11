@@ -10,6 +10,7 @@ import { Observable } from 'rxjs';
 import { LeaderboardInfoComponent } from '../leaderboard-info/leaderboard-info.component';
 import { LeaderboardResultComponent } from '../leaderboard-result/leaderboard-result.component';
 import { PlayerResultsContainerComponent } from '../player-results-container/player-results-container.component';
+import { LoadingSpinnerComponent } from "../loading-spinner/loading-spinner.component";
 
 @Component({
   selector: 'leaderboard-container',
@@ -21,8 +22,9 @@ import { PlayerResultsContainerComponent } from '../player-results-container/pla
     MatProgressSpinnerModule,
     MatDialogModule,
     LeaderboardResultComponent,
-    PlayerResultsContainerComponent
-  ],
+    PlayerResultsContainerComponent,
+    LoadingSpinnerComponent
+],
   templateUrl: './leaderboard-container.component.html',
   styleUrls: ['./leaderboard-container.component.scss']
 })

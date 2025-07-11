@@ -7,6 +7,7 @@ import { IndividualResult, PodiumResult } from '../models';
 import { PodiumCalculatorService } from '../service/podium-calculator.service';
 import { NumberDisplayComponent } from '../number-display/number-display.component';
 import { PodiumComponent } from '../podium/podium.component';
+import { LoadingSpinnerComponent } from "../loading-spinner/loading-spinner.component";
 
 @Component({
   selector: 'stats-container',
@@ -15,8 +16,9 @@ import { PodiumComponent } from '../podium/podium.component';
     CommonModule,
     MatDividerModule,
     NumberDisplayComponent,
-    PodiumComponent
-  ],
+    PodiumComponent,
+    LoadingSpinnerComponent
+],
   templateUrl: './stats-container.component.html',
   styleUrls: ['./stats-container.component.scss']
 })
