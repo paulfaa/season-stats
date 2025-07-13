@@ -454,7 +454,6 @@ export class PodiumCalculatorService {
       .map(([name, streak]) => ({ name, totalPoints: streak }))
       .sort((a, b) => b.totalPoints - a.totalPoints);
 
-    console.log(sortedStreaks);
     const podium = this.generateTopThreePodium("Longest Losing Streak", sortedStreaks);
     podium.subtitle = "most playlists lost in a row";
     podium.isNegative = true;

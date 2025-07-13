@@ -11,6 +11,7 @@ import { provideRouter } from '@angular/router';
 import { routes } from './app/app.routes';
 import { provideAnimations } from '@angular/platform-browser/animations';
 import { ReactiveFormsModule } from '@angular/forms';
+import { HashLocationStrategy, LocationStrategy } from '@angular/common';
 
 if (environment.production) {
   enableProdMode();
@@ -19,6 +20,7 @@ if (environment.production) {
 bootstrapApplication(AppComponent, {
   providers: [
     provideRouter(routes),
+    { provide: LocationStrategy, useClass: HashLocationStrategy },
     provideAnimations(),
     importProvidersFrom(
       BrowserAnimationsModule,
