@@ -14,4 +14,12 @@ export const routes: Routes = [
     path: 'leaderboard', 
     loadComponent: () => import('./leaderboard-container/leaderboard-container.component').then(c => c.LeaderboardContainerComponent)
   },
+  {
+    path: 'login',
+    loadComponent: () => import('./login/login.component').then(c => c.LoginComponent)
+  },
+  { 
+    path: '**', 
+    redirectTo: 'stats' 
+  }
 ];

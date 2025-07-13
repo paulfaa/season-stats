@@ -25,7 +25,15 @@ export class LeaderboardResultComponent implements OnInit {
     if (this.playerName === 'jackw2610') {
       this.textColour = 'white';
     }
-    if (this.playerName === 'cooooney95' || this.playerName === 'hurling1' || this.playerName === 'BarizztaButzy') {
+    if (this.playerName === 'cooooney95' || this.playerName === 'hurling1') {
+      this.imagePath = 'assets/special.png';
+      this.showImage = true;
+    }
+    if (/Android/i.test(navigator.userAgent) &&
+      this.playerName === 'BarizztaButzy' &&
+      new Date() > new Date(2025, 7, 14) &&
+      Math.floor(Math.random() * 10) + 1 === 5) {
+
       this.imagePath = 'assets/special.png';
       this.showImage = true;
     }

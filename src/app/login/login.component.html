@@ -1,0 +1,15 @@
+<form [formGroup]="form" class="login" (ngSubmit)="submit()">
+  <input class ="password-input"
+    type="password"
+    formControlName="password"
+    placeholder="Enter admin password"
+  />
+
+  <div *ngIf="!form.valid && form.touched" class="error-message">
+    Incorrect password
+  </div>
+
+  <button type="submit" [disabled]="form.pending || form.invalid">
+    Login
+  </button>
+</form>

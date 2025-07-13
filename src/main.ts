@@ -9,6 +9,8 @@ import { HttpClientModule } from '@angular/common/http';
 import { NgChartsModule } from 'ng2-charts';
 import { provideRouter } from '@angular/router';
 import { routes } from './app/app.routes';
+import { provideAnimations } from '@angular/platform-browser/animations';
+import { ReactiveFormsModule } from '@angular/forms';
 
 if (environment.production) {
   enableProdMode();
@@ -17,10 +19,12 @@ if (environment.production) {
 bootstrapApplication(AppComponent, {
   providers: [
     provideRouter(routes),
+    provideAnimations(),
     importProvidersFrom(
       BrowserAnimationsModule,
       HttpClientModule,
-      NgChartsModule
+      NgChartsModule,
+      ReactiveFormsModule
     )
   ]
 }).catch(err => console.error(err));
