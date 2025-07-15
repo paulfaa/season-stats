@@ -10,7 +10,7 @@ import { PodiumComponent } from '../podium/podium.component';
 import { LoadingSpinnerComponent } from "../loading-spinner/loading-spinner.component";
 
 @Component({
-  selector: 'stats-container',
+  selector: 'podiums-container',
   standalone: true,
   imports: [
     CommonModule,
@@ -19,19 +19,19 @@ import { LoadingSpinnerComponent } from "../loading-spinner/loading-spinner.comp
     PodiumComponent,
     LoadingSpinnerComponent
 ],
-  templateUrl: './stats-container.component.html',
-  styleUrls: ['./stats-container.component.scss']
+  templateUrl: './podiums-container.component.html',
+  styleUrls: ['./podiums-container.component.scss']
 })
-export class StatsContainerComponent implements OnInit {
+export class PodiumsContainerComponent implements OnInit {
 
-  podiumStats$: Observable<PodiumResult[]> | undefined;
+  podiums$: Observable<PodiumResult[]> | undefined;
   individualStats$: Observable<IndividualResult[]> | undefined;
 
   constructor(private podiumCalculator: PodiumCalculatorService, private statsCalculator: StatsCalculatorService) { }
 
   ngOnInit(): void {
-    this.podiumStats$ = this.podiumCalculator.getAllPodiums();
-    this.podiumStats$.subscribe();
+    this.podiums$ = this.podiumCalculator.getAllPodiums();
+    this.podiums$.subscribe();
     this.individualStats$ = this.statsCalculator.getAllStats();
     this.individualStats$.subscribe();
   }

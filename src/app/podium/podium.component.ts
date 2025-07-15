@@ -1,6 +1,6 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Player } from '../models';
+import { Player, PodiumResult, } from '../models';
 import { PodiumFormatPipe } from '../pipes/podium-format.pipe';
 
 @Component({
@@ -11,12 +11,7 @@ import { PodiumFormatPipe } from '../pipes/podium-format.pipe';
   styleUrls: ['./podium.component.scss']
 })
 export class PodiumComponent implements OnInit {
-  @Input() podiumData: Player[] = [];
-  @Input() podiumTitle: string = "";
-  @Input() subtitle?: string;
-  @Input() startPosition: number = 0;
-  @Input() isNegative: boolean | undefined;
-  @Input() invertOrder: boolean | undefined;
+  @Input() podium!: PodiumResult;
 
   private maxHeight = 140;
   private minHeight = 80;
@@ -26,6 +21,9 @@ export class PodiumComponent implements OnInit {
   constructor() { }
 
   ngOnInit(): void {
+    if (!this.podium) {
+      throw new Error('Podium input is required');
+    }
     this.computePodiumPositions();
     const podiumItems = document.querySelectorAll('.podium-item');
     podiumItems.forEach(item => {
@@ -35,7 +33,7 @@ export class PodiumComponent implements OnInit {
   }
 
   get podiumType(): 'points' | 'percentage' | 'ordinal' | 'default' {
-    const title = this.podiumTitle.toLowerCase();
+    const title = this.podium.title.toLowerCase();
     if (title.includes('points') || title.includes('margin')) return 'points';
     if (title.includes('position')) return 'ordinal';
     if (title.includes('ratio') || title.includes('percentage') || title.includes('dedicated')) return 'percentage';
@@ -48,16 +46,16 @@ export class PodiumComponent implements OnInit {
   }
 
   private computePodiumHeights(): void {
-    const pointsArray = this.podiumData.map(player => player.totalPoints);
+    const pointsArray = this.podium.players.map(player => player.totalPoints);
     const maxPoints = Math.max(...pointsArray);
     const minPoints = Math.min(...pointsArray);
 
-    this.podiumHeights = this.podiumData.map(player => {
+    this.podiumHeights = this.podium.players.map(player => {
       if (maxPoints === 0) return this.minHeight;
 
       var normalizedHeight: number;
 
-      if (this.invertOrder) {
+      if (this.podium.invertOrder) {
         normalizedHeight = 1 - (player.totalPoints - minPoints) / (maxPoints - minPoints);
       } else {
         normalizedHeight = (player.totalPoints - minPoints) / (maxPoints - minPoints);
@@ -69,9 +67,9 @@ export class PodiumComponent implements OnInit {
   private computeRanks(): void {
     const ranks: { player: Player, rank: number, height: number }[] = [];
 
-    this.podiumData.forEach((player, i) => {
+    this.podium.players.forEach((player, i) => {
       const height = this.podiumHeights[i];
-      const rank = i > 0 && player.totalPoints === this.podiumData[i - 1].totalPoints
+      const rank = i > 0 && player.totalPoints === this.podium.players[i - 1].totalPoints
         ? ranks[i - 1].rank
         : i + 1;
       ranks.push({ player, rank, height });

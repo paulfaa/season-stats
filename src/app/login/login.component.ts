@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormGroup, FormBuilder, Validators, AbstractControl, AsyncValidatorFn, ValidationErrors, ReactiveFormsModule } from '@angular/forms';
 import { Observable, of } from 'rxjs';
@@ -17,7 +17,6 @@ export class LoginComponent {
   form: FormGroup;
 
   constructor(private formBuilder: FormBuilder, private authService: AuthService, private router: Router) {
-
     this.form = this.formBuilder.group({
       password: ['', {
         validators: [Validators.required],
@@ -37,10 +36,17 @@ export class LoginComponent {
   }
 
   submit() {
-    if (this.form?.valid) {
+  if (this.form.invalid) {
+    this.form.markAllAsTouched();
+    return;
+  }
+  this.form.get('password')?.updateValueAndValidity();
+  this.authService.loginAsAdmin(this.form.value.password).subscribe(success => {
+    if (success) {
       this.router.navigate(['/upload']);
     } else {
-      this.form?.markAllAsTouched();
+      this.form.get('password')?.setErrors({ invalidPassword: true });
     }
-  }
+  });
+}
 }

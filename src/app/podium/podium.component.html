@@ -4,7 +4,7 @@
          'first': entry.rank === 1,
          'second': entry.rank === 2,
          'third': entry.rank === 3,
-         'negative': isNegative
+         'negative': podium.isNegative
        }" [style.height.px]="entry.height">
 
     <p class="username">{{ entry.player.name }}</p>
@@ -13,8 +13,8 @@
 
 </div>
 <div class="podium-description">
-  <span class="title">{{podiumTitle}}</span>
-  <span class="subtitle" *ngIf="subtitle">
-    ({{subtitle}})
+  <span class="title">{{podium.title}}</span>
+  <span class="subtitle" *ngIf="podium.subtitle">
+    ({{podium.subtitle}})
   </span>
 </div>

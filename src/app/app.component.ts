@@ -23,8 +23,16 @@ export class AppComponent {
 
   title = 'season-stats';
 
+  get selectedTabIndex(): number {
+    const url = this.router.url;
+    if (url.includes('/charts')) return 1;
+    if (url.includes('/leaderboard')) return 2;
+    return 0;
+  }
+
   onTabChange(index: number): void {
     const routes = ['/stats', '/charts', '/leaderboard'];
     this.router.navigate([routes[index]]);
+    window.scrollTo(0, 0);
   }
 }

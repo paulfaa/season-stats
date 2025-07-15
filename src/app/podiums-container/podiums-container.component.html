@@ -1,0 +1,20 @@
+<ng-container *ngIf="(podiums$ | async)?.length && (individualStats$ | async)?.length; else loading">
+  <div class="podiums-container">
+    <app-podium 
+      *ngFor="let podium of podiums$ | async" 
+      [podium]="podium"
+      >
+    </app-podium>
+
+    <mat-divider></mat-divider>
+
+    <app-number-display 
+      *ngFor="let number of individualStats$ | async" 
+      [individualResult]="number">
+    </app-number-display>
+  </div>
+</ng-container>
+
+<ng-template #loading>
+  <loading-spinner></loading-spinner>
+</ng-template>
