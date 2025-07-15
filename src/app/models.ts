@@ -21,6 +21,12 @@ export interface PodiumResult {
     invertOrder?: boolean;
 }
 
+export interface PodiumPosition {
+  player: Player;
+  rank: number;
+  height: number;
+}
+
 export interface IndividualResult {
     title: string;
     subtitle?: string;

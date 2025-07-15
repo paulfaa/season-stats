@@ -1,10 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Observable } from 'rxjs';
-import { ChartsService } from '../service/charts.service';
-import { ChartResult } from '../models';
+import { ChartsService } from '../../service/charts.service';
+import { ChartResult } from '../../models';
 import { ChartComponent } from '../chart/chart.component';
-import { LoadingSpinnerComponent } from "../loading-spinner/loading-spinner.component";
+import { LoadingSpinnerComponent } from "../../loading-spinner/loading-spinner.component";
 
 @Component({
   selector: 'chart-container',

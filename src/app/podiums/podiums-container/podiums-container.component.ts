@@ -1,13 +1,13 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatDividerModule } from '@angular/material/divider';
-import { StatsCalculatorService } from '../service/stats-calculator.service';
 import { Observable } from 'rxjs';
-import { IndividualResult, PodiumResult } from '../models';
-import { PodiumCalculatorService } from '../service/podium-calculator.service';
-import { NumberDisplayComponent } from '../number-display/number-display.component';
+import { LoadingSpinnerComponent } from 'src/app/loading-spinner/loading-spinner.component';
+import { PodiumResult, IndividualResult } from 'src/app/models';
+import { NumberDisplayComponent } from 'src/app/number-display/number-display.component';
+import { PodiumCalculatorService } from 'src/app/service/podium-calculator.service';
+import { StatsCalculatorService } from 'src/app/service/stats-calculator.service';
 import { PodiumComponent } from '../podium/podium.component';
-import { LoadingSpinnerComponent } from "../loading-spinner/loading-spinner.component";
 
 @Component({
   selector: 'podiums-container',

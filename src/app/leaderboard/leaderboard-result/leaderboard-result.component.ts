@@ -1,6 +1,6 @@
 import { Component, ElementRef, Input, OnInit, Renderer2 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Utils } from '../util/utils';
+import { Utils } from '../../util/utils';
 
 @Component({
   selector: 'leaderboard-result',

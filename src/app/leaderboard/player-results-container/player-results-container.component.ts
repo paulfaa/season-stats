@@ -1,6 +1,6 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { PlayerResult } from '../models';
+import { PlayerResult } from '../../models';
 import { PlayerResultComponent } from '../player-result/player-result.component';
 
 @Component({

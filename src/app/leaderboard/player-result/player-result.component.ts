@@ -1,6 +1,6 @@
 import { Component, ElementRef, Input, OnInit, Renderer2 } from '@angular/core';
-import { Utils } from '../util/utils';
-import { ShortNamePipe } from '../pipes/name-format.pipe';
+import { Utils } from '../../util/utils';
+import { ShortNamePipe } from '../../pipes/name-format.pipe';
 
 @Component({
   selector: 'player-result',

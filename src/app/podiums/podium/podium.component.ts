@@ -1,7 +1,8 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Player, PodiumResult, } from '../models';
-import { PodiumFormatPipe } from '../pipes/podium-format.pipe';
+import { PodiumFormatPipe } from 'src/app/pipes/podium-format.pipe';
+import { PodiumResult, Player, PodiumPosition } from 'src/app/models';
+
 
 @Component({
   selector: 'app-podium',
@@ -16,7 +17,7 @@ export class PodiumComponent implements OnInit {
   private maxHeight = 140;
   private minHeight = 80;
   private podiumHeights: number[] = [];
-  podiumPositions: { player: Player, rank: number, height: number }[] = [];
+  podiumPositions: PodiumPosition[] = [];
 
   constructor() { }
 
@@ -27,7 +28,7 @@ export class PodiumComponent implements OnInit {
     this.computePodiumPositions();
     const podiumItems = document.querySelectorAll('.podium-item');
     podiumItems.forEach(item => {
-      const randomDelay = Math.random() * 2; // Random delay between 0s and 2s
+      const randomDelay = Math.random() * 2;
       (item as HTMLElement).style.setProperty('--random-delay', randomDelay.toString());
     });
   }
