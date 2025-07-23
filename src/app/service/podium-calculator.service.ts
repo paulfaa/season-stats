@@ -1,61 +1,56 @@
 import { Injectable } from '@angular/core';
 import { Player, Playlist, PodiumResult } from '../models';
-import { BehaviorSubject, filter, Observable, switchMap, tap } from 'rxjs';
+import { map, Observable } from 'rxjs';
 import { Utils } from '../util/utils';
 import { PlaylistDataService } from './playlist-data.service';
-import { DateTime } from 'luxon';
-import { stat } from 'fs';
 
 @Injectable({
   providedIn: 'root'
 })
 export class PodiumCalculatorService {
 
-  private podiumDataSubject = new BehaviorSubject<PodiumResult[]>([]);
-  public podiumData$ = this.podiumDataSubject.asObservable();
-  private playlistData: Playlist[] = [];
+  constructor(private playlistDataService: PlaylistDataService) {}
 
-  constructor(private playlistDataService: PlaylistDataService) {
-    this.playlistDataService.playlistData$.subscribe(data => {
-      this.playlistData = data;
-    });
-  }
-
-  getAllPodiums(): Observable<PodiumResult[]> {
+  public getAllPodiums(): Observable<PodiumResult[]> {
     return this.playlistDataService.playlistData$.pipe(
-      filter(data => data.length > 0),
-      tap(() => this.updateAllPodiums()),
-      switchMap(() => this.podiumData$)
+      map(playlistData => this.generateAllPodiums(playlistData))
     );
   }
 
-  public updateAllPodiums(): void {
-    const stats = [];
-    stats.push(this.calculateFlights());
-    stats.push(this.calculateMostUninstalls());
-    stats.push(this.calculateLongestAppearanceStreak());
-    stats.push(this.calculateMostWins());
-    stats.push(this.calculateMostDraws());
-    stats.push(this.calculateMostSecondPlaces());
-    stats.push(this.calculateMostLastPlaces());
-    stats.push(this.calculateLongestLosingStreak());
-    const mostPlaylistsLost = this.calculateMostPlaylistsLostInFinalEvent();
-    mostPlaylistsLost != null && stats.push(mostPlaylistsLost);
-    //stats.push(this.lostMostChancesToWin());
+  public generateAllPodiums(playlistData: Playlist[]): PodiumResult[] {
+  const singleStatFunctions: Array<() => PodiumResult> = [
+    () => this.calculateFlights(),
+    () => this.calculateMostUninstalls(),
+    () => this.calculateLongestAppearanceStreak(playlistData),
+    () => this.calculateMostWins(playlistData),
+    () => this.calculateMostDraws(playlistData),
+    () => this.calculateMostSecondPlaces(playlistData),
+    () => this.calculateMostLastPlaces(playlistData),
+    () => this.calculateLongestLosingStreak(playlistData),
+  ];
 
-    //methods returning multiple stats
-    stats.push(...this.calculateWinRatios());
-    stats.push(...this.calculateAverageFinishingPositions());
-    stats.push(...this.calculateAverageScore());
-    stats.push(...this.calculateAverageWinMargins());
-    stats.push(...this.calculateAverageLossMargins())
-    stats.push(...this.calculateDedicationRates());
-    this.podiumDataSubject.next(stats)
-  }
+  const multiStatFunctions: Array<() => PodiumResult[]> = [
+    () => this.calculateWinRatios(playlistData),
+    () => this.calculateAverageFinishingPositions(playlistData),
+    () => this.calculateAverageScore(playlistData),
+    () => this.calculateAverageWinMargins(playlistData),
+    () => this.calculateAverageLossMargins(playlistData),
+    () => this.calculateDedicationRates(playlistData),
+  ];
 
-  private calculateMostPlaylistsLostInFinalEvent(): PodiumResult | undefined {
+  const stats: PodiumResult[] = [
+    ...singleStatFunctions.map(fn => fn()),
+    ...multiStatFunctions.flatMap(fn => fn())
+  ];
+
+  const mostPlaylistsLost = this.calculateMostPlaylistsLostInFinalEvent(playlistData);
+  if (mostPlaylistsLost) stats.push(mostPlaylistsLost);
+  return stats;
+}
+
+  private calculateMostPlaylistsLostInFinalEvent(playlistData: Playlist[]): PodiumResult | undefined {
     const lossCounts: Record<string, number> = {};
-    this.playlistData.forEach(playlist => {
+    playlistData.forEach(playlist => {
       const pointsAvailable: number[] = [];
       var standingsInSecondLastEvent: Player[] = [];
       playlist.players.forEach(player => {
@@ -177,10 +172,10 @@ export class PodiumCalculatorService {
     return podium;
   }
 
-  private calculateMostWins(): PodiumResult {
+  private calculateMostWins(playlistData: Playlist[]): PodiumResult {
     const winCounts: Record<string, number> = {};
 
-    this.playlistData.forEach(playlist => {
+    playlistData.forEach(playlist => {
       var winners = [];
       if (Utils.playlistWasDraw(playlist)) {
         return;
@@ -199,10 +194,10 @@ export class PodiumCalculatorService {
     return podium;
   }
 
-  private calculateMostSecondPlaces(): PodiumResult {
+  private calculateMostSecondPlaces(playlistData: Playlist[]): PodiumResult {
     const secondPlaceCounts: Record<string, number> = {};
 
-    this.playlistData.forEach(playlist => {
+    playlistData.forEach(playlist => {
       const winningScore = playlist.players[0].totalPoints;
       const winners = this.getPlayersWithScore(winningScore, playlist.players);
       if (winners.length > 1) {
@@ -224,10 +219,10 @@ export class PodiumCalculatorService {
     return this.generateTopThreePodium("Most Second Places 🥈", sortedPlayers);
   }
 
-  private calculateMostLastPlaces(): PodiumResult {
+  private calculateMostLastPlaces(playlistData: Playlist[]): PodiumResult {
     const lastPlaceCounts: Record<string, number> = {};
 
-    this.playlistData.forEach(playlist => {
+    playlistData.forEach(playlist => {
       const lastPlayer = playlist.players[playlist.players.length - 1];
       lastPlaceCounts[lastPlayer.name] = (lastPlaceCounts[lastPlayer.name] || 0) + 1;
     });
@@ -240,9 +235,9 @@ export class PodiumCalculatorService {
     return result;
   }
 
-  private calculateMostDraws(): PodiumResult {
+  private calculateMostDraws(playlistData: Playlist[]): PodiumResult {
     const drawCounts: Record<string, number> = {};
-    this.playlistData.forEach(playlist => {
+    playlistData.forEach(playlist => {
       const maxPoints = Math.max(...playlist.players.map(p => p.totalPoints));
       const winners = playlist.players.filter(p => p.totalPoints === maxPoints);
       if (winners.length > 1) {
@@ -258,10 +253,10 @@ export class PodiumCalculatorService {
     return result;
   }
 
-  private calculateWinRatios(): PodiumResult[] {
+  private calculateWinRatios(playlistData: Playlist[]): PodiumResult[] {
     const winsAndAppearances: Record<string, { wins: number; appearances: number }> = {};
 
-    this.playlistData.forEach(playlist => {
+    playlistData.forEach(playlist => {
       if (Utils.playlistWasDraw(playlist)) {
         return
       }
@@ -289,18 +284,18 @@ export class PodiumCalculatorService {
     return [highestWinRatio, lowestWinRatio];
   }
 
-  private calculateLongestAppearanceStreak(): PodiumResult {
+  private calculateLongestAppearanceStreak(playlistData: Playlist[]): PodiumResult {
     const appearanceStreaks: Record<string, number> = {};
     const maxAppearanceStreaks: Record<string, number> = {};
     const allPlayers = Array.from(
-      new Set(this.playlistData.flatMap(pl => pl.players.map(p => p.name)))
+      new Set(playlistData.flatMap(pl => pl.players.map(p => p.name)))
     );
 
     allPlayers.forEach(name => {
       appearanceStreaks[name] = 0;
       maxAppearanceStreaks[name] = 0;
     });
-    this.playlistData.forEach(playlist => {
+    playlistData.forEach(playlist => {
       const present = new Set(playlist.players.map(p => p.name));
 
       allPlayers.forEach(name => {
@@ -322,11 +317,11 @@ export class PodiumCalculatorService {
     return podium;
   }
 
-  private calculateAverageFinishingPositions(): PodiumResult[] {
+  private calculateAverageFinishingPositions(playlistData: Playlist[]): PodiumResult[] {
     const playerStats: Record<string, { totalPosition: number; appearances: number }> = {};
 
-    this.playlistData.forEach(playlist => {
-      let currentPosition = 1; 
+    playlistData.forEach(playlist => {
+      let currentPosition = 1;
       let tieCount = 0;
       playlist.players.forEach((player, index) => {
         if (index > 0 && player.totalPoints === playlist.players[index - 1].totalPoints) {
@@ -359,11 +354,11 @@ export class PodiumCalculatorService {
     return [bestAveragePositions, worstAveragePositions];
   }
 
-  private calculateAverageWinMargins(): PodiumResult[] {
+  private calculateAverageWinMargins(playlistData: Playlist[]): PodiumResult[] {
     const totalWinMargins: Record<string, { totalWinMargin: number; wins: number }> = {};
     const subtitle = "points finished ahead of second place";
 
-    this.playlistData.forEach(playlist => {
+    playlistData.forEach(playlist => {
       if (Utils.playlistWasDraw(playlist)) {
         return
       }
@@ -390,10 +385,10 @@ export class PodiumCalculatorService {
     return [bestAverageWinMargin, worstAverageWinMargin];
   }
 
-  private calculateAverageLossMargins(): PodiumResult[] {
+  private calculateAverageLossMargins(playlistData: Playlist[]): PodiumResult[] {
     const totalLossMargins: Record<string, { totalLossMargin: number; appearances: number }> = {};
     var index = 1;
-    this.playlistData.forEach(playlist => {
+    playlistData.forEach(playlist => {
       const winningPoints = playlist.players[0].totalPoints;
       if (Utils.playlistWasDraw(playlist)) {
         index = 0;
@@ -422,12 +417,12 @@ export class PodiumCalculatorService {
     return [worstAverageLossMargins, bestAverageLossMargins];
   }
 
-  private calculateLongestLosingStreak(): PodiumResult {
+  private calculateLongestLosingStreak(playlistData: Playlist[]): PodiumResult {
     const losingStreaks: Record<string, number> = {};
     const maxLosingStreaks: Record<string, number> = {};
 
     const allPlayers = Array.from(
-      new Set(this.playlistData.flatMap(pl => pl.players.map(p => p.name)))
+      new Set(playlistData.flatMap(pl => pl.players.map(p => p.name)))
     );
 
     allPlayers.forEach(name => {
@@ -435,7 +430,7 @@ export class PodiumCalculatorService {
       maxLosingStreaks[name] = 0;
     });
 
-    this.playlistData.forEach(playlist => {
+    playlistData.forEach(playlist => {
       const winnerName = playlist.players[0].name;
       const present = new Set(playlist.players.map(p => p.name));
 
@@ -463,16 +458,16 @@ export class PodiumCalculatorService {
     return podium;
   }
 
-  private calculateDedicationRates(): PodiumResult[] {
+  private calculateDedicationRates(playlistData: Playlist[]): PodiumResult[] {
     const galwayboy7JoinDate = new Date("2025-05-12T00:00:00Z");
-    const totalPlaylists = this.playlistData.length;
+    const totalPlaylists = playlistData.length;
     const attendanceCounts: Record<string, number> = {};
     const subtitle = "total participation in playlists since joining";
-    const galwayboy7Playlists = this.playlistData.filter(
+    const galwayboy7Playlists = playlistData.filter(
       playlist => new Date(playlist.date + "T00:00:00Z") >= galwayboy7JoinDate
     ).length;
 
-    this.playlistData.forEach(playlist => {
+    playlistData.forEach(playlist => {
       playlist.players.forEach(player => {
         if (player.name === "galwayboy7" && new Date(playlist.date + "T00:00:00Z") < galwayboy7JoinDate) {
           return;
@@ -495,10 +490,10 @@ export class PodiumCalculatorService {
     return [mostDedicated, leastDedicated];
   }
 
-  private calculateAverageScore(): PodiumResult[] {
+  private calculateAverageScore(playlistData: Playlist[]): PodiumResult[] {
     const playerStats: Record<string, { totalPoints: number; count: number }> = {};
 
-    this.playlistData.forEach(playlist => {
+    playlistData.forEach(playlist => {
       playlist.players.forEach(player => {
         if (!playerStats[player.name]) {
           playerStats[player.name] = { totalPoints: 0, count: 0 };

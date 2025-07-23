@@ -9,18 +9,18 @@ import { Playlist } from '../models';
 })
 export class GoogleSheetsService {
   private static readonly SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQAZGEvx2dZEIRC7rmpoV_Zqz0RAJhZ8rI5OnVOcVege6Oni9A7KDK2fN9R98Q1UJRcZLlMn639gjvL/pub?output=xlsx';
-  public lastRefreshed: string = '';
+  private lastRefreshDate: string = '';
 
   constructor(private http: HttpClient) {}
 
-  fetchSheetsPlaylistData(): Observable<Playlist[]> {
+  public fetchSheetsPlaylistData(): Observable<Playlist[]> {
     const lastUpdate = localStorage.getItem('lastUpdate');
     const storedData = localStorage.getItem('sheetsData');
     // If data was fetched less than an hour ago, use the cached data
     if (lastUpdate && storedData && Date.now() - parseInt(lastUpdate) < 1000 * 60 * 60) {
       console.info('Using cached data');
       const arrayBuffer = this.base64ToArrayBuffer(storedData);
-      this.lastRefreshed = lastUpdate;
+      this.lastRefreshDate = lastUpdate;
       return of(this.parseExcel(arrayBuffer));
     }
     else {
@@ -29,7 +29,7 @@ export class GoogleSheetsService {
         tap(data => {
           localStorage.setItem('sheetsData', this.arrayBufferToBase64(data));
           const currentDate = Date.now().toString();
-          this.lastRefreshed = currentDate;
+          this.lastRefreshDate = currentDate;
           localStorage.setItem('lastUpdate', currentDate);
         }),
         map(data => this.parseExcel(data))

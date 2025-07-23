@@ -1,6 +1,6 @@
-import { Injectable, OnDestroy } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { ChartOptions } from 'chart.js';
-import { BehaviorSubject, Subscription, Observable, switchMap, tap } from 'rxjs';
+import { Observable, map } from 'rxjs';
 import { ChartResult, RaceResults, PLAYER_COLOURS, Playlist, ALL_NAMES } from '../models';
 import { PlaylistDataService } from './playlist-data.service';
 import { LeaderboardService } from './leaderboard.service';
@@ -8,49 +8,91 @@ import { LeaderboardService } from './leaderboard.service';
 @Injectable({
   providedIn: 'root'
 })
-export class ChartsService implements OnDestroy {
-
-  private subscriptions = new Subscription();
-  private chartDataSubject = new BehaviorSubject<ChartResult[]>([]);
-  public chartData$ = this.chartDataSubject.asObservable();
-  private playlistData: Playlist[] = [];
-  private raceResults: RaceResults | undefined;
+export class ChartsService {
 
   constructor(private playlistDataService: PlaylistDataService, private leaderboardService: LeaderboardService) {
-    this.subscriptions.add(
-      this.playlistDataService.playlistData$.subscribe(data => {
-        this.playlistData = data;
-      })
-    );
-    this.subscriptions.add(
-      this.leaderboardService.raceBreakdown$.subscribe(data => {
-        this.raceResults = data;
-      })
-    );
-  }
-
-  ngOnDestroy() {
-    this.subscriptions.unsubscribe();
-  }
-
-  public generateAllCharts(): void {
-    const charts = [];
-    charts.push(this.generateTotalWinsChart());
-    charts.push(this.generateTotalAppearancesChart());
-    charts.push(this.generateChampionshipPointsChart());
-    //charts.push(this.generateWinRateChart())
-    this.chartDataSubject.next(charts);
   }
 
   public getAllCharts(): Observable<ChartResult[]> {
     return this.playlistDataService.playlistData$.pipe(
-      tap(() => this.generateAllCharts()),
-      switchMap(() => this.chartData$)
+      map(playlists => [
+        this.generateTotalWinsChart(playlists),
+        this.generateTotalAppearancesChart(playlists),
+        //this.generateWinRateChart(playlists)
+      ])
     );
   }
 
-  private generateTotalWinsChart(): ChartResult {
-    const labels = this.generateDateLabels();
+  public getChampionshipPointsChart(): Observable<ChartResult> {
+    const championshipPointsChartOptions: ChartOptions = {
+      responsive: true,
+      interaction: {
+        mode: 'index',
+        intersect: false,
+      },
+      elements: {
+        point: {
+          radius: 0
+        }
+      },
+      maintainAspectRatio: false,
+      scales: {
+        x: {
+          ticks: {
+            autoSkip: false
+          },
+          title: {
+            display: true,
+            text: 'Playlist Date'
+          }
+        },
+        y: {
+          beginAtZero: true,
+          title: {
+            display: true,
+            text: 'Total Points'
+          }
+        }
+      },
+      plugins: {
+        tooltip: {
+          callbacks: {
+            labelColor: (context) => this.getLabelColor(context),
+          }
+        }
+      }
+    };
+
+    return this.leaderboardService.getRaceBreakdown().pipe(
+      map(breakdown => {
+        const labels = breakdown.races.map(race => {
+          const date = new Date(race.date);
+          const day = date.getDate().toString().padStart(2, '0');
+          const month = (date.getMonth() + 1).toString().padStart(2, '0');
+          return `${day}-${month}`;
+        });
+        const playerStats = this.mapBreakdownToChartData(breakdown);
+        const chart = {
+          labels,
+          datasets: Object.keys(playerStats).map(player => ({
+            label: player,
+            data: playerStats[player],
+            borderColor: PLAYER_COLOURS[player],
+            backgroundColor: PLAYER_COLOURS[player],
+            fill: false
+          }))
+        };
+        return {
+          chartData: chart,
+          chartOptions: championshipPointsChartOptions,
+          title: 'Total Points'
+        };
+      })
+    );
+  }
+
+  private generateTotalWinsChart(playlists: Playlist[]): ChartResult {
+    const labels = this.generateDateLabels(playlists);
     const cumulativeWins: { [playerName: string]: number[] } = {};
     const totalWinsChartOptions: ChartOptions = {
       responsive: true,
@@ -94,7 +136,7 @@ export class ChartsService implements OnDestroy {
       }
     };
 
-    this.playlistData.forEach((playlist) => {
+    playlists.forEach((playlist) => {
       const maxPoints = Math.max(...playlist.players.map(p => p.totalPoints));
       var winners = playlist.players.filter(p => p.totalPoints === maxPoints);
 
@@ -134,8 +176,8 @@ export class ChartsService implements OnDestroy {
     };
   }
 
-  private generateTotalAppearancesChart(): ChartResult {
-    const labels = this.generateDateLabels();
+  private generateTotalAppearancesChart(playlists: Playlist[]): ChartResult {
+    const labels = this.generateDateLabels(playlists);
     const appearances: { [playerName: string]: number[] } = {};
     const totalAppearancesChartOptions: ChartOptions = {
       responsive: true,
@@ -182,7 +224,7 @@ export class ChartsService implements OnDestroy {
       }
     };
 
-    this.playlistData.forEach((playlist) => {
+    playlists.forEach((playlist) => {
       playlist.players.forEach(player => {
         const name = player.name;
         if (!appearances[name]) {
@@ -242,66 +284,6 @@ export class ChartsService implements OnDestroy {
      });
    } */
 
-  private generateChampionshipPointsChart(): ChartResult {
-    const labels = this.generateDateLabels();
-    const playerStats = this.mapBreakdownToChartData(this.raceResults!);
-
-    const championshipPointsChartOptions: ChartOptions = {
-      responsive: true,
-      interaction: {
-        mode: 'index',
-        intersect: false,
-      },
-      elements: {
-        point: {
-          radius: 0
-        }
-      },
-      maintainAspectRatio: false,
-      scales: {
-        x: {
-          ticks: {
-            autoSkip: false
-          },
-          title: {
-            display: true,
-            text: 'Playlist Date'
-          }
-        },
-        y: {
-          beginAtZero: true,
-          title: {
-            display: true,
-            text: 'Total Points'
-          }
-        }
-      },
-      plugins: {
-        tooltip: {
-          callbacks: {
-            labelColor: (context) => this.getLabelColor(context),
-          }
-        }
-      }
-    };
-
-    const chart = {
-      labels,
-      datasets: Object.keys(playerStats).map(player => ({
-        label: player,
-        data: playerStats[player],
-        borderColor: PLAYER_COLOURS[player],
-        backgroundColor: PLAYER_COLOURS[player],
-        fill: false
-      }))
-    };
-    return {
-      chartData: chart,
-      chartOptions: championshipPointsChartOptions,
-      title: 'Total Points'
-    };
-  }
-
   private mapBreakdownToChartData(breakdown: RaceResults): Record<string, number[]> {
     const championshipPoints: Record<string, number[]> = {};
     breakdown.races.forEach(race => {
@@ -317,7 +299,7 @@ export class ChartsService implements OnDestroy {
     return championshipPoints;
   }
 
-  private generateWinRateChart(): ChartResult {
+  private generateWinRateChart(playlists: Playlist[]): ChartResult {
     type PlayerWinStats = {
       winRate: number[];
       winCount: number;
@@ -325,7 +307,7 @@ export class ChartsService implements OnDestroy {
     };
 
     const playerStats: Record<string, PlayerWinStats> = {};
-    const labels = this.generateDateLabels();
+    const labels = this.generateDateLabels(playlists);
 
     const winRateChartOptions: ChartOptions<'line'> = {
       responsive: true,
@@ -365,7 +347,7 @@ export class ChartsService implements OnDestroy {
       }
     };
 
-    this.playlistData.forEach((playlist, index) => {
+    playlists.forEach((playlist, index) => {
       const maxPoints = Math.max(...playlist.players.map(p => p.totalPoints));
       const winners = playlist.players.filter(p => p.totalPoints === maxPoints);
 
@@ -413,9 +395,9 @@ export class ChartsService implements OnDestroy {
     };
   }
 
-  private generateDateLabels(): string[] {
+  private generateDateLabels(playlists: Playlist[]): string[] {
     const labels: string[] = [];
-    this.playlistData.forEach((playlist) => {
+    playlists.forEach((playlist) => {
       const [year, month, day] = playlist.date.split('-'); // Split YYYY-MM-DD
       labels.push(`${day}-${month}`);
     });

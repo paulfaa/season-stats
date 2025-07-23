@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, filter, Observable, switchMap, tap } from 'rxjs';
+import { map, Observable } from 'rxjs';
 import { ALL_NAMES, Player, PlayerResult, Playlist, RaceResults } from '../models';
 import { PlaylistDataService } from './playlist-data.service';
 
@@ -7,12 +7,6 @@ import { PlaylistDataService } from './playlist-data.service';
   providedIn: 'root'
 })
 export class LeaderboardService {
-
-  private raceBreakdownSubject = new BehaviorSubject<RaceResults>({ races: [] });
-  public raceBreakdown$ = this.raceBreakdownSubject.asObservable();
-  private leaderboardSubject = new BehaviorSubject<PlayerResult[]>([]);
-  public leaderboard$ = this.leaderboardSubject.asObservable();
-  private playlistData: Playlist[] = [];
 
   private pointsMap = new Map<number, number>([
     [0, 25],
@@ -26,41 +20,30 @@ export class LeaderboardService {
   ])
 
   constructor(private playlistDataService: PlaylistDataService) {
-    this.playlistDataService.playlistData$.subscribe(data => {
-      this.playlistData = data;
-    });
   }
 
   public getRaceBreakdown(): Observable<RaceResults> {
-    return this.playlistDataService.playlistData$.pipe(
-      tap(() => {
-        const breakdown = this.generateRaceByRaceBreakdown();
-        this.raceBreakdownSubject.next(breakdown);
-      }),
-      switchMap(() => this.raceBreakdown$)
-    );
-  }
+  return this.playlistDataService.playlistData$.pipe(
+    map(playlists => this.generateRaceByRaceBreakdown(playlists))
+  );
+}
 
   public getOverallLeaderboard(): Observable<PlayerResult[]> {
     return this.playlistDataService.playlistData$.pipe(
-      tap(() => {
-        const leaderboard = this.generateOverallLeaderboard();
-        this.leaderboardSubject.next(leaderboard);
-      }),
-      switchMap(() => this.leaderboard$)
+      map(playlists => this.generateOverallLeaderboard(playlists))
     );
   }
 
-  private generateRaceByRaceBreakdown(): RaceResults {
+  private generateRaceByRaceBreakdown(playlists: Playlist[]): RaceResults {
     const allResults: RaceResults = { races: [] };
-  
-    this.playlistData.forEach(element => {
-      const date = new Date(element.date);
+
+    playlists.forEach(playlist => {
+      const date = new Date(playlist.date);
       const missingNames = [...ALL_NAMES];
       const currentResults: PlayerResult[] = [];
-      const numberOfDrivers = element.players.length;
-  
-      element.players.forEach((player: Player, index: number) => {
+      // const numberOfDrivers = playlist.players.length;
+
+      playlist.players.forEach((player: Player, index: number) => {
         if (missingNames.includes(player.name)) {
           const nameIndex = missingNames.indexOf(player.name);
           if (nameIndex > -1) {
@@ -91,9 +74,9 @@ export class LeaderboardService {
     return allResults;
   }
 
-  private generateOverallLeaderboard(): PlayerResult[] {
+  private generateOverallLeaderboard(playlists: Playlist[]): PlayerResult[] {
     const pointsPerPlayer: Record<string, number> = {};
-    this.playlistData.forEach(playlist => {
+    playlists.forEach(playlist => {
       playlist.players.forEach((player, index) => {
         if (!pointsPerPlayer[player.name]) {
           pointsPerPlayer[player.name] = 0;

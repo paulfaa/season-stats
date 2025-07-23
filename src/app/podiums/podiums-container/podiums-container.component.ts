@@ -31,8 +31,6 @@ export class PodiumsContainerComponent implements OnInit {
 
   ngOnInit(): void {
     this.podiums$ = this.podiumCalculator.getAllPodiums();
-    this.podiums$.subscribe();
     this.individualStats$ = this.statsCalculator.getAllStats();
-    this.individualStats$.subscribe();
   }
 }

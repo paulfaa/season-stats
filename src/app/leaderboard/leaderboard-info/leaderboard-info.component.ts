@@ -11,12 +11,7 @@ import { MatButtonModule } from '@angular/material/button';
   templateUrl: './leaderboard-info.component.html',
   styleUrls: ['./leaderboard-info.component.scss']
 })
-export class LeaderboardInfoComponent implements OnInit {
-
-  constructor() { }
-
-  ngOnInit(): void {
-  }
+export class LeaderboardInfoComponent {
 
   displayedColumns = ['1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th', '9th', '10th'];
   f1PointsRow = [{

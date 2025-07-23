@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, interval, Subject, takeUntil } from 'rxjs';
+import { startWith, interval, map, Observable, shareReplay, Subject, switchMap, takeUntil } from 'rxjs';
 import { Playlist } from '../models';
 import { GoogleSheetsService } from './google-sheets.service';
 
@@ -7,44 +7,27 @@ import { GoogleSheetsService } from './google-sheets.service';
   providedIn: 'root'
 })
 export class PlaylistDataService {
-  private playlistDataSubject = new BehaviorSubject<Playlist[]>([]);
-  public playlistData$ = this.playlistDataSubject.asObservable();
-  
-  private lastPlaylistDateSubject = new BehaviorSubject<Date | undefined>(undefined);
-  public lastPlaylistDate$ = this.lastPlaylistDateSubject.asObservable();
-
   private destroy$ = new Subject<void>();
   private TWELVE_HOURS_IN_MS: number = 12 * 60 * 60 * 1000;
 
-  constructor(private googleSheetsService: GoogleSheetsService) {
-    this.fetchAndUpdatePlaylistData();
-    interval(this.TWELVE_HOURS_IN_MS)
-    .pipe(takeUntil(this.destroy$)) 
-    .subscribe(() => this.fetchAndUpdatePlaylistData());
-  }
+  constructor(private googleSheetsService: GoogleSheetsService) { }
+
+  public playlistData$: Observable<Playlist[]> = interval(this.TWELVE_HOURS_IN_MS).pipe(
+  startWith(0), // Emit immediately on subscription
+  switchMap(() => this.googleSheetsService.fetchSheetsPlaylistData()),
+  shareReplay(1),
+  takeUntil(this.destroy$)
+);
 
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
   }
 
-  private fetchAndUpdatePlaylistData(): void {
-    this.googleSheetsService.fetchSheetsPlaylistData().subscribe({
-      next: data => {
-        this.playlistDataSubject.next(data);
-        this.updateLastPlaylistDate(data);
-      },
-      error: err => console.error('Error fetching data from Google Sheets', err)
-    });
-  }
-
-  private updateLastPlaylistDate(playlists: Playlist[]): void {
-    if (playlists.length > 0) {
-      const latestDate = new Date(playlists[playlists.length - 1].date)
-      this.lastPlaylistDateSubject.next(latestDate);
-    } 
-    else {
-      this.lastPlaylistDateSubject.next(undefined);
-    }
-  }
+  public lastPlaylistDate$: Observable<Date | undefined> = this.playlistData$.pipe(
+    map(playlists => playlists.length > 0
+      ? new Date(playlists[playlists.length - 1].date)
+      : undefined
+    )
+  );
 }
