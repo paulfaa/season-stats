@@ -346,9 +346,9 @@ export class PodiumCalculatorService {
       }));
 
     //The lower the average the better  
-    const bestAveragePositions = this.generateBottomThreePodium("Highest Average Finishing Position 🎯", averagePositions, true);
+    const bestAveragePositions = this.generateBottomThreePodium("Highest Average Position 🎯", averagePositions, true);
     bestAveragePositions.isNegative = false;
-    const worstAveragePositions = this.generateTopThreePodium("Lowest Average Finishing Position", averagePositions);
+    const worstAveragePositions = this.generateTopThreePodium("Lowest Average Position", averagePositions);
     worstAveragePositions.subtitle = "started from the bottom now we're still here";
     worstAveragePositions.isNegative = true;
     return [bestAveragePositions, worstAveragePositions];
@@ -485,7 +485,7 @@ export class PodiumCalculatorService {
 
     const mostDedicated = this.generateTopThreePodium("Most Dedicated 💪", attendanceRates);
     mostDedicated.subtitle = subtitle;
-    const leastDedicated = this.generateBottomThreePodium("Least Dedicated 💤", attendanceRates);
+    const leastDedicated = this.generateBottomThreePodium("Most Cowardly 💤", attendanceRates);
     leastDedicated.subtitle = subtitle;
     return [mostDedicated, leastDedicated];
   }

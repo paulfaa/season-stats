@@ -4,7 +4,7 @@ import { MatDividerModule } from '@angular/material/divider';
 import { Observable } from 'rxjs';
 import { LoadingSpinnerComponent } from 'src/app/loading-spinner/loading-spinner.component';
 import { PodiumResult, IndividualResult } from 'src/app/models';
-import { NumberDisplayComponent } from 'src/app/number-display/number-display.component';
+import { NumberDisplayComponent } from 'src/app/stats/number-display/number-display.component';
 import { PodiumCalculatorService } from 'src/app/service/podium-calculator.service';
 import { StatsCalculatorService } from 'src/app/service/stats-calculator.service';
 import { PodiumComponent } from '../podium/podium.component';
@@ -22,14 +22,12 @@ import { PodiumComponent } from '../podium/podium.component';
   templateUrl: './podiums-container.component.html',
   styleUrls: ['./podiums-container.component.scss']
 })
-export class PodiumsContainerComponent implements OnInit {
+export class PodiumsContainerComponent {
 
   podiums$: Observable<PodiumResult[]> | undefined;
   individualStats$: Observable<IndividualResult[]> | undefined;
 
-  constructor(private podiumCalculator: PodiumCalculatorService, private statsCalculator: StatsCalculatorService) { }
-
-  ngOnInit(): void {
+  constructor(private podiumCalculator: PodiumCalculatorService, private statsCalculator: StatsCalculatorService) {
     this.podiums$ = this.podiumCalculator.getAllPodiums();
     this.individualStats$ = this.statsCalculator.getAllStats();
   }

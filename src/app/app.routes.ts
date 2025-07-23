@@ -1,10 +1,14 @@
 import { Routes } from '@angular/router';
 
 export const routes: Routes = [
-  { path: '', redirectTo: 'stats', pathMatch: 'full' },
+  { path: '', redirectTo: 'podiums', pathMatch: 'full' },
   { 
-    path: 'stats', 
+    path: 'podiums', 
     loadComponent: () => import('./podiums/podiums-container/podiums-container.component').then(c => c.PodiumsContainerComponent)
+  },
+  {
+    path: 'stats',
+    loadComponent: () => import('./stats/stats-container/stats-container.component').then(c => c.StatsContainerComponent)
   },
   { 
     path: 'charts', 
@@ -20,6 +24,6 @@ export const routes: Routes = [
   },
   { 
     path: '**', 
-    redirectTo: 'stats' 
+    redirectTo: 'podiums' 
   }
 ];

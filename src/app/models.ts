@@ -22,9 +22,9 @@ export interface PodiumResult {
 }
 
 export interface PodiumPosition {
-  player: Player;
-  rank: number;
-  height: number;
+    player: Player;
+    rank: number;
+    height: number;
 }
 
 export interface IndividualResult {
@@ -53,6 +53,27 @@ export interface RaceResult {
 export interface RaceResults {
     races: RaceResult[];
 }
+
+export interface TableData {
+    title: string;
+    data: PlayerResult[];
+    columnHeaders: {
+        playerName: string;
+        points: string;
+    };
+}
+
+export const FIRST_APPEARANCES: { [name: string]: Date } = {
+    'BarizztaButzy': new Date('2025-01-07'),
+    'mikc95': new Date('2025-01-07'),
+    'meas_taibhse': new Date('2025-01-07'),
+    'iiCiaran': new Date('2025-01-07'),
+    'cooooney95': new Date('2025-01-08'),
+    'kendy232': new Date('2025-01-15'),
+    'hurling1': new Date('2025-01-09'),
+    'jackw2610': new Date('2025-01-08'),
+    'galwayboy7': new Date('2025-05-12')
+};
 
 export const ALL_NAMES = ['BarizztaButzy', 'mikc95', 'meas_taibhse', 'iiCiaran', 'cooooney95', 'kendy232', 'hurling1', 'jackw2610', 'galwayboy7'];
 

@@ -1,6 +1,6 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { IndividualResult } from '../models';
+import { IndividualResult } from '../../models';
 
 @Component({
   selector: 'app-number-display',
@@ -9,13 +9,7 @@ import { IndividualResult } from '../models';
   templateUrl: './number-display.component.html',
   styleUrls: ['./number-display.component.scss']
 })
-export class NumberDisplayComponent implements OnInit {
+export class NumberDisplayComponent {
 
   @Input() individualResult: IndividualResult | undefined = undefined;
-
-  constructor() { }
-
-  ngOnInit(): void {
-  }
-
 }

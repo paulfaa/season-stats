@@ -5,13 +5,6 @@
       [podium]="podium"
       >
     </app-podium>
-
-    <mat-divider></mat-divider>
-
-    <app-number-display 
-      *ngFor="let number of individualStats$ | async" 
-      [individualResult]="number">
-    </app-number-display>
   </div>
 </ng-container>
 

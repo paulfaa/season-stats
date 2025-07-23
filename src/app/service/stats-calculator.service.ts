@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, filter, Observable, switchMap, tap } from 'rxjs';
-import { IndividualResult, Playlist } from '../models';
+import { map, Observable } from 'rxjs';
+import { ALL_NAMES, FIRST_APPEARANCES, IndividualResult, PlayerResult, Playlist, TableData } from '../models';
 import { Utils } from '../util/utils';
 import { PlaylistDataService } from './playlist-data.service';
 
@@ -9,53 +9,70 @@ import { PlaylistDataService } from './playlist-data.service';
 })
 export class StatsCalculatorService {
 
-  private individualDataSubject = new BehaviorSubject<IndividualResult[]>([]);
-  public individualData$ = this.individualDataSubject.asObservable();
-  private playlistData: Playlist[] = [];
-
-  constructor(private playlistDataService: PlaylistDataService) {
-    this.playlistDataService.playlistData$.subscribe(data => {
-      this.playlistData = data;
-    });
-  }
+  constructor(private playlistDataService: PlaylistDataService) {}
 
   public getAllStats(): Observable<IndividualResult[]> {
     return this.playlistDataService.playlistData$.pipe(
-      filter(data => data.length > 0),
-      tap(() => this.updateAllStats()),
-      switchMap(() => this.individualData$)
+      map(playlistData => this.generateAllStats(playlistData))
     );
   }
 
-  public updateAllStats(): void {
+  public getAllTables(): Observable<TableData[]> {
+    return this.playlistDataService.playlistData$.pipe(
+      map(playlistData => this.generateAllTables(playlistData))
+    );
+  }
+
+  public generateAllStats(playlistData: Playlist[]): IndividualResult[] {
     const stats = [];
-    stats.push(this.calculateTotalNumberOfPlaylists());
-    stats.push(this.calculateAveragePlaylistLength());
-    stats.push(this.calculateAverageSquadSize());
-    stats.push(...this.calculateMostPopularDays());
-    stats.push(this.calculateMostPlaylistsInOneWeek());
+    stats.push(this.calculateTotalNumberOfPlaylists(playlistData));
+    stats.push(this.calculateAveragePlaylistLength(playlistData));
+    stats.push(this.calculateAverageSquadSize(playlistData));
+    stats.push(...this.calculateMostPopularDays(playlistData));
+    stats.push(this.calculateMostPlaylistsInOneWeek(playlistData));
     //stats.push(this.calculateLongestWinningStreak()); //needs fix
-    this.individualDataSubject.next(stats);
+    return stats
   }
 
-  private calculateTotalNumberOfPlaylists(): IndividualResult {
-    return { title: 'Total Playlists', value: this.playlistData.length }
+  private generateAllTables(playlistData: Playlist[]): TableData[] {
+    const tables: TableData[] = [];
+    tables.push({
+      title: 'Days Since Last Win',
+      data: this.calculateDaysSinceLastWin(playlistData),
+      columnHeaders: {
+        playerName: 'Player',
+        points: 'Days'
+      }
+    });
+    tables.push({
+      title: 'Days Since Last Podium',
+      data: this.calculateDaysSinceLastPodium(playlistData),
+      columnHeaders: {
+        playerName: 'Player',
+        points: 'Days'
+      }
+    });
+    return tables;
   }
 
-  private calculateAveragePlaylistLength(): IndividualResult {
-    const avgLength = this.playlistData.reduce((acc, playlist) => acc + playlist.length, 0) / this.playlistData.length;
+  private calculateTotalNumberOfPlaylists(playlistData: Playlist[]): IndividualResult {
+    return { title: 'Total Playlists', value: playlistData.length }
+  }
+
+  private calculateAveragePlaylistLength(playlistData: Playlist[]): IndividualResult {
+    const avgLength = playlistData.reduce((acc, playlist) => acc + playlist.length, 0) / playlistData.length;
     return { title: 'Average Playlist Length', value: Utils.toTwoDecimalPlaces(avgLength) }
   }
 
-  private calculateAverageSquadSize(): IndividualResult {
-    const avgSize = this.playlistData.reduce((acc, playlist) => acc + playlist.players.length, 0) / this.playlistData.length;
+  private calculateAverageSquadSize(playlistData: Playlist[]): IndividualResult {
+    const avgSize = playlistData.reduce((acc, playlist) => acc + playlist.players.length, 0) / playlistData.length;
     return { title: 'Average Squad Size', value: Utils.toTwoDecimalPlaces(avgSize) }
   }
 
-  private calculateMostPopularDays(): IndividualResult[] {
+  private calculateMostPopularDays(playlistData: Playlist[]): IndividualResult[] {
     const dayCounts: Record<string, number> = {};
 
-    this.playlistData.forEach(playlist => {
+    playlistData.forEach(playlist => {
       const day = new Date(playlist.date).toLocaleDateString('en-US', { weekday: 'long' });
       dayCounts[day] = (dayCounts[day] || 0) + 1;
     });
@@ -68,9 +85,9 @@ export class StatsCalculatorService {
     return [{ title: 'Most Popular Day', subtitle: mostPopularDay }, { title: 'Least Popular Day', subtitle: leastPopularDay }];
   }
 
-  private calculateMostPlaylistsInOneWeek(): IndividualResult {
+  private calculateMostPlaylistsInOneWeek(playlistData: Playlist[]): IndividualResult {
     const weekCounts: Record<string, number> = {};
-    const playlists = this.playlistData.map(playlist => ({
+    const playlists = playlistData.map(playlist => ({
       ...playlist,
       dateObj: new Date(playlist.date)
     }));
@@ -106,8 +123,59 @@ export class StatsCalculatorService {
     return { title: 'Most Playlists in One Week', subtitle: formattedWeekRange, value: mostPlaylistsCount };
   }
 
-  private calculateLongestWinningStreak(): IndividualResult {
-    const sortedPlaylists = [...this.playlistData].sort(
+  private calculateDaysSinceLastWin(playlistData: Playlist[]): PlayerResult[] {
+    const mostRecentWin: Record<string, Date> = {};
+    const today = new Date();
+
+    for (let i = playlistData.length - 1; i >= 0; i--) {
+      const playlist = playlistData[i];
+      if (Utils.playlistWasDraw(playlist)) continue;
+
+      const winner = playlist.players[0].name;
+      if (!mostRecentWin[winner]) {
+        mostRecentWin[winner] = new Date(playlist.date);
+      }
+    }
+
+    const sorted = ALL_NAMES
+      .map(player => {
+        const referenceDate = mostRecentWin[player] || FIRST_APPEARANCES[player];
+        const days = Math.floor((today.getTime() - referenceDate.getTime()) / (1000 * 60 * 60 * 24));
+        return { playerName: player, points: days };
+      })
+      .sort((a, b) => a.points - b.points);
+    return sorted;
+  }
+
+  private calculateDaysSinceLastPodium(playlistData: Playlist[]): PlayerResult[] {
+    const mostRecentPodium: Record<string, Date> = {};
+    const today = new Date();
+
+    for (let i = playlistData.length - 1; i >= 0; i--) {
+      const playlist = playlistData[i];
+      if (Utils.playlistWasDraw(playlist)) continue;
+
+      const podiumFinishers = playlist.players.slice(0, 3).map(player => player.name);
+      podiumFinishers.forEach(name => {
+        if (!mostRecentPodium[name]) {
+          mostRecentPodium[name] = new Date(playlist.date);
+        }
+      });
+    }
+
+    const sorted = ALL_NAMES
+      .map(player => {
+        const referenceDate = mostRecentPodium[player] || FIRST_APPEARANCES[player];
+        const days = Math.floor((today.getTime() - referenceDate.getTime()) / (1000 * 60 * 60 * 24));
+        return { playerName: player, points: days };
+      })
+      .sort((a, b) => a.points - b.points);
+    console.log('Days since last podium:', sorted);
+    return sorted;
+  }
+
+  private calculateLongestWinningStreak(playlistData: Playlist[]): IndividualResult {
+    const sortedPlaylists = [...playlistData].sort(
       (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
     );
 
