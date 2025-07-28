@@ -18,28 +18,34 @@ export class LeaderboardResultComponent implements OnInit {
   public backgroundColour: string = '';
   public textColour: string = 'black';
   public showImage: boolean = false;
-  public imagePath: string = 'assets/special.png';
+  public imagePath: string | undefined;
 
   ngOnInit(): void {
     this.backgroundColour = Utils.getCorrespondingColour(this.playerName);
     if (this.playerName === 'jackw2610') {
       this.textColour = 'white';
     }
+    this.setImage();
+  }
+
+  private setImage(): void {
     if (this.playerName === 'cooooney95' || this.playerName === 'hurling1') {
       this.imagePath = 'assets/special.png';
       this.showImage = true;
     }
+    if (this.position <= 4 ){
+      this.imagePath = 'assets/heavy.png';
+      this.showImage = true;
+    }
     if (/Android/i.test(navigator.userAgent) &&
       this.playerName === 'BarizztaButzy' &&
-      new Date() > new Date(2025, 7, 14) &&
-      Math.floor(Math.random() * 10) + 1 === 5) {
-
+      Math.floor(Math.random() * 8) + 1 === 5) {
       this.imagePath = 'assets/special.png';
       this.showImage = true;
     }
   }
 
-  darkenRGBColor(rgb: string, percent: number): string {
+  private darkenRGBColor(rgb: string, percent: number): string {
     const match = rgb.match(/rgb\s*\(\s*(\d+),\s*(\d+),\s*(\d+)\s*\)/);
     if (!match) return rgb;
 

@@ -14,7 +14,8 @@ table {
     align-items: center;
 }
 
-.centered {
+th.centered, td.centered {
+  padding-right: 0 !important;
   text-align: center;
   vertical-align: middle;
 }

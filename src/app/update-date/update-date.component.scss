@@ -1,5 +1,16 @@
 #update-date {
     display: flex;
-    justify-content: center;
     font-size: small;
+    flex-direction: column;
+    align-items: flex-end;
+}
+
+#update-date p {
+    margin: 0;
+    padding: 0px;
+    line-height: 1.2;
+}
+
+.date {
+    font-style: italic;
 }

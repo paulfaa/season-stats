@@ -37,7 +37,7 @@ export class PodiumComponent implements OnInit {
     const title = this.podium.title.toLowerCase();
     if (title.includes('points') || title.includes('margin')) return 'points';
     if (title.includes('position')) return 'ordinal';
-    if (title.includes('ratio') || title.includes('percentage') || title.includes('dedicated')) return 'percentage';
+    if (title.includes('ratio') || title.includes('percentage') || title.includes('dedicated') || title.includes('cowardly')) return 'percentage';
     return 'default';
   }
 
