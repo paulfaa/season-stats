@@ -39,7 +39,7 @@ export class LeaderboardResultComponent implements OnInit {
     }
     if (/Android/i.test(navigator.userAgent) &&
       this.playerName === 'BarizztaButzy' &&
-      Math.floor(Math.random() * 8) + 1 === 5) {
+      Math.floor(Math.random() * 9) + 1 === 5) {
       this.imagePath = 'assets/special.png';
       this.showImage = true;
     }

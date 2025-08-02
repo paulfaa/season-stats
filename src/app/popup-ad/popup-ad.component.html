@@ -1,0 +1,14 @@
+<mat-dialog-content class="popup-ad-content">
+    <h3>Ads help to keep this app free for everyone</h3>
+    <p>Please take a moment to check out our sponsors below:</p>
+
+    <div>
+        250 x 250px ad space
+    </div>
+
+    <p>This popup can be closed in {{ displayTimeInSecs }} seconds</p>
+</mat-dialog-content>
+
+<mat-dialog-actions class="dialog-actions-right">
+    <button [disabled]="closeDisabled" matButton mat-dialog-close cdkFocusInitial>Close</button>
+</mat-dialog-actions>

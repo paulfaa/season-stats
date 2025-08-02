@@ -1,4 +1,5 @@
 import { Routes } from '@angular/router';
+import { AuthGuard } from './upload/auth-guard';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'podiums', pathMatch: 'full' },
@@ -19,8 +20,13 @@ export const routes: Routes = [
     loadComponent: () => import('./leaderboard/leaderboard-container/leaderboard-container.component').then(c => c.LeaderboardContainerComponent)
   },
   {
+    path: 'upload',
+    canActivate: [AuthGuard],
+    loadComponent: () => import('./upload/image-upload/image-upload.component').then(c => c.ImageUploadComponent)
+  },
+  {
     path: 'login',
-    loadComponent: () => import('./login/login.component').then(c => c.LoginComponent)
+    loadComponent: () => import('./upload/login/login.component').then(c => c.LoginComponent)
   },
   { 
     path: '**', 

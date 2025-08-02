@@ -1,0 +1,9 @@
+<form [formGroup]="form" class="login" (ngSubmit)="submit()">
+  <label>You are not authenticated:</label>
+
+  <input class="password-input" type="password" formControlName="password" placeholder="Enter password" />
+
+  <button type="submit">Login</button>
+  
+  <div *ngIf="error" style="color:red">{{ error }}</div>
+</form>

@@ -4,7 +4,6 @@ import { MatDividerModule } from '@angular/material/divider';
 import { Observable } from 'rxjs';
 import { LoadingSpinnerComponent } from 'src/app/loading-spinner/loading-spinner.component';
 import { PodiumResult, IndividualResult } from 'src/app/models';
-import { NumberDisplayComponent } from 'src/app/stats/number-display/number-display.component';
 import { PodiumCalculatorService } from 'src/app/service/podium-calculator.service';
 import { StatsCalculatorService } from 'src/app/service/stats-calculator.service';
 import { PodiumComponent } from '../podium/podium.component';
@@ -15,7 +14,6 @@ import { PodiumComponent } from '../podium/podium.component';
   imports: [
     CommonModule,
     MatDividerModule,
-    NumberDisplayComponent,
     PodiumComponent,
     LoadingSpinnerComponent
 ],

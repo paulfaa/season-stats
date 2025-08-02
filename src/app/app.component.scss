@@ -18,7 +18,7 @@
     width: 100%;
 }
 
-.sticky {
+.sticky-header {
     position: fixed;
     top: 0px;
     left: 0;
@@ -27,8 +27,22 @@
     background-color: white;
 }
 
+.sticky-footer {
+    position: fixed;
+    bottom: 0px;
+    left: 0;
+    width: 100%;
+    z-index: 1000;
+    background-color: white;
+}
+
 .spacer {
   flex: 1 1 auto;
+}
+
+mat-icon {
+    vertical-align: middle;
+    padding-right: 8px;
 }
 
 update-date {
@@ -57,4 +71,18 @@ app-podium:nth-child(3) {
 .stats-container {
     position: relative;
     min-height: 200vh;
+}
+
+.version-info {
+    display: flex;
+    justify-content: center;
+    margin-top: 75px;
+    padding-bottom: 100px;
+}
+
+.ad-banner {
+    display: block;
+    margin: 0 auto;
+    width: 100%;
+    height: 90px;
 }

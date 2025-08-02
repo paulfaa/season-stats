@@ -1,4 +1,9 @@
-<div class="sticky">
+<!-- <head>
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3109034804431853"
+     crossorigin="anonymous"></script>
+</head> -->
+
+<div class="sticky-header">
   <mat-toolbar>
     <mat-toolbar-row>
       <span id="main-title">GTA Wrapped 2025</span>
@@ -7,7 +12,8 @@
     </mat-toolbar-row>
   </mat-toolbar>
 
-  <mat-tab-group mat-stretch-tabs="false" mat-align-tabs="center" [selectedIndex]="selectedTabIndex"
+  <!-- todo: fix issue with [selectedIndex]="selectedTabIndex" -->
+  <mat-tab-group mat-stretch-tabs="false" mat-align-tabs="center"
     (selectedIndexChange)="onTabChange($event)">
     <mat-tab>
       <ng-template mat-tab-label>
@@ -33,7 +39,30 @@
         Leaderboard
       </ng-template>
     </mat-tab>
+    <mat-tab>
+      <ng-template mat-tab-label>
+        <mat-icon>cloud_upload</mat-icon>
+        Upload
+      </ng-template>
+    </mat-tab>
   </mat-tab-group>
 </div>
 
 <router-outlet></router-outlet>
+
+<div class="version-info">
+    <span>Version: {{APP_VERSION}}</span>
+</div>
+
+<div class="sticky-footer">
+  <!-- Ads go here
+  <ins class="adsbygoogle"
+      style="display:block"
+      data-ad-client="ca-pub-3109034804431853"
+      data-ad-slot="6667208404"
+      data-ad-format="auto"
+      data-full-width-responsive="true"></ins>
+  <script>
+      (adsbygoogle = window.adsbygoogle || []).push({});
+  </script> -->
+</div>

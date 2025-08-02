@@ -170,7 +170,6 @@ export class StatsCalculatorService {
         return { playerName: player, points: days };
       })
       .sort((a, b) => a.points - b.points);
-    console.log('Days since last podium:', sorted);
     return sorted;
   }
 
