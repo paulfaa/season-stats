@@ -1,0 +1,10 @@
+<div class="version-history">
+    <mat-card *ngFor="let version of versionHistory" appearance="outlined">
+        <mat-card-header>
+            <mat-card-title>{{ version.version }}</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+            <p>{{ version.changes }}</p>
+        </mat-card-content>
+    </mat-card>
+</div>

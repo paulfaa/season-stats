@@ -13,36 +13,11 @@
   </mat-toolbar>
 
   <!-- todo: fix issue with [selectedIndex]="selectedTabIndex" -->
-  <mat-tab-group mat-stretch-tabs="false" mat-align-tabs="center"
-    (selectedIndexChange)="onTabChange($event)">
-    <mat-tab>
+  <mat-tab-group mat-stretch-tabs="false" mat-align-tabs="center" (selectedIndexChange)="onTabChange($event)">
+    <mat-tab *ngFor="let tab of tabs">
       <ng-template mat-tab-label>
-        <mat-icon>bar_chart</mat-icon>
-        Podiums
-      </ng-template>
-    </mat-tab>
-    <mat-tab>
-      <ng-template mat-tab-label>
-        <mat-icon>looks_one</mat-icon>
-        Stats
-      </ng-template>
-    </mat-tab>
-    <mat-tab>
-      <ng-template mat-tab-label>
-        <mat-icon>show_chart</mat-icon>
-        Charts
-      </ng-template>
-    </mat-tab>
-    <mat-tab>
-      <ng-template mat-tab-label>
-        <mat-icon>format_list_numbered</mat-icon>
-        Leaderboard
-      </ng-template>
-    </mat-tab>
-    <mat-tab>
-      <ng-template mat-tab-label>
-        <mat-icon>cloud_upload</mat-icon>
-        Upload
+        <mat-icon>{{ tab.icon }}</mat-icon>
+        {{ tab.label }}
       </ng-template>
     </mat-tab>
   </mat-tab-group>
@@ -51,7 +26,10 @@
 <router-outlet></router-outlet>
 
 <div class="version-info">
-    <span>Version: {{APP_VERSION}}</span>
+  <p>Version: {{APP_VERSION}}</p>
+  <p>
+    <a [routerLink]="['/version-history']"> Version history </a>
+  </p>
 </div>
 
 <div class="sticky-footer">

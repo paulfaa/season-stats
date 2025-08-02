@@ -63,6 +63,20 @@ export interface TableData {
     };
 }
 
+// todo: use this
+export enum PlayerName {
+    BarizztaButzy = "BarizztaButzy",
+    mikc95 = "mikc95",
+    meas_taibhse = "meas_taibhse",
+    iiCiaran = "iiCiaran",
+    cooooney95 = "cooooney95",
+    kendy232 = "kendy232",
+    hurling1 = "hurling1",
+    jackw2610 = "jackw2610",
+    galwayboy7 = "galwayboy7",
+    cwolin = "cwolin",
+}
+
 export const FIRST_APPEARANCES: { [name: string]: Date } = {
     'BarizztaButzy': new Date('2025-01-07'),
     'mikc95': new Date('2025-01-07'),
@@ -72,10 +86,11 @@ export const FIRST_APPEARANCES: { [name: string]: Date } = {
     'kendy232': new Date('2025-01-15'),
     'hurling1': new Date('2025-01-09'),
     'jackw2610': new Date('2025-01-08'),
-    'galwayboy7': new Date('2025-05-12')
+    'galwayboy7': new Date('2025-05-12'),
+    'cwolin': new Date('2025-08-01')
 };
 
-export const ALL_NAMES = ['BarizztaButzy', 'mikc95', 'meas_taibhse', 'iiCiaran', 'cooooney95', 'kendy232', 'hurling1', 'jackw2610', 'galwayboy7'];
+export const ALL_NAMES = ['BarizztaButzy', 'mikc95', 'meas_taibhse', 'iiCiaran', 'cooooney95', 'kendy232', 'hurling1', 'jackw2610', 'galwayboy7', 'cwolin'];
 
 export const PLAYER_COLOURS: { [name: string]: string } = {
     'BarizztaButzy': 'rgb(173, 10, 202)',
@@ -86,5 +101,6 @@ export const PLAYER_COLOURS: { [name: string]: string } = {
     'kendy232': 'rgb(17, 229, 45)',
     'hurling1': 'rgb(249, 151, 5)',
     'jackw2610': 'rgb(0, 0, 0)',
-    'galwayboy7': 'rgb(20, 192, 245)'
+    'galwayboy7': 'rgb(20, 192, 245)',
+    'cwolin': 'rgba(20, 35, 245, 1)'
 };

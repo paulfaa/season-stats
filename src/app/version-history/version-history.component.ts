@@ -1,0 +1,25 @@
+import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { MatCardModule } from '@angular/material/card';
+
+@Component({
+  selector: 'app-version-history',
+  standalone: true,
+  imports: [CommonModule, MatCardModule],
+  templateUrl: './version-history.component.html',
+  styleUrls: ['./version-history.component.scss']
+})
+export class VersionHistoryComponent {
+
+  versionHistory = [
+    {
+      version: '0.1.0',
+      changes: 'Add upload functionality'
+    },
+    {
+      version: '0.2.0',
+      changes: 'Add cwolin to stats & create version history page'
+    }
+  ];
+
+}

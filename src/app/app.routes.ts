@@ -28,6 +28,10 @@ export const routes: Routes = [
     path: 'login',
     loadComponent: () => import('./upload/login/login.component').then(c => c.LoginComponent)
   },
+  {
+    path: 'version-history',
+    loadComponent: () => import('./version-history/version-history.component').then(c => c.VersionHistoryComponent)
+  },
   { 
     path: '**', 
     redirectTo: 'podiums' 

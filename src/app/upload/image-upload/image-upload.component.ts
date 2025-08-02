@@ -15,12 +15,12 @@ import { Validators, FormBuilder, ReactiveFormsModule } from '@angular/forms';
 export class ImageUploadComponent implements OnInit {
 
   uploadError: string | null = null;
-  uploadSuccess: boolean = false;
+  parseSuccess: boolean = false;
+
   imageFile: File | null = null;
-  imageTitle: string = '';
-  uploadForm = this.formBuilder.group({
-      password: ['', Validators.required]
-    });
+  filename: string = '';
+
+  uploadForm = this.formBuilder.group({});
 
   constructor(private formBuilder: FormBuilder) { }
 
@@ -37,8 +37,8 @@ export class ImageUploadComponent implements OnInit {
     if (this.uploadForm.invalid) return;
 
     // todo...
-    if (this.imageFile && this.imageTitle) {
-      console.log('Uploading:', this.imageTitle, this.imageFile);
+    if (this.imageFile) {
+      console.log('Uploading:', this.filename, this.imageFile);
     }
   }
 }

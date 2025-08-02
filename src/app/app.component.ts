@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { Router, RouterOutlet } from '@angular/router';
+import { Router, RouterModule, RouterOutlet } from '@angular/router';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatIconModule } from '@angular/material/icon';
@@ -19,7 +19,8 @@ import { PopupAdComponent } from './popup-ad/popup-ad.component';
     MatIconModule,
     UpdateDateComponent,
     CommonModule,
-    MatDialogModule
+    MatDialogModule,
+    RouterModule
   ],
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss']
@@ -28,6 +29,13 @@ export class AppComponent implements OnInit {
 
   APP_VERSION: string = packageJson.version;
   showAds: boolean = false;
+  tabs = [
+    { icon: 'bar_chart', label: 'Podiums' },
+    { icon: 'looks_one', label: 'Stats' },
+    { icon: 'show_chart', label: 'Charts' },
+    { icon: 'format_list_numbered', label: 'Leaderboard' },
+    { icon: 'cloud_upload', label: 'Upload' }
+  ];
 
   constructor(private router: Router, private dialog: MatDialog) { }
 

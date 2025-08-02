@@ -1,14 +1,20 @@
-<p>image-upload works!</p>
-
 <div class="image-upload">
   <h2>Upload Image</h2>
-  <form [formGroup]="uploadForm" (ngSubmit)="onSubmit()">
-    <mat-form-field>
-      <mat-label>Select Image</mat-label>
-      <input type="file" (change)="onFileSelected($event)" accept="image/*">
-    </mat-form-field>
-    <button mat-raised-button color="primary" type="submit" [disabled]="!uploadForm.valid">Upload</button>
-  </form>
-  <div *ngIf="uploadError" class="error-message">{{ uploadError }}</div>
-    <div *ngIf="uploadSuccess" class="success-message">Image uploaded successfully!</div>
+
+  <input class="select-file-input" type="file" formControlName="select-file" (change)="onFileSelected($event)"
+    accept="image/*">
+
+  <div *ngIf="parseSuccess">
+    <form [formGroup]="uploadForm" (ngSubmit)="onSubmit()">
+      <mat-form-field>
+        <mat-label>Select Image</mat-label>
+
+      </mat-form-field>
+      <button mat-raised-button color="primary" type="submit" [disabled]="!uploadForm.valid">Upload</button>
+    </form>
+
+    <div *ngIf="uploadError" class="error-message">{{ uploadError }}</div>
+    <div *ngIf="parseSuccess" class="success-message">Image parsed successfully!</div>
+  </div>
+
 </div>
