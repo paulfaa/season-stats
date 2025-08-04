@@ -20,7 +20,7 @@ export class PlayerResultComponent implements OnInit {
 
   ngOnInit(): void {
     this.backgroundColour = Utils.getCorrespondingColour(this.playerName);
-    if (this.playerName === 'jackw2610') {
+    if (this.playerName === 'jackw2610' || this.playerName === 'cwolin') {
       this.textColour = 'white';
     }
     if (this.points == 0) {

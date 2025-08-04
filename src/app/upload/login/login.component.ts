@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { AuthService } from '../../service/auth.service';
+import { ParsingService } from '../../service/parsing.service';
 import { ReactiveFormsModule, Validators, FormBuilder } from '@angular/forms';
 
 @Component({
@@ -17,7 +17,7 @@ export class LoginComponent {
     password: ['', Validators.required]
   });
 
-  constructor(private formBuilder: FormBuilder, private authService: AuthService, private router: Router) { }
+  constructor(private formBuilder: FormBuilder, private authService: ParsingService, private router: Router) { }
 
   submit() {
     if (this.form.invalid) return;

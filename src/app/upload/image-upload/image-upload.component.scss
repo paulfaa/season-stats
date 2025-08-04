@@ -1,3 +1,38 @@
 .image-upload {
-    margin-top: 150px;
+  margin-top: 150px;
+}
+
+.file-input-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.hidden-file-input {
+  display: none;
+}
+
+.custom-file-label {
+  display: inline-block;
+  padding: 0.5rem 1rem;
+  background-color: #1976d2;
+  color: white;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.3s;
+}
+
+.playlist-form {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.form-actions {
+  display: flex;
+  flex-direction: column;
+  margin-top: 20px;
+  width: 60%;
 }

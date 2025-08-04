@@ -37,7 +37,7 @@ export class StatsCalculatorService {
   private generateAllTables(playlistData: Playlist[]): TableData[] {
     const tables: TableData[] = [];
     tables.push({
-      title: 'Days Since Last Win',
+      title: 'Days Without A Win',
       data: this.calculateDaysSinceLastWin(playlistData),
       columnHeaders: {
         playerName: 'Player',
@@ -45,7 +45,7 @@ export class StatsCalculatorService {
       }
     });
     tables.push({
-      title: 'Days Since Last Podium',
+      title: 'Days Without A Podium',
       data: this.calculateDaysSinceLastPodium(playlistData),
       columnHeaders: {
         playerName: 'Player',

@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
 
@@ -11,9 +11,13 @@ import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
 })
 export class LoadingSpinnerComponent implements OnInit {
 
+  @Input() loadingText: string | undefined;
+
   constructor() { }
 
   ngOnInit(): void {
+    if (!this.loadingText) {
+      this.loadingText = 'loading...';
+    }
   }
-
 }

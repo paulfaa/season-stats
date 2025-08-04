@@ -1,9 +1,19 @@
 import { ChartData, ChartOptions } from "chart.js";
 
 export interface Player {
-    name: string;
+    name: string; //todo: rename to playerName and make lastEventPoints required
     totalPoints: number;
     lastEventPoints?: number;
+}
+
+export interface PlaylistData {
+    playlistName: string;
+    playlistDate: string;
+    numberOfEvents: number;
+    numberOfPlayers: number;
+    uploadDate: string;
+    uploadedBy: string;
+    players: Player[];
 }
 
 export interface Playlist {

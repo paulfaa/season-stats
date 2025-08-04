@@ -19,7 +19,10 @@ export class VersionHistoryComponent {
     {
       version: '0.2.0',
       changes: 'Add cwolin to stats & create version history page'
+    },
+    {
+      version: '0.3.0',
+      changes: 'Fix upload page'
     }
   ];
-
 }
