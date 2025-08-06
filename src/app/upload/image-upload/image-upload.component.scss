@@ -30,9 +30,24 @@
   align-items: center;
 }
 
-.form-actions {
+.players-form {
   display: flex;
   flex-direction: column;
+  align-items: center;
+}
+
+.form-actions {
+  display: contents;
   margin-top: 20px;
   width: 60%;
+}
+
+.form-actions button {
+  margin-top: 10px;
+}
+
+.last-uploaded {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }

@@ -1,7 +1,11 @@
 <div class="image-upload">
-  
+
   <div class="file-input-container" *ngIf="!imageFile">
     <h2>Scan playlist photo</h2>
+
+    <span class="last-uploaded">
+      Last uploaded: {{ lastUploaded | date: 'short' }}
+    </span>
 
     <input type="file" id="fileInput" class="hidden-file-input" (change)="onFileSelected($event)" accept="image/*" />
     <label for="fileInput" class="custom-file-label">
@@ -13,8 +17,10 @@
     <loading-spinner [loadingText]="'scanning image...'"></loading-spinner>
   </div>
 
-  <div class="playlist-form" *ngIf="parseSuccess">
-    <form [formGroup]="uploadForm" (ngSubmit)="onSubmit()">
+  <div *ngIf="parseSuccess">
+    <h2>{{ fileName }}</h2>
+    <form class="playlist-form" [formGroup]="uploadForm" (ngSubmit)="onSubmit()">
+    
 
       <mat-form-field appearance="fill">
         <mat-label>Playlist Name</mat-label>
@@ -37,6 +43,7 @@
       </mat-form-field>
 
       <div class="players-form" formArrayName="players">
+        <h3>Players</h3>
         <ng-container *ngFor="let playerGroup of playerControls; let i = index" [formGroupName]="i">
           <h4>Player {{ i + 1 }}</h4>
 
@@ -60,12 +67,15 @@
             <input matInput type="number" formControlName="totalPoints" />
           </mat-form-field>
         </ng-container>
-        <button mat-stroked-button color="primary" type="button" (click)="addPlayer()">
-          <i class="fa-solid fa-plus"></i>
-        </button>
-        <button mat-stroked-button color="warn" type="button" (click)="removePlayer()" [disabled]="playersLength === 0">
-          <i class="fa-solid fa-minus"></i>
-        </button>
+        <div class="player-controls">
+          <button mat-stroked-button color="primary" type="button" (click)="addPlayer()">
+            <i class="fa-solid fa-plus"></i>
+          </button>
+          <button mat-stroked-button color="warn" type="button" (click)="removePlayer()"
+            [disabled]="playersLength === 0">
+            <i class="fa-solid fa-minus"></i>
+          </button>
+        </div>
       </div>
 
       <div class="form-actions">

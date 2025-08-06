@@ -18,13 +18,14 @@ import { LoadingSpinnerComponent } from "src/app/loading-spinner/loading-spinner
 })
 export class ImageUploadComponent implements OnInit {
 
+  lastUploaded: Date | undefined;
   uploadError: string | null = null;
   parseSuccess: boolean = false;
   // use single string to keep track of success/error etc
   isLoading: boolean = false;
 
   imageFile: File | null = null;
-  filename: string = '';
+  fileName: string = '';
 
   uploadForm: FormGroup;
   allNames = ALL_NAMES;
@@ -32,14 +33,15 @@ export class ImageUploadComponent implements OnInit {
   constructor(private formBuilder: FormBuilder, private parsingService: ParsingService) {
     this.uploadForm = this.formBuilder.group({
       playlistName: [''],
-      playlistDate: [''],
+      playlistDate: [],
       numberOfEvents: [0],
       numberOfPlayers: [0],
       players: this.formBuilder.array([]),
     });
+    this.lastUploaded = new Date(); // todo
   }
 
-  ngOnInit(): void { }
+  ngOnInit(): void {}
 
   get playersLength(): number {
     const playersArray = this.uploadForm.get('players') as FormArray;
@@ -59,7 +61,7 @@ export class ImageUploadComponent implements OnInit {
       return;
     }
     this.imageFile = input.files![0];
-    this.filename = this.imageFile.name;
+    this.fileName = this.imageFile.name;
     const formData = new FormData();
     formData.append('image', this.imageFile);
 
@@ -71,7 +73,7 @@ export class ImageUploadComponent implements OnInit {
       complete: () => {
         this.isLoading = false;
         this.uploadError = null;
-        console.log('Image upload successful:', this.filename);
+        console.log('Image upload successful:', this.fileName);
       },
       error: (error) => {
         this.isLoading = false;
@@ -99,7 +101,7 @@ export class ImageUploadComponent implements OnInit {
     this.parseSuccess = false;
     this.uploadError = null;
     this.imageFile = null;
-    this.filename = '';
+    this.fileName = '';
   }
 
   isNameSelected(name: string, currentIndex: number): boolean {
@@ -112,7 +114,7 @@ export class ImageUploadComponent implements OnInit {
   private createForm(data: any): void {
     this.uploadForm = this.formBuilder.group({
       playlistName: [data.playlistName, Validators.required],
-      playlistDate: [data.playlistDate, Validators.required],
+      playlistDate: [new Date(), Validators.required, this.dateValidator],
       numberOfEvents: [data.numberOfEvents, Validators.required],
       numberOfPlayers: [data.numberOfPlayers, Validators.required],
       players: this.formBuilder.array(
@@ -160,9 +162,23 @@ export class ImageUploadComponent implements OnInit {
     });
   }
 
-  uniquePlayerNamesValidator: ValidatorFn = (formArray: AbstractControl): ValidationErrors | null => {
+  uniquePlayerNamesValidator(formArray: AbstractControl): ValidationErrors | null {
     const names = (formArray.value as any[]).map(player => player.name);
     const hasDuplicates = names.some((name, idx) => name && names.indexOf(name) !== idx);
     return hasDuplicates ? { nonUniqueNames: true } : null;
   };
+
+  dateValidator(control: AbstractControl): ValidationErrors | null {
+    const today = new Date();
+    const twoWeeksAgo = new Date();
+    twoWeeksAgo.setDate(today.getDate() - 14);
+    const selectedDate = new Date(control.value);
+
+    today.setHours(0, 0, 0, 0);
+    twoWeeksAgo.setHours(0, 0, 0, 0);
+    selectedDate.setHours(0, 0, 0, 0);
+
+    return selectedDate > today || selectedDate < twoWeeksAgo ? { invalidDate: true } : null;
+  }
+
 }
