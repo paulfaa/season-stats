@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { ChartOptions } from 'chart.js';
 import { Observable, map } from 'rxjs';
-import { ChartResult, RaceResults, PLAYER_COLOURS, Playlist, ALL_NAMES } from '../models';
+import { ChartResult, RaceResults, PLAYER_COLOURS, ALL_NAMES, PlaylistData } from '../models';
 import { PlaylistDataService } from './playlist-data.service';
 import { LeaderboardService } from './leaderboard.service';
 
@@ -91,7 +91,7 @@ export class ChartsService {
     );
   }
 
-  private generateTotalWinsChart(playlists: Playlist[]): ChartResult {
+  private generateTotalWinsChart(playlists: PlaylistData[]): ChartResult {
     const labels = this.generateDateLabels(playlists);
     const cumulativeWins: { [playerName: string]: number[] } = {};
     const totalWinsChartOptions: ChartOptions = {
@@ -176,7 +176,7 @@ export class ChartsService {
     };
   }
 
-  private generateTotalAppearancesChart(playlists: Playlist[]): ChartResult {
+  private generateTotalAppearancesChart(playlists: PlaylistData[]): ChartResult {
     const labels = this.generateDateLabels(playlists);
     const appearances: { [playerName: string]: number[] } = {};
     const totalAppearancesChartOptions: ChartOptions = {
@@ -299,7 +299,7 @@ export class ChartsService {
     return championshipPoints;
   }
 
-  private generateWinRateChart(playlists: Playlist[]): ChartResult {
+  private generateWinRateChart(playlists: PlaylistData[]): ChartResult {
     type PlayerWinStats = {
       winRate: number[];
       winCount: number;
@@ -395,10 +395,10 @@ export class ChartsService {
     };
   }
 
-  private generateDateLabels(playlists: Playlist[]): string[] {
+  private generateDateLabels(playlists: PlaylistData[]): string[] {
     const labels: string[] = [];
     playlists.forEach((playlist) => {
-      const [year, month, day] = playlist.date.split('-'); // Split YYYY-MM-DD
+      const [year, month, day] = playlist.playlistDate.split('-'); // Split YYYY-MM-DD
       labels.push(`${day}-${month}`);
     });
     return labels;

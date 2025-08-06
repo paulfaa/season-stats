@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { map, Observable } from 'rxjs';
-import { ALL_NAMES, Player, PlayerResult, Playlist, RaceResults } from '../models';
+import { ALL_NAMES, Player, PlayerResult, Playlist, PlaylistData, RaceResults } from '../models';
 import { PlaylistDataService } from './playlist-data.service';
 
 @Injectable({
@@ -34,11 +34,11 @@ export class LeaderboardService {
     );
   }
 
-  private generateRaceByRaceBreakdown(playlists: Playlist[]): RaceResults {
+  private generateRaceByRaceBreakdown(playlists: PlaylistData[]): RaceResults {
     const allResults: RaceResults = { races: [] };
 
     playlists.forEach(playlist => {
-      const date = new Date(playlist.date);
+      const date = new Date(playlist.playlistDate);
       const missingNames = [...ALL_NAMES];
       const currentResults: PlayerResult[] = [];
       // const numberOfDrivers = playlist.players.length;
@@ -74,7 +74,7 @@ export class LeaderboardService {
     return allResults;
   }
 
-  private generateOverallLeaderboard(playlists: Playlist[]): PlayerResult[] {
+  private generateOverallLeaderboard(playlists: PlaylistData[]): PlayerResult[] {
     const pointsPerPlayer: Record<string, number> = {};
     playlists.forEach(playlist => {
       playlist.players.forEach((player, index) => {

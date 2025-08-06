@@ -1,8 +1,8 @@
-import { PLAYER_COLOURS, Playlist } from "../models";
+import { PLAYER_COLOURS, PlaylistData } from "../models";
 
 export class Utils {
 
-    static playlistWasDraw(playlist: Playlist): boolean {
+    static playlistWasDraw(playlist: PlaylistData): boolean {
         return playlist.players[0].totalPoints == playlist.players[1].totalPoints;
     }
 

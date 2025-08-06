@@ -8,6 +8,8 @@ import { ParsingService } from 'src/app/service/parsing.service';
 import { ALL_NAMES, PlaylistData } from '../../models';
 import { MatSelectModule } from '@angular/material/select';
 import { LoadingSpinnerComponent } from "src/app/loading-spinner/loading-spinner.component";
+import { PlaylistDataService } from 'src/app/service/playlist-data.service';
+import { Observable } from 'rxjs';
 
 @Component({
   selector: 'app-image-upload',
@@ -18,7 +20,8 @@ import { LoadingSpinnerComponent } from "src/app/loading-spinner/loading-spinner
 })
 export class ImageUploadComponent implements OnInit {
 
-  lastUploaded: Date | undefined;
+  lastUploaded: Observable<Date | undefined>;
+  lastUploadedName: Observable<string | undefined>;
   uploadError: string | null = null;
   parseSuccess: boolean = false;
   // use single string to keep track of success/error etc
@@ -30,7 +33,7 @@ export class ImageUploadComponent implements OnInit {
   uploadForm: FormGroup;
   allNames = ALL_NAMES;
 
-  constructor(private formBuilder: FormBuilder, private parsingService: ParsingService) {
+  constructor(private formBuilder: FormBuilder, private parsingService: ParsingService, private playlistDataService: PlaylistDataService) {
     this.uploadForm = this.formBuilder.group({
       playlistName: [''],
       playlistDate: [],
@@ -38,7 +41,8 @@ export class ImageUploadComponent implements OnInit {
       numberOfPlayers: [0],
       players: this.formBuilder.array([]),
     });
-    this.lastUploaded = new Date(); // todo
+    this.lastUploaded = this.playlistDataService.lastPlaylistDate$;
+    this.lastUploadedName = this.playlistDataService.lastPlaylistName$;
   }
 
   ngOnInit(): void {}
@@ -112,17 +116,17 @@ export class ImageUploadComponent implements OnInit {
   }
 
   private createForm(data: any): void {
-    this.uploadForm = this.formBuilder.group({
-      playlistName: [data.playlistName, Validators.required],
-      playlistDate: [new Date(), Validators.required, this.dateValidator],
-      numberOfEvents: [data.numberOfEvents, Validators.required],
-      numberOfPlayers: [data.numberOfPlayers, Validators.required],
-      players: this.formBuilder.array(
-        data.players.map((player: any) => this.createPlayerGroup(player)),
-        [this.uniquePlayerNamesValidator]
-      )
-    });
-  }
+  this.uploadForm = this.formBuilder.group({
+    playlistName: [data.playlistName, Validators.required],
+    playlistDate: [undefined, [Validators.required, this.dateValidator]],
+    numberOfEvents: [data.numberOfEvents, Validators.required],
+    numberOfPlayers: [data.numberOfPlayers, Validators.required],
+    players: this.formBuilder.array(
+      data.players.map((player: any) => this.createPlayerGroup(player)),
+      [this.uniquePlayerNamesValidator]
+    )
+  });
+}
 
   private createPlayerGroup(player: any) {
     return this.formBuilder.group({
@@ -154,6 +158,7 @@ export class ImageUploadComponent implements OnInit {
       next: () => {
         console.log('Data saved successfully');
         this.resetForm();
+        window.scrollTo(0, 0);
       },
       error: (error) => {
         console.error('Error saving data:', error);

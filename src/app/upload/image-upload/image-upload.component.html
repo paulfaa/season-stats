@@ -1,11 +1,13 @@
 <div class="image-upload">
 
   <div class="file-input-container" *ngIf="!imageFile">
-    <h2>Scan playlist photo</h2>
+    <div class="header">
+      <h2>Scan playlist photo</h2>
 
-    <span class="last-uploaded">
-      Last uploaded: {{ lastUploaded | date: 'short' }}
-    </span>
+      <span class="last-uploaded">
+        Last upload: {{ lastUploadedName | async }} on {{ lastUploaded | async | date }}
+      </span>
+    </div>
 
     <input type="file" id="fileInput" class="hidden-file-input" (change)="onFileSelected($event)" accept="image/*" />
     <label for="fileInput" class="custom-file-label">
@@ -18,26 +20,26 @@
   </div>
 
   <div *ngIf="parseSuccess">
-    <h2>{{ fileName }}</h2>
+    <h2 class="filename">{{ fileName }}</h2>
     <form class="playlist-form" [formGroup]="uploadForm" (ngSubmit)="onSubmit()">
-    
 
-      <mat-form-field appearance="fill">
+
+      <mat-form-field appearance="fill" required>
         <mat-label>Playlist Name</mat-label>
         <input matInput formControlName="playlistName" />
       </mat-form-field>
 
-      <mat-form-field appearance="fill">
+      <mat-form-field appearance="fill" required>
         <mat-label>Playlist Date</mat-label>
         <input matInput type="date" formControlName="playlistDate" />
       </mat-form-field>
 
-      <mat-form-field appearance="fill">
+      <mat-form-field appearance="fill" required>
         <mat-label>Number of Events</mat-label>
         <input matInput type="number" formControlName="numberOfEvents" />
       </mat-form-field>
 
-      <mat-form-field appearance="fill">
+      <mat-form-field appearance="fill" required>
         <mat-label>Number of Players</mat-label>
         <input matInput type="number" formControlName="numberOfPlayers" />
       </mat-form-field>

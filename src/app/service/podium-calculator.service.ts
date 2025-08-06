@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Player, Playlist, PodiumResult } from '../models';
+import { Player, Playlist, PlaylistData, PodiumResult } from '../models';
 import { map, Observable } from 'rxjs';
 import { Utils } from '../util/utils';
 import { PlaylistDataService } from './playlist-data.service';
@@ -18,7 +18,7 @@ export class PodiumCalculatorService {
     );
   }
 
-  public generateAllPodiums(playlistData: Playlist[]): PodiumResult[] {
+  public generateAllPodiums(playlistData: PlaylistData[]): PodiumResult[] {
     const singleStatFunctions: Array<() => PodiumResult> = [
       () => this.calculateFlights(),
       () => this.calculateMostUninstalls(),
@@ -49,7 +49,7 @@ export class PodiumCalculatorService {
     return stats;
   }
 
-  private calculateMostPlaylistsLostInFinalEvent(playlistData: Playlist[]): PodiumResult | undefined {
+  private calculateMostPlaylistsLostInFinalEvent(playlistData: PlaylistData[]): PodiumResult | undefined {
     const lossCounts: Record<string, number> = {};
     playlistData.forEach(playlist => {
       const pointsAvailable: number[] = [];
@@ -173,7 +173,7 @@ export class PodiumCalculatorService {
     return podium;
   }
 
-  private calculateMostWins(playlistData: Playlist[]): PodiumResult {
+  private calculateMostWins(playlistData: PlaylistData[]): PodiumResult {
     const winCounts: Record<string, number> = {};
 
     playlistData.forEach(playlist => {
@@ -195,7 +195,7 @@ export class PodiumCalculatorService {
     return podium;
   }
 
-  private calculateMostSecondPlaces(playlistData: Playlist[]): PodiumResult {
+  private calculateMostSecondPlaces(playlistData: PlaylistData[]): PodiumResult {
     const secondPlaceCounts: Record<string, number> = {};
 
     playlistData.forEach(playlist => {
@@ -220,7 +220,7 @@ export class PodiumCalculatorService {
     return this.generateTopThreePodium("Most Second Places 🥈", sortedPlayers);
   }
 
-  private calculateMostLastPlaces(playlistData: Playlist[]): PodiumResult {
+  private calculateMostLastPlaces(playlistData: PlaylistData[]): PodiumResult {
     const lastPlaceCounts: Record<string, number> = {};
 
     playlistData.forEach(playlist => {
@@ -236,7 +236,7 @@ export class PodiumCalculatorService {
     return result;
   }
 
-  private calculateMostDraws(playlistData: Playlist[]): PodiumResult {
+  private calculateMostDraws(playlistData: PlaylistData[]): PodiumResult {
     const drawCounts: Record<string, number> = {};
     playlistData.forEach(playlist => {
       const maxPoints = Math.max(...playlist.players.map(p => p.totalPoints));
@@ -254,7 +254,7 @@ export class PodiumCalculatorService {
     return result;
   }
 
-  private calculateWinRatios(playlistData: Playlist[]): PodiumResult[] {
+  private calculateWinRatios(playlistData: PlaylistData[]): PodiumResult[] {
     const winsAndAppearances: Record<string, { wins: number; appearances: number }> = {};
 
     playlistData.forEach(playlist => {
@@ -285,7 +285,7 @@ export class PodiumCalculatorService {
     return [highestWinRatio, lowestWinRatio];
   }
 
-  private calculateLongestAppearanceStreak(playlistData: Playlist[]): PodiumResult {
+  private calculateLongestAppearanceStreak(playlistData: PlaylistData[]): PodiumResult {
     const appearanceStreaks: Record<string, number> = {};
     const maxAppearanceStreaks: Record<string, number> = {};
     const allPlayers = Array.from(
@@ -318,7 +318,7 @@ export class PodiumCalculatorService {
     return podium;
   }
 
-  private calculateAverageFinishingPositions(playlistData: Playlist[]): PodiumResult[] {
+  private calculateAverageFinishingPositions(playlistData: PlaylistData[]): PodiumResult[] {
     const playerStats: Record<string, { totalPosition: number; appearances: number }> = {};
 
     playlistData.forEach(playlist => {
@@ -355,7 +355,7 @@ export class PodiumCalculatorService {
     return [bestAveragePositions, worstAveragePositions];
   }
 
-  private calculateAverageWinMargins(playlistData: Playlist[]): PodiumResult[] {
+  private calculateAverageWinMargins(playlistData: PlaylistData[]): PodiumResult[] {
     const totalWinMargins: Record<string, { totalWinMargin: number; wins: number }> = {};
     const subtitle = "points finished ahead of second place";
 
@@ -386,7 +386,7 @@ export class PodiumCalculatorService {
     return [bestAverageWinMargin, worstAverageWinMargin];
   }
 
-  private calculateAverageLossMargins(playlistData: Playlist[]): PodiumResult[] {
+  private calculateAverageLossMargins(playlistData: PlaylistData[]): PodiumResult[] {
     const totalLossMargins: Record<string, { totalLossMargin: number; appearances: number }> = {};
     var index = 1;
     playlistData.forEach(playlist => {
@@ -418,7 +418,7 @@ export class PodiumCalculatorService {
     return [worstAverageLossMargins, bestAverageLossMargins];
   }
 
-  private calculateLongestLosingStreak(playlistData: Playlist[]): PodiumResult {
+  private calculateLongestLosingStreak(playlistData: PlaylistData[]): PodiumResult {
     const losingStreaks: Record<string, number> = {};
     const maxLosingStreaks: Record<string, number> = {};
 
@@ -459,13 +459,13 @@ export class PodiumCalculatorService {
     return podium;
   }
 
-  private calculateDedicationRates(playlistData: Playlist[]): PodiumResult[] {
+  private calculateDedicationRates(playlistData: PlaylistData[]): PodiumResult[] {
     const joinDates = FIRST_APPEARANCES;
 
     const totalPlaylistsByPlayer: Record<string, number> = {};
     Object.entries(joinDates).forEach(([player, joinDate]) => {
       totalPlaylistsByPlayer[player] = playlistData.filter(
-        playlist => new Date(playlist.date + "T00:00:00Z") >= joinDate
+        playlist => new Date(playlist.playlistDate + "T00:00:00Z") >= joinDate
       ).length;
     });
 
@@ -473,7 +473,7 @@ export class PodiumCalculatorService {
 
     const attendanceCounts: Record<string, number> = {};
     playlistData.forEach(playlist => {
-      const playlistDate = new Date(playlist.date + "T00:00:00Z");
+      const playlistDate = new Date(playlist.playlistDate + "T00:00:00Z");
       playlist.players.forEach(player => {
         const joinDate = joinDates[player.name];
         if (joinDate && playlistDate < joinDate) return;
@@ -495,7 +495,7 @@ export class PodiumCalculatorService {
     return [mostDedicated, leastDedicated];
   }
 
-  private calculateAverageScore(playlistData: Playlist[]): PodiumResult[] {
+  private calculateAverageScore(playlistData: PlaylistData[]): PodiumResult[] {
     const playerStats: Record<string, { totalPoints: number; count: number }> = {};
 
     playlistData.forEach(playlist => {

@@ -37,17 +37,37 @@
 }
 
 .form-actions {
-  display: contents;
-  margin-top: 20px;
-  width: 60%;
+  width: 90%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
 }
 
 .form-actions button {
   margin-top: 10px;
+  margin-left: 5px;
+  margin-right: 5px;
 }
 
 .last-uploaded {
   display: flex;
   flex-direction: column;
   align-items: center;
+}
+
+.filename {
+  display: flex;
+  justify-content: center;
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
+  align-content: center;
+  align-items: center;
+  padding-bottom: 50px;
+}
+
+.header h2 {
+  margin-bottom: 0px;
 }

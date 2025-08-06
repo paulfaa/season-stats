@@ -16,6 +16,17 @@ export class ParsingService {
     return this.userRoleSubject.getValue()!;
   }
 
+  public getAllPlaylists(): Observable<PlaylistData[]> {
+    return this.http.get<PlaylistData[]>(`${this.apiUrl}/playlists`, { withCredentials: true })
+      .pipe(
+        tap(data => console.log('Fetched playlists:', data)),
+        catchError(error => {
+          console.error('Error fetching playlists:', error);
+          return throwError(() => error);
+        })
+      );
+  }
+
   public login(password: string): Observable<{success: boolean, role: string }> {
     return this.http.post<{success: boolean, role: string }>(`${this.apiUrl}/login`, { password }, { withCredentials: true })
       .pipe(
