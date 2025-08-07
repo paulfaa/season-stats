@@ -5,13 +5,16 @@ import { AppComponent } from './app/app.component';
 import { environment } from './environments/environment';
 import { importProvidersFrom } from '@angular/core';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { HttpClientModule } from '@angular/common/http';
+import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
 import { NgChartsModule } from 'ng2-charts';
 import { provideRouter } from '@angular/router';
 import { routes } from './app/app.routes';
 import { provideAnimations } from '@angular/platform-browser/animations';
 import { ReactiveFormsModule } from '@angular/forms';
 import { HashLocationStrategy, LocationStrategy } from '@angular/common';
+import { AuthInterceptor } from './app/upload/auth-interceptor';
+
+
 
 if (environment.production) {
   enableProdMode();
@@ -27,6 +30,7 @@ bootstrapApplication(AppComponent, {
       HttpClientModule,
       NgChartsModule,
       ReactiveFormsModule
-    )
+    ),
+    { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true }
   ]
 }).catch(err => console.error(err));

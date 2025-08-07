@@ -17,9 +17,8 @@ export class ParsingService {
   }
 
   public getAllPlaylists(): Observable<PlaylistData[]> {
-    return this.http.get<PlaylistData[]>(`${this.apiUrl}/playlists`, { withCredentials: true })
+    return this.http.get<PlaylistData[]>(`${this.apiUrl}/playlists`)
       .pipe(
-        tap(data => console.log('Fetched playlists:', data)),
         catchError(error => {
           console.error('Error fetching playlists:', error);
           return throwError(() => error);
@@ -27,10 +26,11 @@ export class ParsingService {
       );
   }
 
-  public login(password: string): Observable<{success: boolean, role: string }> {
-    return this.http.post<{success: boolean, role: string }>(`${this.apiUrl}/login`, { password }, { withCredentials: true })
+  public login(password: string): Observable<{ success: boolean, role: string, token: string }> {
+    return this.http.post<{ success: boolean, role: string, token: string }>(`${this.apiUrl}/login`, { password })
       .pipe(
         tap(response => {
+          localStorage.setItem('authToken', response.token);
           this.userRoleSubject.next(response.role);
         }),
         catchError(error => {
@@ -41,7 +41,7 @@ export class ParsingService {
   }
 
   public checkAuth(): Observable<{ role: string }> {
-    return this.http.get<{ role: string }>(`${this.apiUrl}/check`, { withCredentials: true })
+    return this.http.get<{ role: string }>(`${this.apiUrl}/check`)
       .pipe(
         tap(response => {
           this.userRoleSubject.next(response.role);
@@ -54,10 +54,10 @@ export class ParsingService {
   }
 
   public uploadImage(formData: FormData): Observable<any> {
-    return this.http.post(`${this.apiUrl}/upload`, formData, { withCredentials: true });
+    return this.http.post(`${this.apiUrl}/upload`, formData);
   }
 
   public saveToDatabase(playlistData: PlaylistData): Observable<any> {
-    return this.http.post(`${this.apiUrl}/save`, playlistData, { withCredentials: true });
+    return this.http.post(`${this.apiUrl}/save`, playlistData);
   }
 }
