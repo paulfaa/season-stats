@@ -34,6 +34,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
+  margin-top: 40px;
 }
 
 .form-actions {
@@ -70,4 +71,9 @@
 
 .header h2 {
   margin-bottom: 0px;
+}
+
+.player-controls button {
+  margin-left: 5px;
+  margin-right: 5px;
 }

@@ -23,6 +23,10 @@ export class VersionHistoryComponent {
     {
       version: '0.3.0',
       changes: 'Fix upload page'
+    },
+    {
+      version: '0.4.0',
+      changes: 'UI changes'
     }
   ];
 }

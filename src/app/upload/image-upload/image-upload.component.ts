@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { Validators, FormBuilder, ReactiveFormsModule, FormArray, ValidatorFn, AbstractControl, ValidationErrors, FormGroup } from '@angular/forms';
 import { ParsingService } from 'src/app/service/parsing.service';
 import { ALL_NAMES, PlaylistData } from '../../models';
@@ -14,7 +15,7 @@ import { Observable } from 'rxjs';
 @Component({
   selector: 'app-image-upload',
   standalone: true,
-  imports: [CommonModule, MatFormFieldModule, MatInputModule, MatButtonModule, ReactiveFormsModule, MatSelectModule, LoadingSpinnerComponent],
+  imports: [CommonModule, MatFormFieldModule, MatInputModule, MatButtonModule, ReactiveFormsModule, MatSelectModule, LoadingSpinnerComponent, MatSnackBarModule],
   templateUrl: './image-upload.component.html',
   styleUrls: ['./image-upload.component.scss']
 })
@@ -22,18 +23,16 @@ export class ImageUploadComponent implements OnInit {
 
   lastUploaded: Observable<Date | undefined>;
   lastUploadedName: Observable<string | undefined>;
-  uploadError: string | null = null;
   parseSuccess: boolean = false;
-  // use single string to keep track of success/error etc
   isLoading: boolean = false;
 
   imageFile: File | null = null;
-  fileName: string = '';
+  fileName: string | undefined;
 
   uploadForm: FormGroup;
   allNames = ALL_NAMES;
 
-  constructor(private formBuilder: FormBuilder, private parsingService: ParsingService, private playlistDataService: PlaylistDataService) {
+  constructor(private formBuilder: FormBuilder, private parsingService: ParsingService, private playlistDataService: PlaylistDataService, private snackBar: MatSnackBar) {
     this.uploadForm = this.formBuilder.group({
       playlistName: [''],
       playlistDate: [],
@@ -61,7 +60,6 @@ export class ImageUploadComponent implements OnInit {
     this.isLoading = true;
     const input = event.target as HTMLInputElement;
     if (!input.files || input.files.length === 0) {
-      this.uploadError = 'Invalid file selected';
       return;
     }
     this.imageFile = input.files![0];
@@ -73,17 +71,17 @@ export class ImageUploadComponent implements OnInit {
       next: (parsedData) => {
         this.createForm(parsedData);
         this.parseSuccess = true;
+        this.showSnackBar('Image uploaded successfully');
       },
       complete: () => {
         this.isLoading = false;
-        this.uploadError = null;
         console.log('Image upload successful:', this.fileName);
       },
       error: (error) => {
         this.isLoading = false;
         this.parseSuccess = false;
         console.error('Image upload failed:', error);
-        this.uploadError = 'Image upload failed. Please try again.';
+        this.showSnackBar('Failed to scan image');
       }
     });
   }
@@ -103,9 +101,8 @@ export class ImageUploadComponent implements OnInit {
   public resetForm(): void {
     this.uploadForm.reset();
     this.parseSuccess = false;
-    this.uploadError = null;
     this.imageFile = null;
-    this.fileName = '';
+    this.fileName = undefined;
   }
 
   isNameSelected(name: string, currentIndex: number): boolean {
@@ -115,18 +112,32 @@ export class ImageUploadComponent implements OnInit {
     );
   }
 
-  private createForm(data: any): void {
-  this.uploadForm = this.formBuilder.group({
-    playlistName: [data.playlistName, Validators.required],
-    playlistDate: [undefined, [Validators.required, this.dateValidator]],
-    numberOfEvents: [data.numberOfEvents, Validators.required],
-    numberOfPlayers: [data.numberOfPlayers, Validators.required],
-    players: this.formBuilder.array(
-      data.players.map((player: any) => this.createPlayerGroup(player)),
-      [this.uniquePlayerNamesValidator]
-    )
+  get sortedNames(): string[] {
+  const playersArray = this.uploadForm.get('players') as FormArray;
+
+  return this.allNames.slice().sort((a, b) => {
+    const aSelected = playersArray.controls.some(group => group.get('name')?.value === a);
+    const bSelected = playersArray.controls.some(group => group.get('name')?.value === b);
+
+    if (aSelected === bSelected) {
+      return a.localeCompare(b);
+    }
+    return aSelected ? 1 : -1;
   });
 }
+
+  private createForm(data: any): void {
+    this.uploadForm = this.formBuilder.group({
+      playlistName: [data.playlistName, Validators.required],
+      playlistDate: [undefined, [Validators.required, this.dateValidator]],
+      numberOfEvents: [data.numberOfEvents, Validators.required],
+      numberOfPlayers: [data.numberOfPlayers, Validators.required],
+      players: this.formBuilder.array(
+        data.players.map((player: any) => this.createPlayerGroup(player)),
+        [this.uniquePlayerNamesValidator]
+      )
+    });
+  }
 
   private createPlayerGroup(player: any) {
     return this.formBuilder.group({
@@ -144,7 +155,7 @@ export class ImageUploadComponent implements OnInit {
       playlistName: formContents.playlistName,
       playlistDate: formContents.playlistDate,
       numberOfEvents: formContents.numberOfEvents,
-      numberOfPlayers: formContents.numberOfPlayers,
+      numberOfPlayers: formContents.players.length,
       uploadDate: new Date().toISOString().split('T')[0], //just need DD-MM-YYYY
       uploadedBy: this.parsingService.userRole,
       players: formContents.players.map((player: any) => ({
@@ -159,10 +170,11 @@ export class ImageUploadComponent implements OnInit {
         console.log('Data saved successfully');
         this.resetForm();
         window.scrollTo(0, 0);
+        this.showSnackBar(`${this.capitalizeFirstLetter(playlistData.playlistName)} uploaded successfully`);
       },
       error: (error) => {
         console.error('Error saving data:', error);
-        this.uploadError = 'Failed to save data. Please try again.';
+        this.showSnackBar(`Failed to upload ${playlistData.playlistName} to database`);
       }
     });
   }
@@ -175,15 +187,28 @@ export class ImageUploadComponent implements OnInit {
 
   dateValidator(control: AbstractControl): ValidationErrors | null {
     const today = new Date();
-    const twoWeeksAgo = new Date();
-    twoWeeksAgo.setDate(today.getDate() - 14);
+    const oneMonthAgo = new Date();
+    oneMonthAgo.setMonth(today.getMonth() - 1);
     const selectedDate = new Date(control.value);
 
     today.setHours(0, 0, 0, 0);
-    twoWeeksAgo.setHours(0, 0, 0, 0);
+    oneMonthAgo.setHours(0, 0, 0, 0);
     selectedDate.setHours(0, 0, 0, 0);
 
-    return selectedDate > today || selectedDate < twoWeeksAgo ? { invalidDate: true } : null;
+    return selectedDate > today || selectedDate < oneMonthAgo ? { invalidDate: true } : null;
   }
+
+  private showSnackBar(message: string): void {
+    this.snackBar.open(message, 'Dismiss', {
+      duration: 3500,
+      verticalPosition: 'bottom',
+      horizontalPosition: 'center',
+      panelClass: ['snackbar-style']
+    });
+  }
+
+  private capitalizeFirstLetter(name: string): string {
+  return name.charAt(0).toUpperCase() + name.slice(1);
+}
 
 }
