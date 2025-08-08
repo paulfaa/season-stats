@@ -9,7 +9,7 @@ import { PlaylistDataService } from './playlist-data.service';
 })
 export class StatsCalculatorService {
 
-  constructor(private playlistDataService: PlaylistDataService) {}
+  constructor(private playlistDataService: PlaylistDataService) { }
 
   public getAllStats(): Observable<IndividualResult[]> {
     return this.playlistDataService.playlistData$.pipe(
@@ -52,6 +52,14 @@ export class StatsCalculatorService {
         points: 'Days'
       }
     });
+    /* tables.push({
+      title: 'Days on Top of Leaderboard',
+      data: this.calculateDaysOnTop(playlistData),
+      columnHeaders: {
+        playerName: 'Player',
+        points: 'Days'
+      }
+    }); */
     return tables;
   }
 
@@ -172,6 +180,63 @@ export class StatsCalculatorService {
       .sort((a, b) => a.points - b.points);
     return sorted;
   }
+
+  private calculateDaysOnTop(playlistData: PlaylistData[]): PlayerResult[] {
+    const sortedPlaylists = [...playlistData].sort(
+      (a, b) => new Date(a.playlistDate).getTime() - new Date(b.playlistDate).getTime()
+    );
+
+    const pointsPerPlayer: Record<string, number> = {};
+    ALL_NAMES.forEach(name => pointsPerPlayer[name] = 0);
+
+    const leaderByDate: Record<string, string> = {};
+    let currentLeader: string | null = null;
+
+    sortedPlaylists.forEach(playlist => {
+      playlist.players.forEach((player, index) => {
+        pointsPerPlayer[player.name] += Utils.calculatePoints(index);
+      });
+
+      const sortedLeaders = Object.entries(pointsPerPlayer)
+        .sort((a, b) => b[1] - a[1]);
+
+      currentLeader = sortedLeaders[0][0];
+      const dateKey = this.formatDateKey(new Date(playlist.playlistDate));
+      leaderByDate[dateKey] = currentLeader;
+    });
+
+    const startDate = new Date(2025, 0, 7);
+    const today = new Date();
+
+    const daysOnTop: Record<string, number> = {};
+    ALL_NAMES.forEach(name => daysOnTop[name] = 0);
+
+    let dateCursor = new Date(startDate);
+
+    while (dateCursor <= today) {
+      const dateKey = this.formatDateKey(dateCursor);
+
+      if (leaderByDate[dateKey]) {
+        currentLeader = leaderByDate[dateKey];
+      }
+
+      if (currentLeader) {
+        daysOnTop[currentLeader] += 1;
+      }
+
+      dateCursor.setDate(dateCursor.getDate() + 1);
+    }
+
+    return Object.entries(daysOnTop)
+      .map(([playerName, points]) => ({ playerName, points }))
+      .sort((a, b) => b.points - a.points);
+  }
+
+
+  private formatDateKey(date: Date): string {
+    return date.toISOString().split('T')[0];
+  }
+
 
   private calculateLongestWinningStreak(playlistData: PlaylistData[]): IndividualResult {
     const sortedPlaylists = [...playlistData].sort(

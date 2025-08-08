@@ -1,9 +1,18 @@
-<ng-container *ngIf="(podiums$ | async)?.length && (individualStats$ | async)?.length; else loading">
+<ng-container *ngIf="(sortedPodiums$ | async)?.length; else loading">
+
+  <mat-form-field class="sort-select" appearance="fill">
+    <mat-label>Order By</mat-label>
+    <mat-select [value]="'popular'" (selectionChange)="onSortModeChange($event.value)">
+      <mat-option *ngFor="let option of sortModes" [value]="option.value">
+        {{option.viewValue}}
+      </mat-option>
+    </mat-select>
+  </mat-form-field>
+
   <div class="podiums-container">
     <app-podium 
-      *ngFor="let podium of podiums$ | async" 
-      [podium]="podium"
-      >
+      *ngFor="let podium of sortedPodiums$ | async" 
+      [podium]="podium">
     </app-podium>
   </div>
 </ng-container>

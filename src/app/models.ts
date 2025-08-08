@@ -27,6 +27,8 @@ export interface PodiumResult {
     title: string;
     subtitle?: string;
     players: Player[];
+    dateCreated: string;
+    popularity: number;
     isNegative?: boolean;
     invertOrder?: boolean;
 }

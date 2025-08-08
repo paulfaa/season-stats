@@ -2,6 +2,21 @@ import { PLAYER_COLOURS, PlaylistData } from "../models";
 
 export class Utils {
 
+    static pointsMap = new Map<number, number>([
+        [0, 25],
+        [1, 18],
+        [2, 15],
+        [3, 12],
+        [4, 10],
+        [5, 8],
+        [6, 6],
+        [7, 4]
+    ])
+
+    static calculatePoints(finishingPosition: number) {
+        return Utils.pointsMap.get(finishingPosition) || 0;
+    }
+
     static playlistWasDraw(playlist: PlaylistData): boolean {
         return playlist.players[0].totalPoints == playlist.players[1].totalPoints;
     }

@@ -27,6 +27,10 @@ export class VersionHistoryComponent {
     {
       version: '0.4.0',
       changes: 'UI changes'
+    },
+    {
+      version: '0.5.0',
+      changes: 'Add sort mode to podiums page'
     }
   ];
 }

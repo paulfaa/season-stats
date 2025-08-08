@@ -86,7 +86,7 @@ export class PodiumCalculatorService {
 
     const sortedPlayers = this.sortHighestToLowest(lossCounts)
     if (sortedPlayers.length > 0) {
-      const result = this.generateTopThreePodium("Most playlists bottled 🍼", sortedPlayers);
+      const result = this.generateTopThreePodium("Most playlists bottled 🍼", sortedPlayers, new Date(2025,5,28).toISOString());
       result.isNegative = true;
       result.subtitle = "leading the playlist in final event and lost";
       return result;
@@ -158,7 +158,7 @@ export class PodiumCalculatorService {
     const flightCounts: Record<string, number> = {};
     flightCounts["mikc95"] = 1;
     const sortedPlayers = this.sortHighestToLowest(flightCounts)
-    const podium = this.generateTopThreePodium("Most Flights To Switzerland ✈️", sortedPlayers);
+    const podium = this.generateTopThreePodium("Most Flights To Switzerland ✈️", sortedPlayers, new Date(2025,6,8).toISOString());
     podium.subtitle = "he couldn't handle the smoke"
     return podium;
   }
@@ -167,7 +167,7 @@ export class PodiumCalculatorService {
     const uninstallCounts: Record<string, number> = {};
     uninstallCounts["BarizztaButzy"] = 4;
     const sortedPlayers = this.sortHighestToLowest(uninstallCounts)
-    const podium = this.generateTopThreePodium("Most times GTA uninstalled 🤬", sortedPlayers);
+    const podium = this.generateTopThreePodium("Most times GTA uninstalled 🤬", sortedPlayers, new Date(2025,6,8).toISOString());
     podium.subtitle = "i'm never playing this bullshit game again";
     podium.isNegative = true;
     return podium;
@@ -190,7 +190,7 @@ export class PodiumCalculatorService {
     });
 
     const sortedPlayers = this.sortHighestToLowest(winCounts)
-    const podium = this.generateTopThreePodium("Most Wins 🥇", sortedPlayers);
+    const podium = this.generateTopThreePodium("Most Wins 🥇", sortedPlayers, new Date(2025,5,8).toISOString(), 2);
     podium.subtitle = "wachow";
     return podium;
   }
@@ -217,7 +217,7 @@ export class PodiumCalculatorService {
       }
     });
     const sortedPlayers = this.sortHighestToLowest(secondPlaceCounts);
-    return this.generateTopThreePodium("Most Second Places 🥈", sortedPlayers);
+    return this.generateTopThreePodium("Most Second Places 🥈", sortedPlayers, new Date(2025,5,8).toISOString());
   }
 
   private calculateMostLastPlaces(playlistData: PlaylistData[]): PodiumResult {
@@ -230,7 +230,7 @@ export class PodiumCalculatorService {
 
     const sortedPlayers = this.sortHighestToLowest(lastPlaceCounts);
 
-    const result = this.generateTopThreePodium("Most Last Place Finishes 👑", sortedPlayers);
+    const result = this.generateTopThreePodium("Most Last Place Finishes 👑", sortedPlayers, new Date(2025,5,8).toISOString(), 5);
     result.subtitle = "king of the sewers";
     result.isNegative = true;
     return result;
@@ -248,7 +248,7 @@ export class PodiumCalculatorService {
       }
     })
     const sortedPlayers = this.sortHighestToLowest(drawCounts);
-    const result = this.generateTopThreePodium("Most Draws", sortedPlayers);
+    const result = this.generateTopThreePodium("Most Draws", sortedPlayers, new Date(2025,5,8).toISOString(), 7);
     result.subtitle = "stoppable force meets movable object";
     result.isNegative = true;
     return result;
@@ -279,8 +279,8 @@ export class PodiumCalculatorService {
         totalPoints: (stats.wins / stats.appearances) * 100
       }));
 
-    const highestWinRatio = this.generateTopThreePodium("Highest Win Ratio", winRatios);
-    const lowestWinRatio = this.generateBottomThreePodium("Lowest Win Ratio 🌟", winRatios);
+    const highestWinRatio = this.generateTopThreePodium("Highest Win Ratio", winRatios, new Date(2025,5,8).toISOString());
+    const lowestWinRatio = this.generateBottomThreePodium("Lowest Win Ratio 🌟", winRatios, new Date(2025,5,8).toISOString());
     lowestWinRatio.subtitle = "make a wish";
     return [highestWinRatio, lowestWinRatio];
   }
@@ -313,7 +313,7 @@ export class PodiumCalculatorService {
     const sortedStreaks = Object.entries(maxAppearanceStreaks)
       .map(([name, streak]) => ({ name, totalPoints: streak }))
       .sort((a, b) => b.totalPoints - a.totalPoints);
-    const podium = this.generateTopThreePodium("Longest Appearance Streak", sortedStreaks);
+    const podium = this.generateTopThreePodium("Longest Appearance Streak", sortedStreaks, new Date(2025,7,8).toISOString(), 4);
     podium.subtitle = "most nights on in a row";
     return podium;
   }
@@ -347,9 +347,10 @@ export class PodiumCalculatorService {
       }));
 
     //The lower the average the better  
-    const bestAveragePositions = this.generateBottomThreePodium("Highest Average Position 🎯", averagePositions, true);
+    const bestAveragePositions = this.generateBottomThreePodium("Highest Average Position 🎯", averagePositions, new Date(2025,5,27).toISOString());
     bestAveragePositions.isNegative = false;
-    const worstAveragePositions = this.generateTopThreePodium("Lowest Average Position", averagePositions);
+    bestAveragePositions.invertOrder = true;
+    const worstAveragePositions = this.generateTopThreePodium("Lowest Average Position", averagePositions, new Date(2025,5,27).toISOString());
     worstAveragePositions.subtitle = "started from the bottom now we're still here";
     worstAveragePositions.isNegative = true;
     return [bestAveragePositions, worstAveragePositions];
@@ -379,9 +380,9 @@ export class PodiumCalculatorService {
         totalPoints: stats.totalWinMargin / stats.wins
       }));
 
-    const bestAverageWinMargin = this.generateTopThreePodium("Best Average Win Margin", averageWinMargins);
+    const bestAverageWinMargin = this.generateTopThreePodium("Best Average Win Margin", averageWinMargins, new Date(2025,5,27).toISOString());
     bestAverageWinMargin.subtitle = subtitle;
-    const worstAverageWinMargin = this.generateBottomThreePodium("Worst Average Win Margin", averageWinMargins);
+    const worstAverageWinMargin = this.generateBottomThreePodium("Worst Average Win Margin", averageWinMargins, new Date(2025,5,27).toISOString());
     worstAverageWinMargin.subtitle = subtitle;
     return [bestAverageWinMargin, worstAverageWinMargin];
   }
@@ -409,10 +410,10 @@ export class PodiumCalculatorService {
         name,
         totalPoints: stats.totalLossMargin / stats.appearances
       }));
-    const worstAverageLossMargins = this.generateTopThreePodium("Highest Average Loss Margin", averageLossMargins);
+    const worstAverageLossMargins = this.generateTopThreePodium("Highest Average Loss Margin", averageLossMargins, new Date(2025,5,8).toISOString());
     worstAverageLossMargins.subtitle = "points finished behind playlist winner"
     worstAverageLossMargins.isNegative = true;
-    const bestAverageLossMargins = this.generateBottomThreePodium("Lowest Average Loss Margin", averageLossMargins);
+    const bestAverageLossMargins = this.generateBottomThreePodium("Lowest Average Loss Margin", averageLossMargins, new Date(2025,5,8).toISOString());
     bestAverageLossMargins.subtitle = "points finished behind playlist winner";
     bestAverageLossMargins.isNegative = false;
     return [worstAverageLossMargins, bestAverageLossMargins];
@@ -453,7 +454,7 @@ export class PodiumCalculatorService {
       .map(([name, streak]) => ({ name, totalPoints: streak }))
       .sort((a, b) => b.totalPoints - a.totalPoints);
 
-    const podium = this.generateTopThreePodium("Longest Losing Streak 🔥", sortedStreaks);
+    const podium = this.generateTopThreePodium("Longest Losing Streak 🔥", sortedStreaks, new Date(2025,7,19).toISOString());
     podium.subtitle = "most playlists lost in a row";
     podium.isNegative = true;
     return podium;
@@ -488,9 +489,9 @@ export class PodiumCalculatorService {
     });
 
     const subtitle = "total participation in playlists since joining";
-    const mostDedicated = this.generateTopThreePodium("Most Dedicated 💪", attendanceRates);
+    const mostDedicated = this.generateTopThreePodium("Most Dedicated 💪", attendanceRates, new Date(2025,5,1).toISOString(), 1);
     mostDedicated.subtitle = subtitle;
-    const leastDedicated = this.generateBottomThreePodium("Most Cowardly 💤", attendanceRates);
+    const leastDedicated = this.generateBottomThreePodium("Most Cowardly 💤", attendanceRates, new Date(2025,5,9).toISOString());
     leastDedicated.subtitle = subtitle;
     return [mostDedicated, leastDedicated];
   }
@@ -512,8 +513,8 @@ export class PodiumCalculatorService {
       name,
       totalPoints: stats.totalPoints / stats.count
     }));
-    const highestAveragePoints = this.generateTopThreePodium("Highest Average Points", avgPointsArray);
-    const lowestAveragePoints = this.generateBottomThreePodium("Lowest Average Points", avgPointsArray);
+    const highestAveragePoints = this.generateTopThreePodium("Highest Average Points", avgPointsArray, new Date(2025, 5, 8).toISOString());
+    const lowestAveragePoints = this.generateBottomThreePodium("Lowest Average Points", avgPointsArray, new Date(2025, 5, 8).toISOString());
     return [highestAveragePoints, lowestAveragePoints];
   }
 
@@ -523,7 +524,7 @@ export class PodiumCalculatorService {
       .sort((a, b) => b.totalPoints - a.totalPoints);
   }
 
-  private generateTopThreePodium(podiumTitle: string, players: Player[], invertOrder?: boolean): PodiumResult {
+  private generateTopThreePodium(podiumTitle: string, players: Player[], dateCreated: string, popularity?: number): PodiumResult {
     return {
       title: podiumTitle,
       players: players
@@ -535,11 +536,12 @@ export class PodiumCalculatorService {
         }))
         .sort((a, b) => b.totalPoints - a.totalPoints)
         .slice(0, 3),
-      invertOrder: invertOrder
+      dateCreated: dateCreated,
+      popularity: popularity || 0
     };
   }
 
-  private generateBottomThreePodium(podiumTitle: string, players: Player[], invertOrder?: boolean): PodiumResult {
+  private generateBottomThreePodium(podiumTitle: string, players: Player[], dateCreated: string, popularity?: number): PodiumResult {
     return {
       title: podiumTitle,
       players: players
@@ -551,8 +553,9 @@ export class PodiumCalculatorService {
         }))
         .sort((a, b) => a.totalPoints - b.totalPoints)
         .slice(0, 3),
-      invertOrder: invertOrder,
-      isNegative: true
+      isNegative: true,
+      dateCreated: dateCreated,
+      popularity: popularity || 0
     };
   }
 

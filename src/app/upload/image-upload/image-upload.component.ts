@@ -81,7 +81,7 @@ export class ImageUploadComponent implements OnInit {
         this.isLoading = false;
         this.parseSuccess = false;
         console.error('Image upload failed:', error);
-        this.showSnackBar('Failed to scan image');
+        this.showSnackBar('Failed to scan image. Did Mikey take the photo?');
       }
     });
   }
@@ -170,7 +170,7 @@ export class ImageUploadComponent implements OnInit {
         console.log('Data saved successfully');
         this.resetForm();
         window.scrollTo(0, 0);
-        this.showSnackBar(`${this.capitalizeFirstLetter(playlistData.playlistName)} uploaded successfully`);
+        this.showSnackBar(`${this.capitalizeFirstLetter(playlistData.playlistName)} uploaded to database successfully`);
       },
       error: (error) => {
         console.error('Error saving data:', error);

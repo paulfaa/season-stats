@@ -2,22 +2,12 @@ import { Injectable } from '@angular/core';
 import { map, Observable } from 'rxjs';
 import { ALL_NAMES, Player, PlayerResult, Playlist, PlaylistData, RaceResults } from '../models';
 import { PlaylistDataService } from './playlist-data.service';
+import { Utils } from '../util/utils';
 
 @Injectable({
   providedIn: 'root'
 })
 export class LeaderboardService {
-
-  private pointsMap = new Map<number, number>([
-    [0, 25],
-    [1, 18],
-    [2, 15],
-    [3, 12],
-    [4, 10],
-    [5, 8],
-    [6, 6],
-    [7, 4]
-  ])
 
   constructor(private playlistDataService: PlaylistDataService) {
   }
@@ -41,7 +31,6 @@ export class LeaderboardService {
       const date = new Date(playlist.playlistDate);
       const missingNames = [...ALL_NAMES];
       const currentResults: PlayerResult[] = [];
-      // const numberOfDrivers = playlist.players.length;
 
       playlist.players.forEach((player: Player, index: number) => {
         if (missingNames.includes(player.name)) {
@@ -91,7 +80,7 @@ export class LeaderboardService {
     return totalResults;
   }
 
-  private calculatePoints(finishingPosition: number) {
-    return this.pointsMap.get(finishingPosition) || 0;
+  public calculatePoints(finishingPosition: number) {
+    return Utils.calculatePoints(finishingPosition) || 0;
   }
 }

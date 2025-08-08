@@ -10,8 +10,8 @@
     <p class="username">{{ entry.player.name }}</p>
     <p class="points">{{ entry.player.totalPoints | podiumFormat: podiumType }}</p>
   </div>
-
 </div>
+
 <div class="podium-description">
   <span class="title">{{podium.title}}</span>
   <span class="subtitle" *ngIf="podium.subtitle">

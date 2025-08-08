@@ -3,7 +3,6 @@ import { CommonModule } from '@angular/common';
 import { PodiumFormatPipe } from 'src/app/pipes/podium-format.pipe';
 import { PodiumResult, Player, PodiumPosition } from 'src/app/models';
 
-
 @Component({
   selector: 'app-podium',
   standalone: true,
