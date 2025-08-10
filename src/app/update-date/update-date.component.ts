@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { PlaylistDataService } from '../service/playlist-data.service';
-import { Observable } from 'rxjs';
+import { map, Observable } from 'rxjs';
 
 @Component({
   selector: 'update-date',
@@ -10,13 +10,13 @@ import { Observable } from 'rxjs';
   templateUrl: './update-date.component.html',
   styleUrls: ['./update-date.component.scss']
 })
-export class UpdateDateComponent implements OnInit {
+export class UpdateDateComponent {
 
-  lastUpdateDate$?: Observable<Date | undefined>;
-  
-  constructor(private playlistData: PlaylistDataService) { }
+  lastUpdateDate$: Observable<Date | undefined>;
 
-  ngOnInit(): void {
-    this.lastUpdateDate$ = this.playlistData.lastPlaylistDate$;
+  constructor(private playlistData: PlaylistDataService) {
+    this.lastUpdateDate$ = playlistData.lastThreePlaylists$.pipe(
+      map(data => data.length > 0 ? new Date(data[data.length - 1].playlistDate) : undefined)
+    );
   }
 }

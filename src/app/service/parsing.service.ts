@@ -8,12 +8,12 @@ import { PlaylistData } from '../models';
 export class ParsingService {
 
   private apiUrl = environment.apiUrl;
-  private userRoleSubject = new BehaviorSubject<string | null>(null);
+  private usernameSubject = new BehaviorSubject<string | null>(null);
 
   constructor(private http: HttpClient) { }
 
-  public get userRole(): string {
-    return this.userRoleSubject.getValue()!;
+  public get username(): string {
+    return this.usernameSubject.getValue()!;
   }
 
   public getAllPlaylists(): Observable<PlaylistData[]> {
@@ -26,12 +26,16 @@ export class ParsingService {
       );
   }
 
-  public login(password: string): Observable<{ success: boolean, role: string, token: string }> {
+  public login(username: string, password: string): Observable<{ success: boolean, role: string, token: string }> {
     return this.http.post<{ success: boolean, role: string, token: string }>(`${this.apiUrl}/login`, { password })
       .pipe(
         tap(response => {
+          var name = username;
+          if(response.role === 'admin'){
+            name = 'admin';
+          }
           localStorage.setItem('authToken', response.token);
-          this.userRoleSubject.next(response.role);
+          this.usernameSubject.next(username);
         }),
         catchError(error => {
           console.error('Error connecting to authentication server:', error);
@@ -44,7 +48,7 @@ export class ParsingService {
     return this.http.get<{ role: string }>(`${this.apiUrl}/check`)
       .pipe(
         tap(response => {
-          this.userRoleSubject.next(response.role);
+          this.usernameSubject.next(response.role);
         }),
         catchError(error => {
           console.error('Error connecting to authentication server:', error);

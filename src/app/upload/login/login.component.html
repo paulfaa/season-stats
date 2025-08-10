@@ -1,9 +1,21 @@
-<form [formGroup]="form" class="login" (ngSubmit)="submit()">
-  <label>You are not authenticated:</label>
+<form class="login" [formGroup]="loginForm" class="login" (ngSubmit)="submit()">
+  <mat-form-field appearance="outline">
+    <mat-label>Username</mat-label>
+    <input matInput type="text" required="true" formControlName="usernameInput">
+  </mat-form-field>
 
-  <input class="password-input" type="password" formControlName="password" placeholder="Enter password" />
+  <mat-form-field appearance="outline">
+    <mat-label>Password</mat-label>
+    <input matInput required="true" formControlName="passwordInput" [type]="hidePassword ? 'password' : 'text'">
+    <button mat-icon-button matSuffix (click)="hidePassword = !hidePassword" [attr.aria-label]="'Hide password'"
+      [attr.aria-pressed]="hidePassword">
+      <mat-icon>{{hidePassword ? 'visibility_off' : 'visibility'}}</mat-icon>
+    </button>
+  </mat-form-field>
 
-  <button type="submit">Login</button>
-  
-  <div *ngIf="error" style="color:red">{{ error }}</div>
+  <button id="login-button" [disabled]="loginForm.invalid" mat-raised-button color="primary" type="submit">Login</button>
+
+  <mat-error *ngIf="errorMessage">
+    {{ errorMessage }}
+  </mat-error>
 </form>

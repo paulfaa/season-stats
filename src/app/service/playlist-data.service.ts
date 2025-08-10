@@ -17,6 +17,7 @@ export class PlaylistDataService {
     interval(this.TWELVE_HOURS_IN_MS).pipe(startWith(0)), // Emits immediately and every 12 hours
     this.manualRefresh$
   ).pipe(
+    // server always sorts data from oldest to newest
     switchMap(() => this.parsingService.getAllPlaylists()),
     shareReplay(1),
     takeUntil(this.destroy$)
@@ -31,17 +32,8 @@ export class PlaylistDataService {
     this.manualRefresh$.next();
   }
 
-  public lastPlaylistDate$: Observable<Date | undefined> = this.playlistData$.pipe(
-    map(playlists => playlists.length > 0
-      ? new Date(playlists[playlists.length - 1].playlistDate)
-      : undefined
+  public lastThreePlaylists$: Observable<PlaylistData[]> = this.playlistData$.pipe(
+    map(playlists => playlists.slice(Math.max(playlists.length - 3, 0))
     )
-  );
-
-  public lastPlaylistName$: Observable<string | undefined> = this.playlistData$.pipe(
-    map(playlists => playlists.length > 0
-      ? playlists[playlists.length - 1].playlistName
-      : undefined
-    )
-  );
+  )
 }

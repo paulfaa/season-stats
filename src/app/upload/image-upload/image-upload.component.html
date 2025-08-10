@@ -4,9 +4,12 @@
     <div class="header">
       <h2>Scan playlist photo</h2>
 
-      <span *ngIf="(lastUploadedName | async) && (lastUploaded | async)" class="last-uploaded">
-        Last upload: {{ lastUploadedName | async }} on {{ lastUploaded | async | date }}
-      </span>
+      <ng-container *ngIf="latestUploads$ | async as playlists">
+        <h3>Latest uploads:</h3>
+        <span *ngFor="let playlist of playlists">
+          <i>{{ playlist.playlistName }}</i> on {{ playlist.playlistDate | date }} ({{playlist.uploadedBy}})
+        </span>
+      </ng-container>
     </div>
 
     <input type="file" id="fileInput" class="hidden-file-input" (change)="onFileSelected($event)" accept="image/*" />

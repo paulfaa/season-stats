@@ -11,18 +11,18 @@ import { MatSelectModule } from '@angular/material/select';
 import { LoadingSpinnerComponent } from "src/app/loading-spinner/loading-spinner.component";
 import { PlaylistDataService } from 'src/app/service/playlist-data.service';
 import { Observable } from 'rxjs';
+import { ɵEmptyOutletComponent } from "@angular/router";
 
 @Component({
   selector: 'app-image-upload',
   standalone: true,
-  imports: [CommonModule, MatFormFieldModule, MatInputModule, MatButtonModule, ReactiveFormsModule, MatSelectModule, LoadingSpinnerComponent, MatSnackBarModule],
+  imports: [CommonModule, MatFormFieldModule, MatInputModule, MatButtonModule, ReactiveFormsModule, MatSelectModule, LoadingSpinnerComponent, MatSnackBarModule, ɵEmptyOutletComponent],
   templateUrl: './image-upload.component.html',
   styleUrls: ['./image-upload.component.scss']
 })
-export class ImageUploadComponent implements OnInit {
+export class ImageUploadComponent {
 
-  lastUploaded: Observable<Date | undefined>;
-  lastUploadedName: Observable<string | undefined>;
+  latestUploads$: Observable<PlaylistData[]>;
   parseSuccess: boolean = false;
   isLoading: boolean = false;
 
@@ -40,11 +40,8 @@ export class ImageUploadComponent implements OnInit {
       numberOfPlayers: [0],
       players: this.formBuilder.array([]),
     });
-    this.lastUploaded = this.playlistDataService.lastPlaylistDate$;
-    this.lastUploadedName = this.playlistDataService.lastPlaylistName$;
+    this.latestUploads$ = this.playlistDataService.lastThreePlaylists$;
   }
-
-  ngOnInit(): void {}
 
   get playersLength(): number {
     const playersArray = this.uploadForm.get('players') as FormArray;
@@ -81,7 +78,7 @@ export class ImageUploadComponent implements OnInit {
         this.isLoading = false;
         this.parseSuccess = false;
         console.error('Image upload failed:', error);
-        this.showSnackBar('Failed to scan image. Did Mikey take the photo?');
+        this.showSnackBar('Failed to scan. Double check if Mikey took the photo.');
       }
     });
   }
@@ -113,18 +110,18 @@ export class ImageUploadComponent implements OnInit {
   }
 
   get sortedNames(): string[] {
-  const playersArray = this.uploadForm.get('players') as FormArray;
+    const playersArray = this.uploadForm.get('players') as FormArray;
 
-  return this.allNames.slice().sort((a, b) => {
-    const aSelected = playersArray.controls.some(group => group.get('name')?.value === a);
-    const bSelected = playersArray.controls.some(group => group.get('name')?.value === b);
+    return this.allNames.slice().sort((a, b) => {
+      const aSelected = playersArray.controls.some(group => group.get('name')?.value === a);
+      const bSelected = playersArray.controls.some(group => group.get('name')?.value === b);
 
-    if (aSelected === bSelected) {
-      return a.localeCompare(b);
-    }
-    return aSelected ? 1 : -1;
-  });
-}
+      if (aSelected === bSelected) {
+        return a.localeCompare(b);
+      }
+      return aSelected ? 1 : -1;
+    });
+  }
 
   private createForm(data: any): void {
     this.uploadForm = this.formBuilder.group({
@@ -157,7 +154,7 @@ export class ImageUploadComponent implements OnInit {
       numberOfEvents: formContents.numberOfEvents,
       numberOfPlayers: formContents.players.length,
       uploadDate: new Date().toISOString().split('T')[0], //just need DD-MM-YYYY
-      uploadedBy: this.parsingService.userRole,
+      uploadedBy: this.parsingService.username,
       players: formContents.players.map((player: any) => ({
         name: player.name,
         lastEventPoints: player.lastEventPoints,
@@ -167,9 +164,14 @@ export class ImageUploadComponent implements OnInit {
 
     this.parsingService.saveToDatabase(playlistData).subscribe({
       next: () => {
+        this.playlistDataService.refreshPlaylists();
         console.log('Data saved successfully');
         this.resetForm();
-        window.scrollTo(0, 0);
+        window.scrollTo({
+          top: 0,
+          left: 0,
+          behavior: "smooth",
+        });
         this.showSnackBar(`${this.capitalizeFirstLetter(playlistData.playlistName)} uploaded to database successfully`);
       },
       error: (error) => {
@@ -208,7 +210,7 @@ export class ImageUploadComponent implements OnInit {
   }
 
   private capitalizeFirstLetter(name: string): string {
-  return name.charAt(0).toUpperCase() + name.slice(1);
-}
+    return name.charAt(0).toUpperCase() + name.slice(1);
+  }
 
 }
