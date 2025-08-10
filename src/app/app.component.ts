@@ -30,11 +30,11 @@ export class AppComponent implements OnInit {
   APP_VERSION: string = packageJson.version;
   showAds: boolean = false;
   tabs = [
-    { icon: 'bar_chart', label: 'Podiums' },
-    { icon: 'looks_one', label: 'Stats' },
-    { icon: 'show_chart', label: 'Charts' },
-    { icon: 'format_list_numbered', label: 'Leaderboard' },
-    { icon: 'cloud_upload', label: 'Upload' }
+    { icon: 'bar_chart', label: 'Podiums', route: '/podiums' },
+    { icon: 'looks_one', label: 'Stats', route: '/stats' },
+    { icon: 'show_chart', label: 'Charts', route: '/charts' },
+    { icon: 'format_list_numbered', label: 'Leaderboard', route: '/leaderboard' },
+    { icon: 'upload', label: 'Upload', route: '/upload' }
   ];
 
   constructor(private router: Router, private dialog: MatDialog) { }
