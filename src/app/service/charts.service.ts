@@ -18,7 +18,7 @@ export class ChartsService {
       map(playlists => [
         this.generateTotalWinsChart(playlists),
         this.generateTotalAppearancesChart(playlists),
-        //this.generateWinRateChart(playlists)
+        this.generateWinRateChart(playlists)
       ])
     );
   }
@@ -140,7 +140,6 @@ export class ChartsService {
       const maxPoints = Math.max(...playlist.players.map(p => p.totalPoints));
       var winners = playlist.players.filter(p => p.totalPoints === maxPoints);
 
-      //If draw, no one wins
       if (winners.length > 1) {
         winners = []
       }
@@ -314,9 +313,9 @@ export class ChartsService {
       scales: {
         y: {
           min: 0,
-          max: 1,
+          max: 0.4,
           ticks: {
-            stepSize: 0.1,
+            stepSize: 0.05,
             callback: (value) => `${(value as number * 100).toFixed(0)}%`
           },
           title: {

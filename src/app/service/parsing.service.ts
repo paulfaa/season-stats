@@ -31,11 +31,11 @@ export class ParsingService {
       .pipe(
         tap(response => {
           var name = username;
-          if(response.role === 'admin'){
+          if (response.role === 'admin') {
             name = 'admin';
           }
           localStorage.setItem('authToken', response.token);
-          this.usernameSubject.next(username);
+          this.usernameSubject.next(name);
         }),
         catchError(error => {
           console.error('Error connecting to authentication server:', error);
@@ -45,16 +45,12 @@ export class ParsingService {
   }
 
   public checkAuth(): Observable<{ role: string }> {
-    return this.http.get<{ role: string }>(`${this.apiUrl}/check`)
-      .pipe(
-        tap(response => {
-          this.usernameSubject.next(response.role);
-        }),
-        catchError(error => {
-          console.error('Error connecting to authentication server:', error);
-          return throwError(() => error);
-        })
-      );
+    return this.http.get<{ role: string }>(`${this.apiUrl}/check`).pipe(
+      catchError(error => {
+        console.error('Error connecting to authentication server:', error);
+        return throwError(() => error);
+      })
+    );
   }
 
   public uploadImage(formData: FormData): Observable<any> {

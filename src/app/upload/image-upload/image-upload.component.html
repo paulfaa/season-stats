@@ -32,8 +32,15 @@
       </mat-form-field>
 
       <mat-form-field appearance="fill" required>
-        <mat-label>Date</mat-label>
-        <input matInput type="date" formControlName="playlistDate" />
+        <mat-label>Playlist Date</mat-label>
+        <input 
+          matInput
+          [matDatepicker]="picker"
+          [matDatepickerFilter]="makeFilter(allDates$ | async)"
+          formControlName="playlistDate"
+        >
+        <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+        <mat-datepicker #picker></mat-datepicker>
         <mat-error
           *ngIf="uploadForm.controls['playlistDate'].hasError('invalidDate') && uploadForm.controls['playlistDate'].touched">
           Invalid date

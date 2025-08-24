@@ -33,10 +33,10 @@ export class PodiumComponent implements OnInit {
   }
 
   get podiumType(): 'points' | 'percentage' | 'ordinal' | 'default' {
-    const title = this.podium.title.toLowerCase();
-    if (title.includes('points') || title.includes('margin')) return 'points';
-    if (title.includes('position')) return 'ordinal';
-    if (title.includes('ratio') || title.includes('percentage') || title.includes('dedicated') || title.includes('cowardly')) return 'percentage';
+    const description = this.podium.title.toLowerCase() + " " + this.podium.subtitle;
+    if (description.includes('points') || description.includes('margin')) return 'points';
+    if (description.includes('position')) return 'ordinal';
+    if (description.includes('ratio') || description.includes('percentage') || description.includes('dedicated') || description.includes('cowardly')) return 'percentage';
     return 'default';
   }
 

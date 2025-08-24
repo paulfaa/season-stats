@@ -10,6 +10,7 @@
   <nav mat-tab-nav-bar mat-align-tabs="center">
     <a mat-tab-link *ngFor="let tab of tabs" [routerLink]="tab.route" routerLinkActive #rla="routerLinkActive"
       [active]="rla.isActive" [routerLinkActiveOptions]="{ exact: true }">
+      <!--also need to navigate to 0,0 on new page-->
       <mat-icon>{{ tab.icon }}</mat-icon>
       {{ tab.label }}
     </a>

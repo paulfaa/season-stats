@@ -10,19 +10,23 @@ import { ALL_NAMES, PlaylistData } from '../../models';
 import { MatSelectModule } from '@angular/material/select';
 import { LoadingSpinnerComponent } from "src/app/loading-spinner/loading-spinner.component";
 import { PlaylistDataService } from 'src/app/service/playlist-data.service';
-import { Observable } from 'rxjs';
+import { map, Observable } from 'rxjs';
 import { ɵEmptyOutletComponent } from "@angular/router";
+import { totalPointsOrderValidator } from '../form-validators';
+import { MatNativeDateModule } from '@angular/material/core';
+import { MatDatepickerModule } from '@angular/material/datepicker';
 
 @Component({
   selector: 'app-image-upload',
   standalone: true,
-  imports: [CommonModule, MatFormFieldModule, MatInputModule, MatButtonModule, ReactiveFormsModule, MatSelectModule, LoadingSpinnerComponent, MatSnackBarModule, ɵEmptyOutletComponent],
+  imports: [CommonModule, MatFormFieldModule, MatInputModule, MatDatepickerModule, MatNativeDateModule, MatButtonModule, ReactiveFormsModule, MatSelectModule, LoadingSpinnerComponent, MatSnackBarModule, ɵEmptyOutletComponent],
   templateUrl: './image-upload.component.html',
   styleUrls: ['./image-upload.component.scss']
 })
 export class ImageUploadComponent {
 
   latestUploads$: Observable<PlaylistData[]>;
+  allDates$: Observable<string[]>;
   parseSuccess: boolean = false;
   isLoading: boolean = false;
 
@@ -31,6 +35,22 @@ export class ImageUploadComponent {
 
   uploadForm: FormGroup;
   allNames = ALL_NAMES;
+
+  makeFilter(takenDates: string[] | null) {
+  return (d: Date | null): boolean => {
+    if (!d) return false;
+    if (!takenDates) return true
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const candidate = new Date(d);
+    candidate.setHours(0, 0, 0, 0);
+    const year = d.getFullYear();
+    const dateStr = d.toISOString().split('T')[0]; // YYYY-MM-DD
+
+    return candidate <= today && year > 2024 && !takenDates.includes(dateStr);
+  };
+}
 
   constructor(private formBuilder: FormBuilder, private parsingService: ParsingService, private playlistDataService: PlaylistDataService, private snackBar: MatSnackBar) {
     this.uploadForm = this.formBuilder.group({
@@ -41,6 +61,9 @@ export class ImageUploadComponent {
       players: this.formBuilder.array([]),
     });
     this.latestUploads$ = this.playlistDataService.lastThreePlaylists$;
+    this.allDates$ = this.playlistDataService.playlistData$.pipe(
+      map(playlists => playlists.map(p => p.playlistDate))
+    );
   }
 
   get playersLength(): number {
@@ -138,9 +161,9 @@ export class ImageUploadComponent {
 
   private createPlayerGroup(player: any) {
     return this.formBuilder.group({
-      name: [player.name, Validators.required],
-      lastEventPoints: [player.lastEventPoints, Validators.required],
-      totalPoints: [player.totalPoints, Validators.required]
+      name: [player.name, [Validators.required]],
+      lastEventPoints: [player.lastEventPoints, [Validators.required, Validators.max(16)]],
+      totalPoints: [player.totalPoints, [Validators.required, totalPointsOrderValidator()]]
     });
   }
 

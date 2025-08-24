@@ -1,9 +1,22 @@
 <span class="chart-title">{{chartData?.title}}</span>
 
+<div class="chart-controls">
+  <mat-form-field appearance="fill">
+    <mat-label>Range</mat-label>
+    <mat-select (selectionChange)="onRangeChange($event.value)" [value]="'month'">
+      <mat-option value="week">Past Week</mat-option>
+      <mat-option value="month">Past Month</mat-option>
+      <mat-option value="3m">Past 3 Months</mat-option>
+      <mat-option value="6m">Past 6 Months</mat-option>
+      <mat-option value="all">All</mat-option>
+    </mat-select>
+  </mat-form-field>
+</div>
+
 <div class="chart-container">
     <div class="scrollable-container">
       <canvas baseChart
-        [data]="chartData?.chartData"
+        [data]="filteredChartData"
         [options]="chartData?.chartOptions"
         [type]="lineChartType">
       </canvas>

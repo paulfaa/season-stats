@@ -37,59 +37,83 @@ export class PodiumCalculatorService {
       () => this.calculateAverageWinMargins(playlistData),
       () => this.calculateAverageLossMargins(playlistData),
       () => this.calculateDedicationRates(playlistData),
+      () => this.calculateMostPlaylistsLostInFinalEvent(playlistData) ?? []
     ];
 
-    const stats: PodiumResult[] = [
+    return [
       ...singleStatFunctions.map(fn => fn()),
       ...multiStatFunctions.flatMap(fn => fn())
     ];
-
-    const mostPlaylistsLost = this.calculateMostPlaylistsLostInFinalEvent(playlistData);
-    if (mostPlaylistsLost) stats.push(mostPlaylistsLost);
-    return stats;
   }
 
-  private calculateMostPlaylistsLostInFinalEvent(playlistData: PlaylistData[]): PodiumResult | undefined {
-    const lossCounts: Record<string, number> = {};
+  private calculateMostPlaylistsLostInFinalEvent(playlistData: PlaylistData[]): PodiumResult[] | undefined {
+    const lossRecords: Record<string, { lossCount: number; biggestLoss: number }> = {};
+
     playlistData.forEach(playlist => {
       const pointsAvailable: number[] = [];
-      var standingsInSecondLastEvent: Player[] = [];
+      const standingsInSecondLastEvent: Player[] = [];
+
       playlist.players.forEach(player => {
         const totalPointsInSecondLastEvent = player.totalPoints - player.lastEventPoints!;
         if (player.lastEventPoints! > 1) {
-          pointsAvailable.push(player.lastEventPoints!)
+          pointsAvailable.push(player.lastEventPoints!);
         }
-        standingsInSecondLastEvent.push({ name: player.name, totalPoints: totalPointsInSecondLastEvent })
+        standingsInSecondLastEvent.push({ name: player.name, totalPoints: totalPointsInSecondLastEvent });
       });
+
       standingsInSecondLastEvent.sort((a, b) => b.totalPoints - a.totalPoints);
 
-      var leaderInSecondLastEvent: Player;
-      if (standingsInSecondLastEvent[0].totalPoints == standingsInSecondLastEvent[1].totalPoints) {
-        return
+      if (standingsInSecondLastEvent[0].totalPoints === standingsInSecondLastEvent[1].totalPoints) {
+        return;
       }
-      else {
-        leaderInSecondLastEvent = standingsInSecondLastEvent[0];
-      }
+
+      const leaderInSecondLastEvent = standingsInSecondLastEvent[0];
+      const advantage = leaderInSecondLastEvent.totalPoints - standingsInSecondLastEvent[1].totalPoints;
 
       const maxPointsAvailable = Math.max(...pointsAvailable);
       const minPointsAvailable = Math.min(...pointsAvailable);
       const overallWinner = playlist.players[0];
       const pointsToBeat = overallWinner.totalPoints - maxPointsAvailable + minPointsAvailable;
       const leaderName = leaderInSecondLastEvent.name;
-      if (leaderName == overallWinner.name) {
+
+      if (leaderName === overallWinner.name) {
         return;
       }
+
       if (leaderInSecondLastEvent.totalPoints + maxPointsAvailable > pointsToBeat) {
-        lossCounts[leaderName] = (lossCounts[leaderName] || 0) + 1;
+        if (!lossRecords[leaderName]) {
+          lossRecords[leaderName] = { lossCount: 0, biggestLoss: 0 };
+        }
+
+        lossRecords[leaderName].lossCount += 1;
+        lossRecords[leaderName].biggestLoss = Math.max(lossRecords[leaderName].biggestLoss, advantage);
+        //console.log('advantage: ', advantage, leaderName, lossRecords[leaderName].biggestLoss,  playlist.playlistDate)
       }
     });
 
-    const sortedPlayers = this.sortHighestToLowest(lossCounts)
-    if (sortedPlayers.length > 0) {
-      const result = this.generateTopThreePodium("Most playlists bottled 🍼", sortedPlayers, new Date(2025, 5, 28).toISOString());
-      result.isNegative = true;
-      result.subtitle = "leading the playlist in final event and lost";
-      return result;
+    const lossCounts: Record<string, number> = {};
+    const biggestLosses: Record<string, number> = {};
+
+    Object.entries(lossRecords).forEach(([player, data]) => {
+      lossCounts[player] = data.lossCount;
+      biggestLosses[player] = data.biggestLoss;
+    });
+
+    const playersSortedByLossCount = this.sortHighestToLowest(lossCounts);
+    const playersSortedByBiggestLoss = this.sortHighestToLowest(biggestLosses);
+
+    if (playersSortedByLossCount.length > 0) {
+      const podiumResults = [];
+      const lossCountResult = this.generateTopThreePodium("Most playlists bottled 🍼", playersSortedByLossCount, new Date(2025, 5, 28).toISOString());
+      lossCountResult.isNegative = true;
+      lossCountResult.subtitle = "times leading in final event and still lost";
+      podiumResults.push(lossCountResult);
+
+      const biggestLossResult = this.generateTopThreePodium("Biggest bottler 🍼", playersSortedByBiggestLoss, new Date(2025, 9, 21).toISOString());
+      biggestLossResult.isNegative = true;
+      biggestLossResult.subtitle = "biggest points lead a playlist was lost by";
+      podiumResults.push(biggestLossResult);
+      return podiumResults
     }
     else {
       return undefined;
@@ -165,7 +189,8 @@ export class PodiumCalculatorService {
 
   private calculateMostUninstalls(): PodiumResult {
     const uninstallCounts: Record<string, number> = {};
-    uninstallCounts["BarizztaButzy"] = 4;
+    uninstallCounts["BarizztaButzy"] = 6;
+    uninstallCounts["jackw2610"] = 2;
     const sortedPlayers = this.sortHighestToLowest(uninstallCounts)
     const podium = this.generateTopThreePodium("Most times GTA uninstalled 🤬", sortedPlayers, new Date(2025, 6, 8).toISOString());
     podium.subtitle = "i'm never playing this bullshit game again";
