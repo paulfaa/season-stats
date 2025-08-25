@@ -13,7 +13,7 @@ export class ParsingService {
   constructor(private http: HttpClient) { }
 
   public get username(): string {
-    return this.usernameSubject.getValue()!;
+    return this.usernameSubject.getValue() || 'user';
   }
 
   public getAllPlaylists(): Observable<PlaylistData[]> {

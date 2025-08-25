@@ -16,6 +16,7 @@ import { totalPointsOrderValidator } from '../form-validators';
 import { MatNativeDateModule } from '@angular/material/core';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatIconModule } from '@angular/material/icon';
+import { Utils } from 'src/app/util/utils';
 
 @Component({
   selector: 'app-image-upload',
@@ -64,7 +65,7 @@ export class ImageUploadComponent implements OnInit {
           const candidate = new Date(d);
           candidate.setHours(0, 0, 0, 0);
           const year = candidate.getFullYear();
-          const dateStr = candidate.toISOString().split('T')[0];
+          const dateStr = Utils.dateToYYYYMMDD(candidate);
 
           return year === 2025 && candidate <= today && !takenSet.has(dateStr);
         };
@@ -86,7 +87,7 @@ export class ImageUploadComponent implements OnInit {
     return playersArray?.controls ?? [];
   }
 
-  onFileSelected(event: Event): void {
+  public onFileSelected(event: Event): void {
     this.isLoading = true;
     const input = event.target as HTMLInputElement;
     if (!input.files || input.files.length === 0) {
@@ -168,10 +169,10 @@ export class ImageUploadComponent implements OnInit {
     const formContents = this.uploadForm.value;
     const playlistData: PlaylistData = {
       playlistName: formContents.playlistName,
-      playlistDate: formContents.playlistDate,
+      playlistDate: Utils.dateToYYYYMMDD(formContents.playlistDate),
       numberOfEvents: formContents.numberOfEvents,
       numberOfPlayers: formContents.players.length,
-      uploadDate: new Date().toISOString().split('T')[0], //just need DD-MM-YYYY
+      uploadDate: Utils.dateToYYYYMMDD(new Date()),
       uploadedBy: this.parsingService.username,
       players: formContents.players.map((player: any) => ({
         name: player.name,
@@ -179,6 +180,8 @@ export class ImageUploadComponent implements OnInit {
         totalPoints: player.totalPoints
       }))
     };
+
+    console.log('data:', playlistData)
 
     this.parsingService.saveToDatabase(playlistData).subscribe({
       next: () => {

@@ -78,6 +78,10 @@
               <mat-label>Last Race</mat-label>
               <input matInput type="number" formControlName="lastEventPoints" />
             </mat-form-field>
+            <!-- <mat-error
+              *ngIf="uploadForm.controls['lastEventPoints'].hasError('invalidDate') && uploadForm.controls['lastEventPoints'].touched">
+              Max points are 16
+            </mat-error> -->
 
             <mat-form-field appearance="fill">
               <mat-label>Total</mat-label>
