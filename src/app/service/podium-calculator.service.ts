@@ -25,7 +25,8 @@ export class PodiumCalculatorService {
       () => this.calculateLongestAppearanceStreak(playlistData),
       () => this.calculateMostDraws(playlistData),
       () => this.calculateLongestLosingStreak(playlistData),
-    ];
+      this.calculateMostDNFs ? () => this.calculateMostDNFs(playlistData) : undefined
+    ].filter(Boolean) as Array<() => PodiumResult>;
 
     const multiStatFunctions: Array<() => PodiumResult[]> = [
       () => this.calculateWinRatios(playlistData),
@@ -43,6 +44,31 @@ export class PodiumCalculatorService {
       ...multiStatFunctions.flatMap(fn => fn())
     ];
   }
+
+  private calculateMostDNFs(playlistData: PlaylistData[]): PodiumResult | undefined {
+    const dnfCounts: Record<string, number> = {};
+    playlistData.forEach(playlist => {
+      playlist.players.forEach(player => {
+        if (player.lastEventPoints == 0) {
+          const name = player.name
+          if (!dnfCounts[name]) {
+            dnfCounts[name] = 0;
+          }
+          dnfCounts[name] += 1;
+        }
+      });
+    })
+    const playersSortedByLossCount = this.sortHighestToLowest(dnfCounts);
+    if (playersSortedByLossCount[0].totalPoints >= 1) {
+      const result = this.generateTopThreePodium("Most DNFs 🐌", playersSortedByLossCount, new Date(2025, 9, 25).toISOString());
+      result.isNegative = true;
+      return result;
+    }
+    else {
+      return undefined;
+    }
+  }
+
 
   private calculateMostPlaylistsLostInFinalEvent(playlistData: PlaylistData[]): PodiumResult[] | undefined {
     const lossRecords: Record<string, { lossCount: number; biggestLoss: number }> = {};
@@ -196,91 +222,91 @@ export class PodiumCalculatorService {
     return podium;
   }
 
-private calculateAllPodiums(playlistData: PlaylistData[]): PodiumResult[] {
-  const firstCounts: Record<string, number> = {};
-  const secondCounts: Record<string, number> = {};
-  const thirdCounts: Record<string, number> = {};
-  const lastCounts: Record<string, number> = {};
+  private calculateAllPodiums(playlistData: PlaylistData[]): PodiumResult[] {
+    const firstCounts: Record<string, number> = {};
+    const secondCounts: Record<string, number> = {};
+    const thirdCounts: Record<string, number> = {};
+    const lastCounts: Record<string, number> = {};
 
-  playlistData.forEach(playlist => {
-    const players = playlist.players;
+    playlistData.forEach(playlist => {
+      const players = playlist.players;
 
-    const firstPlacePlayers = this.getPlayersWithScore(players[0].totalPoints, players);
+      const firstPlacePlayers = this.getPlayersWithScore(players[0].totalPoints, players);
 
-    // tied for first scenario
-    if (firstPlacePlayers.length > 1) {
-      firstPlacePlayers.forEach(p => {
-        secondCounts[p.name] = (secondCounts[p.name] || 0) + 1;
-      });
-
-      const remainingAfterFirst = players.filter(p => !firstPlacePlayers.includes(p));
-      if (remainingAfterFirst.length > 0) {
-        const secondPlacePlayers = this.getPlayersWithScore(remainingAfterFirst[0].totalPoints, remainingAfterFirst);
-        secondPlacePlayers.forEach(p => {
-          thirdCounts[p.name] = (thirdCounts[p.name] || 0) + 1;
-        });
-      }
-
-    } else {
-      // single winner scenario
-      firstPlacePlayers.forEach(p => {
-        firstCounts[p.name] = (firstCounts[p.name] || 0) + 1;
-      });
-
-      const remainingAfterFirst = players.filter(p => !firstPlacePlayers.includes(p));
-      if (remainingAfterFirst.length > 0) {
-        const secondPlacePlayers = this.getPlayersWithScore(remainingAfterFirst[0].totalPoints, remainingAfterFirst);
-        secondPlacePlayers.forEach(p => {
+      // tied for first scenario
+      if (firstPlacePlayers.length > 1) {
+        firstPlacePlayers.forEach(p => {
           secondCounts[p.name] = (secondCounts[p.name] || 0) + 1;
         });
 
-        const remainingAfterSecond = remainingAfterFirst.filter(p => !secondPlacePlayers.includes(p));
-        if (remainingAfterSecond.length > 0) {
-          const thirdPlacePlayers = this.getPlayersWithScore(remainingAfterSecond[0].totalPoints, remainingAfterSecond);
-          thirdPlacePlayers.forEach(p => {
+        const remainingAfterFirst = players.filter(p => !firstPlacePlayers.includes(p));
+        if (remainingAfterFirst.length > 0) {
+          const secondPlacePlayers = this.getPlayersWithScore(remainingAfterFirst[0].totalPoints, remainingAfterFirst);
+          secondPlacePlayers.forEach(p => {
             thirdCounts[p.name] = (thirdCounts[p.name] || 0) + 1;
           });
         }
+
+      } else {
+        // single winner scenario
+        firstPlacePlayers.forEach(p => {
+          firstCounts[p.name] = (firstCounts[p.name] || 0) + 1;
+        });
+
+        const remainingAfterFirst = players.filter(p => !firstPlacePlayers.includes(p));
+        if (remainingAfterFirst.length > 0) {
+          const secondPlacePlayers = this.getPlayersWithScore(remainingAfterFirst[0].totalPoints, remainingAfterFirst);
+          secondPlacePlayers.forEach(p => {
+            secondCounts[p.name] = (secondCounts[p.name] || 0) + 1;
+          });
+
+          const remainingAfterSecond = remainingAfterFirst.filter(p => !secondPlacePlayers.includes(p));
+          if (remainingAfterSecond.length > 0) {
+            const thirdPlacePlayers = this.getPlayersWithScore(remainingAfterSecond[0].totalPoints, remainingAfterSecond);
+            thirdPlacePlayers.forEach(p => {
+              thirdCounts[p.name] = (thirdCounts[p.name] || 0) + 1;
+            });
+          }
+        }
       }
-    }
 
-    const lowestScore = players[players.length - 1].totalPoints;
-    const lastPlacePlayers = this.getPlayersWithScore(lowestScore, players);
-    lastPlacePlayers.forEach(p => {
-      lastCounts[p.name] = (lastCounts[p.name] || 0) + 1;
+      const lowestScore = players[players.length - 1].totalPoints;
+      const lastPlacePlayers = this.getPlayersWithScore(lowestScore, players);
+      lastPlacePlayers.forEach(p => {
+        lastCounts[p.name] = (lastCounts[p.name] || 0) + 1;
+      });
     });
-  });
 
-  const firstPodium = this.generateTopThreePodium(
-    "Most Wins 🥇",
-    this.sortHighestToLowest(firstCounts),
-    new Date(2025, 5, 8).toISOString()
-  );
-  firstPodium.subtitle = "wachow";
+    const firstPodium = this.generateTopThreePodium(
+      "Most Wins 🥇",
+      this.sortHighestToLowest(firstCounts),
+      new Date(2025, 5, 8).toISOString()
+    );
+    firstPodium.subtitle = "wachow";
 
-  const secondPodium = this.generateTopThreePodium(
-    "Most Second Places 🥈",
-    this.sortHighestToLowest(secondCounts),
-    new Date(2025, 5, 8).toISOString()
-  );
-  secondPodium.subtitle = "if you ain't first you're last";
+    const secondPodium = this.generateTopThreePodium(
+      "Most Second Places 🥈",
+      this.sortHighestToLowest(secondCounts),
+      new Date(2025, 5, 8).toISOString()
+    );
+    secondPodium.subtitle = "if you ain't first you're last";
 
-  const thirdPodium = this.generateTopThreePodium(
-    "Most Third Places 🥉",
-    this.sortHighestToLowest(thirdCounts),
-    new Date(2025, 8, 25).toISOString()
-  );
-  thirdPodium.subtitle = "if you ain't second you're third";
+    const thirdPodium = this.generateTopThreePodium(
+      "Most Third Places 🥉",
+      this.sortHighestToLowest(thirdCounts),
+      new Date(2025, 9, 25).toISOString()
+    );
+    thirdPodium.subtitle = "if you ain't second you're third";
 
-  const lastPodium = this.generateTopThreePodium(
-    "Most Last Places 👑",
-    this.sortHighestToLowest(lastCounts),
-    new Date(2025, 5, 8).toISOString()
-  );
-  lastPodium.subtitle = "king of the sewers";
+    const lastPodium = this.generateTopThreePodium(
+      "Most Last Places 👑",
+      this.sortHighestToLowest(lastCounts),
+      new Date(2025, 5, 8).toISOString()
+    );
+    lastPodium.subtitle = "king of the sewers";
 
-  return [firstPodium, secondPodium, thirdPodium, lastPodium];
-}
+    return [firstPodium, secondPodium, thirdPodium, lastPodium];
+  }
 
 
   private calculateMostDraws(playlistData: PlaylistData[]): PodiumResult {

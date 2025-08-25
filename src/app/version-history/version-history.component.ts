@@ -11,30 +11,12 @@ import { MatCardModule } from '@angular/material/card';
 })
 export class VersionHistoryComponent {
 
-  versionHistory = [
-    {
-      version: '0.1.0',
-      changes: 'Add upload functionality'
-    },
-    {
-      version: '0.2.0',
-      changes: 'Add cwolin to stats & create version history page'
-    },
-    {
-      version: '0.3.0',
-      changes: 'Fix upload page'
-    },
-    {
-      version: '0.4.0',
-      changes: 'UI changes'
-    },
-    {
-      version: '0.5.0',
-      changes: 'Add sort mode to podiums page'
-    },
-    {
-      version: '0.6.0',
-      changes: 'Add filters to charts'
-    }
-  ];
+  public versionHistory = ([
+    { version: '0.1.0', changes: 'Add upload functionality' },
+    { version: '0.2.0', changes: 'Add cwolin to stats & create version history page' },
+    { version: '0.3.0', changes: 'Fix upload page' },
+    { version: '0.4.0', changes: 'UI changes' },
+    { version: '0.5.0', changes: 'Add sort mode to podiums page' },
+    { version: '0.6.0', changes: 'Add filters to charts' }
+  ]).reverse();
 }

@@ -32,6 +32,10 @@ export const routes: Routes = [
     path: 'version-history',
     loadComponent: () => import('./version-history/version-history.component').then(c => c.VersionHistoryComponent)
   },
+  {
+    path: 'privacy-policy',
+    loadComponent: () => import('./privacy-policy/privacy-policy.component').then(c => c.PrivacyPolicyComponent)
+  },
   { 
     path: '**', 
     redirectTo: 'podiums' 
