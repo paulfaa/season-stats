@@ -194,7 +194,7 @@ export class StatsCalculatorService {
 
     sortedPlaylists.forEach(playlist => {
       playlist.players.forEach((player, index) => {
-        pointsPerPlayer[player.name] += Utils.calculatePoints(index);
+        pointsPerPlayer[player.name] += Utils.calculateChampionshipPoints(index);
       });
 
       const sortedLeaders = Object.entries(pointsPerPlayer)

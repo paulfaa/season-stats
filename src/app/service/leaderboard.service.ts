@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { map, Observable } from 'rxjs';
-import { ALL_NAMES, Player, PlayerResult, Playlist, PlaylistData, RaceResults } from '../models';
+import { ALL_NAMES, Player, PlayerPoints, PlayerResult, Playlist, PlaylistBreakdown, PlaylistData, RaceResults } from '../models';
 import { PlaylistDataService } from './playlist-data.service';
 import { Utils } from '../util/utils';
 
@@ -12,9 +12,9 @@ export class LeaderboardService {
   constructor(private playlistDataService: PlaylistDataService) {
   }
 
-  public getRaceBreakdown(): Observable<RaceResults> {
+  public getPlaylistBreakdown(): Observable<PlaylistBreakdown> {
   return this.playlistDataService.playlistData$.pipe(
-    map(playlists => this.generateRaceByRaceBreakdown(playlists))
+    map(playlists => this.generatePlaylistBreakdown(playlists))
   );
 }
 
@@ -24,13 +24,13 @@ export class LeaderboardService {
     );
   }
 
-  private generateRaceByRaceBreakdown(playlists: PlaylistData[]): RaceResults {
-    const allResults: RaceResults = { races: [] };
+  private generatePlaylistBreakdown(playlists: PlaylistData[]): PlaylistBreakdown {
+    const breakdown: PlaylistBreakdown = { playlists: [] };
 
     playlists.forEach(playlist => {
       const date = new Date(playlist.playlistDate);
       const missingNames = [...ALL_NAMES];
-      const currentResults: PlayerResult[] = [];
+      const currentResults: PlayerPoints[] = [];
 
       playlist.players.forEach((player: Player, index: number) => {
         if (missingNames.includes(player.name)) {
@@ -40,27 +40,29 @@ export class LeaderboardService {
           }
         }
   
-        const playerResult: PlayerResult = {
+        const playerPoints: PlayerPoints = {
           playerName: player.name,
-          points: this.calculatePoints(index)
+          championshipPoints: Utils.calculateChampionshipPoints(index) || 0,
+          playlistPoints: player.totalPoints
         };
-        currentResults.push(playerResult);
+        currentResults.push(playerPoints);
       });
   
       missingNames.forEach(name => {
         currentResults.push({
           playerName: name,
-          points: 0
+          championshipPoints: 0,
+          playlistPoints: 0
         });
       });
   
-      allResults.races.push({
+      breakdown.playlists.push({
         date,
-        players: currentResults
+        results: currentResults
       });
     });
   
-    return allResults;
+    return breakdown;
   }
 
   private generateOverallLeaderboard(playlists: PlaylistData[]): PlayerResult[] {
@@ -70,7 +72,7 @@ export class LeaderboardService {
         if (!pointsPerPlayer[player.name]) {
           pointsPerPlayer[player.name] = 0;
         }
-        pointsPerPlayer[player.name] += this.calculatePoints(index)
+        pointsPerPlayer[player.name] += Utils.calculateChampionshipPoints(index) || 0
       });
     });
     const totalResults = Object.entries(pointsPerPlayer).map(([playerName, points]) => ({
@@ -78,9 +80,5 @@ export class LeaderboardService {
       points
     })).sort((a, b) => b.points - a.points);
     return totalResults;
-  }
-
-  public calculatePoints(finishingPosition: number) {
-    return Utils.calculatePoints(finishingPosition) || 0;
   }
 }

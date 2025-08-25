@@ -1,6 +1,6 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { PlayerResult } from '../../models';
+import { PlayerPoints, PlayerResult } from '../../models';
 import { PlayerResultComponent } from '../player-result/player-result.component';
 
 @Component({
@@ -13,7 +13,7 @@ import { PlayerResultComponent } from '../player-result/player-result.component'
 export class PlayerResultsContainerComponent implements OnInit {
 
   @Input() date: Date | undefined;
-  @Input() results: PlayerResult[] | undefined;
+  @Input() results: PlayerPoints[] | undefined;
 
   constructor() { }
 

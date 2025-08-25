@@ -62,6 +62,21 @@ export interface RaceResult {
     players: PlayerResult[];
 }
 
+export interface PlaylistBreakdown {
+    playlists: PlaylistResult[];
+}
+
+export interface PlaylistResult {
+    date: Date;
+    results: PlayerPoints[];
+}
+
+export interface PlayerPoints {
+    playerName: string;
+    championshipPoints: number;
+    playlistPoints: number
+}
+
 export interface RaceResults {
     races: RaceResult[];
 }

@@ -1,12 +1,15 @@
-<div class="player-result" 
+<div class="player-points" 
     [style.color]="textColour"
     [style.backgroundColor]="backgroundColour"
     [style.opacity]="opacity"
     > 
-    <div class="player-result-name">
-        {{ playerName | shortName }}
+    <div class="player-name">
+        {{ playerPoints.playerName | shortName }}
     </div>
-    <div class="player-result-points">
-        {{ points > 0 ? points : ' - ' }}
+    <div class="player-championship-points">
+        {{ playerPoints.championshipPoints > 0 ? playerPoints.championshipPoints : ' - ' }}
+    </div>
+    <div class="player-playlist-points">
+        {{ playerPoints.playlistPoints > 0 ? playerPoints.playlistPoints : '' }}
     </div>
 </div>

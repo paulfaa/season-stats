@@ -5,7 +5,7 @@ import { MatDividerModule } from '@angular/material/divider';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatDialogModule, MatDialog } from '@angular/material/dialog';
 import { LeaderboardService } from '../../service/leaderboard.service';
-import { PlayerResult, RaceResults } from '../../models';
+import { PlayerResult, PlaylistBreakdown, RaceResults } from '../../models';
 import { Observable } from 'rxjs';
 import { LeaderboardInfoComponent } from '../leaderboard-info/leaderboard-info.component';
 import { LeaderboardResultComponent } from '../leaderboard-result/leaderboard-result.component';
@@ -30,13 +30,13 @@ import { LoadingSpinnerComponent } from "../../loading-spinner/loading-spinner.c
 })
 export class LeaderboardContainerComponent implements OnInit {
 
-  public results$: Observable<RaceResults> | undefined;
+  public results$: Observable<PlaylistBreakdown> | undefined;
   public leaderboard$?: Observable<PlayerResult[]>;
 
   constructor(private leaderboardService: LeaderboardService, private dialog: MatDialog) {}
 
   ngOnInit(): void {
-    this.results$ = this.leaderboardService.getRaceBreakdown();
+    this.results$ = this.leaderboardService.getPlaylistBreakdown();
     this.leaderboard$ = this.leaderboardService.getOverallLeaderboard();
   }
 

@@ -28,8 +28,6 @@
 
 
 <ng-container *ngIf="(individualStats$ | async)?.length; else loading">
-  
-
   <div class="stats-container">
     <app-number-display 
       *ngFor="let number of individualStats$ | async" 

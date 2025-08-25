@@ -16,6 +16,10 @@
     <label for="fileInput" class="custom-file-label">
       🔎 Select Image
     </label>
+
+    <button mat-flat-button color="primary" (click)="showForm()">
+      Add Manually
+    </button>
   </div>
 
   <div *ngIf="isLoading" class="loading-spinner-container">
@@ -33,12 +37,8 @@
 
       <mat-form-field appearance="fill" required>
         <mat-label>Playlist Date</mat-label>
-        <input 
-          matInput
-          [matDatepicker]="picker"
-          [matDatepickerFilter]="makeFilter(allDates$ | async)"
-          formControlName="playlistDate"
-        >
+        <input matInput [matDatepicker]="picker" [matDatepickerFilter]="playlistDateFilter"
+          formControlName="playlistDate">
         <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
         <mat-datepicker #picker></mat-datepicker>
         <mat-error
@@ -53,37 +53,48 @@
       </mat-form-field>
 
       <div class="players-form" formArrayName="players">
-        <h3>Players</h3>
+        <h2>Players</h2>
+
+        <div class="player-row-header">
+          <div></div>
+          <div>Player Name</div>
+          <div>Points In Last Race </div>
+          <div>Total Points</div>
+        </div>
+
         <ng-container *ngFor="let playerGroup of playerControls; let i = index" [formGroupName]="i">
-          <h4>Player {{ i + 1 }}</h4>
+          <div class="player-row">
+            {{ i + 1 }}.
+            <mat-form-field appearance="fill">
+              <mat-label>Name</mat-label>
+              <mat-select formControlName="name">
+                <mat-option *ngFor="let name of sortedNames" [value]="name" [disabled]="isNameSelected(name, i)">
+                  {{ name }}
+                </mat-option>
+              </mat-select>
+            </mat-form-field>
 
-          <mat-form-field appearance="fill">
-            <mat-label>Name</mat-label>
-            <mat-select formControlName="name">
-              <mat-option *ngFor="let name of sortedNames" [value]="name" [disabled]="isNameSelected(name, i)">
-                {{ name }}
-              </mat-option>
-            </mat-select>
-          </mat-form-field>
+            <mat-form-field appearance="fill">
+              <mat-label>Last Race</mat-label>
+              <input matInput type="number" formControlName="lastEventPoints" />
+            </mat-form-field>
 
-          <mat-form-field appearance="fill">
-            <mat-label>Last Event Points</mat-label>
-            <input matInput type="number" formControlName="lastEventPoints" />
-          </mat-form-field>
-
-          <mat-form-field appearance="fill">
-            <mat-label>Total Points</mat-label>
-            <input matInput type="number" formControlName="totalPoints" />
-          </mat-form-field>
+            <mat-form-field appearance="fill">
+              <mat-label>Total</mat-label>
+              <input matInput type="number" formControlName="totalPoints" />
+            </mat-form-field>
+          </div>
         </ng-container>
 
         <div class="player-controls">
-          <button mat-stroked-button color="primary" type="button" (click)="addPlayer()">
+          <button mat-stroked-button color="primary" class="icon-button" type="button" (click)="addPlayer()">
             <i class="fa-solid fa-plus"></i>
+            Add
           </button>
-          <button mat-stroked-button color="warn" type="button" (click)="removePlayer()"
+          <button mat-stroked-button color="warn" class="icon-button" type="button" (click)="removePlayer()"
             [disabled]="playersLength === 0">
             <i class="fa-solid fa-minus"></i>
+            Remove
           </button>
         </div>
       </div>

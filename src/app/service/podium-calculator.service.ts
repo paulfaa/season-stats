@@ -242,7 +242,9 @@ export class PodiumCalculatorService {
       }
     });
     const sortedPlayers = this.sortHighestToLowest(secondPlaceCounts);
-    return this.generateTopThreePodium("Most Second Places 🥈", sortedPlayers, new Date(2025, 5, 8).toISOString());
+    const podium = this.generateTopThreePodium("Most Second Places 🥈", sortedPlayers, new Date(2025, 5, 8).toISOString());
+    podium.subtitle = "if you ain't first you're last";
+    return podium;
   }
 
   private calculateMostLastPlaces(playlistData: PlaylistData[]): PodiumResult {

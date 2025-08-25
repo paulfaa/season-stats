@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { ChartOptions } from 'chart.js';
 import { Observable, map } from 'rxjs';
-import { ChartResult, RaceResults, PLAYER_COLOURS, ALL_NAMES, PlaylistData } from '../models';
+import { ChartResult, RaceResults, PLAYER_COLOURS, ALL_NAMES, PlaylistData, PlaylistBreakdown } from '../models';
 import { PlaylistDataService } from './playlist-data.service';
 import { LeaderboardService } from './leaderboard.service';
 
@@ -63,10 +63,10 @@ export class ChartsService {
       }
     };
 
-    return this.leaderboardService.getRaceBreakdown().pipe(
+    return this.leaderboardService.getPlaylistBreakdown().pipe(
       map(breakdown => {
-        const labels = breakdown.races.map(race => {
-          const date = new Date(race.date);
+        const labels = breakdown.playlists.map(playlist => {
+          const date = new Date(playlist.date);
           const day = date.getDate().toString().padStart(2, '0');
           const month = (date.getMonth() + 1).toString().padStart(2, '0');
           return `${day}-${month}`;
@@ -85,7 +85,7 @@ export class ChartsService {
         return {
           chartData: chart,
           chartOptions: championshipPointsChartOptions,
-          title: 'Total Points'
+          title: 'Points'
         };
       })
     );
@@ -171,7 +171,7 @@ export class ChartsService {
     return {
       chartData: chart,
       chartOptions: totalWinsChartOptions,
-      title: 'Total Wins'
+      title: 'Wins'
     };
   }
 
@@ -255,7 +255,7 @@ export class ChartsService {
     return {
       chartData: chart,
       chartOptions: totalAppearancesChartOptions,
-      title: 'Total Appearances'
+      title: 'Appearances'
     };
   }
 
@@ -283,16 +283,16 @@ export class ChartsService {
      });
    } */
 
-  private mapBreakdownToChartData(breakdown: RaceResults): Record<string, number[]> {
+  private mapBreakdownToChartData(breakdown: PlaylistBreakdown): Record<string, number[]> {
     const championshipPoints: Record<string, number[]> = {};
-    breakdown.races.forEach(race => {
-      race.players.forEach(player => {
+    breakdown.playlists.forEach(playlist => {
+      playlist.results.forEach(player => {
         const name = player.playerName;
         if (!championshipPoints[name]) {
           championshipPoints[name] = [];
         }
         const points = championshipPoints[name][championshipPoints[name].length - 1] || 0;
-        championshipPoints[name].push(points + player.points);
+        championshipPoints[name].push(points + player.championshipPoints);
       });
     });
     return championshipPoints;
@@ -390,7 +390,7 @@ export class ChartsService {
     return {
       chartData: chart,
       chartOptions: winRateChartOptions,
-      title: 'Win Rate Over Time'
+      title: 'Win Rate'
     };
   }
 

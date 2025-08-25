@@ -4,53 +4,39 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
-import { Validators, FormBuilder, ReactiveFormsModule, FormArray, ValidatorFn, AbstractControl, ValidationErrors, FormGroup } from '@angular/forms';
+import { Validators, FormBuilder, ReactiveFormsModule, FormArray, AbstractControl, ValidationErrors, FormGroup } from '@angular/forms';
 import { ParsingService } from 'src/app/service/parsing.service';
 import { ALL_NAMES, PlaylistData } from '../../models';
 import { MatSelectModule } from '@angular/material/select';
 import { LoadingSpinnerComponent } from "src/app/loading-spinner/loading-spinner.component";
 import { PlaylistDataService } from 'src/app/service/playlist-data.service';
-import { map, Observable } from 'rxjs';
+import { map, Observable, Subject, takeUntil } from 'rxjs';
 import { ɵEmptyOutletComponent } from "@angular/router";
 import { totalPointsOrderValidator } from '../form-validators';
 import { MatNativeDateModule } from '@angular/material/core';
 import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatIconModule } from '@angular/material/icon';
 
 @Component({
   selector: 'app-image-upload',
   standalone: true,
-  imports: [CommonModule, MatFormFieldModule, MatInputModule, MatDatepickerModule, MatNativeDateModule, MatButtonModule, ReactiveFormsModule, MatSelectModule, LoadingSpinnerComponent, MatSnackBarModule, ɵEmptyOutletComponent],
+  imports: [CommonModule, MatFormFieldModule, MatInputModule, MatDatepickerModule, MatNativeDateModule, MatButtonModule, ReactiveFormsModule, MatSelectModule, LoadingSpinnerComponent, MatSnackBarModule, MatIconModule],
   templateUrl: './image-upload.component.html',
   styleUrls: ['./image-upload.component.scss']
 })
-export class ImageUploadComponent {
+export class ImageUploadComponent implements OnInit {
 
   latestUploads$: Observable<PlaylistData[]>;
-  allDates$: Observable<string[]>;
   parseSuccess: boolean = false;
   isLoading: boolean = false;
-
   imageFile: File | null = null;
   fileName: string | undefined;
-
   uploadForm: FormGroup;
-  allNames = ALL_NAMES;
+  playlistDateFilter: (d: Date | null) => boolean = () => true;
 
-  makeFilter(takenDates: string[] | null) {
-  return (d: Date | null): boolean => {
-    if (!d) return false;
-    if (!takenDates) return true
-
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const candidate = new Date(d);
-    candidate.setHours(0, 0, 0, 0);
-    const year = d.getFullYear();
-    const dateStr = d.toISOString().split('T')[0]; // YYYY-MM-DD
-
-    return candidate <= today && year > 2024 && !takenDates.includes(dateStr);
-  };
-}
+  private allDates$: Observable<string[]>;
+  private allNames = ALL_NAMES;
+  private destroy$ = new Subject<void>();
 
   constructor(private formBuilder: FormBuilder, private parsingService: ParsingService, private playlistDataService: PlaylistDataService, private snackBar: MatSnackBar) {
     this.uploadForm = this.formBuilder.group({
@@ -64,6 +50,30 @@ export class ImageUploadComponent {
     this.allDates$ = this.playlistDataService.playlistData$.pipe(
       map(playlists => playlists.map(p => p.playlistDate))
     );
+  }
+
+  ngOnInit(): void {
+    this.allDates$.pipe(takeUntil(this.destroy$))
+      .subscribe(dates => {
+        const takenSet = new Set(dates || []);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        this.playlistDateFilter = (d: Date | null) => {
+          if (!d) return false;
+          const candidate = new Date(d);
+          candidate.setHours(0, 0, 0, 0);
+          const year = candidate.getFullYear();
+          const dateStr = candidate.toISOString().split('T')[0];
+
+          return year === 2025 && candidate <= today && !takenSet.has(dateStr);
+        };
+      });
+  }
+
+  ngOnDestroy() {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   get playersLength(): number {
@@ -89,7 +99,7 @@ export class ImageUploadComponent {
 
     this.parsingService.uploadImage(formData).subscribe({
       next: (parsedData) => {
-        this.createForm(parsedData);
+        this.createFormFromParsedImage(parsedData);
         this.parseSuccess = true;
         this.showSnackBar('Image uploaded successfully');
       },
@@ -146,25 +156,10 @@ export class ImageUploadComponent {
     });
   }
 
-  private createForm(data: any): void {
-    this.uploadForm = this.formBuilder.group({
-      playlistName: [data.playlistName, Validators.required],
-      playlistDate: [undefined, [Validators.required, this.dateValidator]],
-      numberOfEvents: [data.numberOfEvents, Validators.required],
-      numberOfPlayers: [data.numberOfPlayers, Validators.required],
-      players: this.formBuilder.array(
-        data.players.map((player: any) => this.createPlayerGroup(player)),
-        [this.uniquePlayerNamesValidator]
-      )
-    });
-  }
-
-  private createPlayerGroup(player: any) {
-    return this.formBuilder.group({
-      name: [player.name, [Validators.required]],
-      lastEventPoints: [player.lastEventPoints, [Validators.required, Validators.max(16)]],
-      totalPoints: [player.totalPoints, [Validators.required, totalPointsOrderValidator()]]
-    });
+  public showForm(): void {
+    this.parseSuccess = true;
+    this.imageFile = new File([], "New Playlist");
+    this.createBlankForm()
   }
 
   onSubmit(): void {
@@ -221,6 +216,42 @@ export class ImageUploadComponent {
     selectedDate.setHours(0, 0, 0, 0);
 
     return selectedDate > today || selectedDate < oneMonthAgo ? { invalidDate: true } : null;
+  }
+
+  private createFormFromParsedImage(data: any): void {
+    this.uploadForm = this.formBuilder.group({
+      playlistName: [data.playlistName, Validators.required],
+      playlistDate: [undefined, [Validators.required, this.dateValidator]],
+      numberOfEvents: [data.numberOfEvents, Validators.required],
+      numberOfPlayers: [data.numberOfPlayers, Validators.required],
+      players: this.formBuilder.array(
+        data.players.map((player: any) => this.createPlayerGroup(player)),
+        [this.uniquePlayerNamesValidator]
+      )
+    });
+  }
+
+  private createBlankForm(): void {
+    this.uploadForm = this.formBuilder.group({
+      playlistName: ['', Validators.required],
+      playlistDate: [undefined, [Validators.required, this.dateValidator]],
+      numberOfEvents: [null, Validators.required],
+      numberOfPlayers: [4, Validators.required],
+      players: this.formBuilder.array(
+        Array.from({ length: 4 }).map(() =>
+          this.createPlayerGroup({ name: '', lastEventPoints: null, totalPoints: null })
+        ),
+        [this.uniquePlayerNamesValidator]
+      )
+    });
+  }
+
+  private createPlayerGroup(player: any) {
+    return this.formBuilder.group({
+      name: [player.name, [Validators.required]],
+      lastEventPoints: [player.lastEventPoints, [Validators.required, Validators.max(16)]],
+      totalPoints: [player.totalPoints, [Validators.required, totalPointsOrderValidator()]]
+    });
   }
 
   private showSnackBar(message: string): void {

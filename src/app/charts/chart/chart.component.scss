@@ -5,16 +5,28 @@
   margin-bottom: 35px;
 }
 
+.chart-header {
+  display: flex;
+  justify-content: space-evenly;
+}
+
+.chart-controls {
+  margin-top: 10px;
+}
+
 .scrollable-container {
   height: 550px;
   width: 1200px;
   min-width: 100%;
   padding: 25px;
+  padding-top: 0px;
 }
 
 .chart-title {
-  display: flex;
-  justify-content: center;
   font-size: x-large;
   margin-top: 25px;
+}
+
+mat-form-field {
+  max-width: 120px;
 }

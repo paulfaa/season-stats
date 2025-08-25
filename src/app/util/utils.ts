@@ -13,7 +13,7 @@ export class Utils {
         [7, 4]
     ])
 
-    static calculatePoints(finishingPosition: number) {
+    static calculateChampionshipPoints(finishingPosition: number) {
         return Utils.pointsMap.get(finishingPosition) || 0;
     }
 

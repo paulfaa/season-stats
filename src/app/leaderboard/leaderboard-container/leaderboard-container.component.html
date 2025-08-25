@@ -1,4 +1,4 @@
-<ng-container *ngIf="(results$ | async)?.races?.length && (results$ | async)!.races!.length > 0; else loading">
+<ng-container *ngIf="(results$ | async)?.playlists?.length && (results$ | async)!.playlists!.length > 0; else loading">
 
   <div class="leaderboard">
     <div class="leaderboard-header">
@@ -15,9 +15,9 @@
 
   <div class="race-breakdown" style="overflow-x: auto;">
     <h1>History</h1>
-    <player-results-container *ngFor="let race of (results$ | async)?.races; let i = index"
-      [date]="race.date"
-      [results]="race.players"
+    <player-results-container *ngFor="let playlist of (results$ | async)?.playlists; let i = index"
+      [date]="playlist.date"
+      [results]="playlist.results"
       [ngClass]="{ 'alt-background': i % 2 === 1 }">
     </player-results-container>
   </div>
