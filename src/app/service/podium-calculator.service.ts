@@ -533,41 +533,102 @@ export class PodiumCalculatorService {
     return podium;
   }
 
-  private calculateDedicationRates(playlistData: PlaylistData[]): PodiumResult[] {
+  private calculateDedicationRates(
+    playlistData: PlaylistData[]
+  ): PodiumResult[] {
+
     const joinDates = FIRST_APPEARANCES;
-
-    const totalPlaylistsByPlayer: Record<string, number> = {};
-    Object.entries(joinDates).forEach(([player, joinDate]) => {
-      totalPlaylistsByPlayer[player] = playlistData.filter(
-        playlist => new Date(playlist.playlistDate + "T00:00:00Z") >= joinDate
-      ).length;
-    });
-
     const defaultTotalPlaylists = playlistData.length;
 
     const attendanceCounts: Record<string, number> = {};
+    const proratedAttendanceCounts: Record<string, number> = {};
+    const totalPlaylistsByPlayer: Record<string, number> = {};
+
+    Object.keys(joinDates).forEach(name => {
+      attendanceCounts[name] = 0;
+      proratedAttendanceCounts[name] = 0;
+    });
+
+    Object.entries(joinDates).forEach(([player, joinDate]) => {
+      totalPlaylistsByPlayer[player] = playlistData.filter(
+        p => new Date(p.playlistDate + 'T00:00:00Z') >= joinDate
+      ).length;
+    });
+
     playlistData.forEach(playlist => {
-      const playlistDate = new Date(playlist.playlistDate + "T00:00:00Z");
+      const playlistDate = new Date(playlist.playlistDate + 'T00:00:00Z');
+
       playlist.players.forEach(player => {
+        attendanceCounts[player.name] =
+          (attendanceCounts[player.name] || 0) + 1;
+
         const joinDate = joinDates[player.name];
-        if (joinDate && playlistDate < joinDate) return;
-        attendanceCounts[player.name] = (attendanceCounts[player.name] || 0) + 1;
+        if (!joinDate || playlistDate >= joinDate) {
+          proratedAttendanceCounts[player.name] =
+            (proratedAttendanceCounts[player.name] || 0) + 1;
+        }
       });
     });
 
-    const attendanceRates = Object.entries(attendanceCounts).map(([name, count]) => {
-      const total = totalPlaylistsByPlayer[name] ?? defaultTotalPlaylists;
-      const totalPoints = total > 0 ? (count / total) * 100 : 0;
-      return { name, totalPoints };
-    });
+    const calculateRates = (
+      counts: Record<string, number>,
+      useProratedTotals: boolean
+    ): { name: string; totalPoints: number }[] =>
+      Object.entries(counts).map(([name, count]) => {
+        const total = useProratedTotals
+          ? totalPlaylistsByPlayer[name]
+          : defaultTotalPlaylists;
 
-    const subtitle = "total participation in playlists since joining";
-    const mostDedicated = this.generateTopThreePodium("Most Dedicated 💪", attendanceRates, new Date(2025, 5, 1).toISOString(), 1);
+        return {
+          name,
+          totalPoints: total && total > 0 ? (count / total) * 100 : 0
+        };
+      });
+
+    const attendanceRates = calculateRates(attendanceCounts, false);
+    const proratedAttendanceRates = calculateRates(proratedAttendanceCounts, true);
+
+    const subtitle = 'total participation in playlists overall';
+    const proratedSubtitle = 'total participation in playlists since joining';
+
+    const mostDedicated = this.generateTopThreePodium(
+      'Most Dedicated 💪',
+      attendanceRates,
+      new Date(2025, 11, 1).toISOString(),
+      1
+    );
     mostDedicated.subtitle = subtitle;
-    const leastDedicated = this.generateBottomThreePodium("Most Cowardly 💤", attendanceRates, new Date(2025, 5, 9).toISOString());
+
+    const leastDedicated = this.generateBottomThreePodium(
+      'Most Cowardly 😴',
+      attendanceRates,
+      new Date(2025, 11, 1).toISOString()
+    );
     leastDedicated.subtitle = subtitle;
-    return [mostDedicated, leastDedicated];
+
+    const proratedMostDedicated = this.generateTopThreePodium(
+      'Most Dedicated (prorated) 💪',
+      proratedAttendanceRates,
+      new Date(2025, 5, 1).toISOString(),
+      1
+    );
+    proratedMostDedicated.subtitle = proratedSubtitle;
+
+    const proratedLeastDedicated = this.generateBottomThreePodium(
+      'Most Cowardly (prorated) 💤',
+      proratedAttendanceRates,
+      new Date(2025, 5, 9).toISOString()
+    );
+    proratedLeastDedicated.subtitle = proratedSubtitle;
+
+    return [
+      mostDedicated,
+      leastDedicated,
+      proratedMostDedicated,
+      proratedLeastDedicated
+    ];
   }
+
 
   private calculateAverageScore(playlistData: PlaylistData[]): PodiumResult[] {
     const playerStats: Record<string, { totalPoints: number; count: number }> = {};

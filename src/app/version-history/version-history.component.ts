@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 
@@ -17,6 +17,7 @@ export class VersionHistoryComponent {
     { version: '0.3.0', changes: 'Fix upload page' },
     { version: '0.4.0', changes: 'UI changes' },
     { version: '0.5.0', changes: 'Add sort mode to podiums page' },
-    { version: '0.6.0', changes: 'Add filters to charts' }
+    { version: '0.6.0', changes: 'Add filters to charts' },
+    { version: '0.7.0', changes: 'Fix chart CSS and prorate participation calculation' },
   ]).reverse();
 }

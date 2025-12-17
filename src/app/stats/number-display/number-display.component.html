@@ -1,11 +1,14 @@
 <div class="number-display-container">
-    <div class="number-value" *ngIf="individualResult?.value || individualResult?.player">
-        {{individualResult?.value}}
-        <p>{{individualResult?.player}}</p>
-    </div>
-    
-    <p class="number-subtitle">
-        {{individualResult?.subtitle}}
-    </p>
+  <div
+    class="number-value"
+    *ngIf="individualResult?.value || individualResult?.player"
+  >
+    {{ individualResult?.value }}
+    <p>{{ individualResult?.player }}</p>
+  </div>
+
+  <p class="number-subtitle">
+    {{ individualResult?.subtitle }}
+  </p>
 </div>
-<span class="number-title">{{individualResult?.title}}</span>
+<span class="number-title">{{ individualResult?.title }}</span>

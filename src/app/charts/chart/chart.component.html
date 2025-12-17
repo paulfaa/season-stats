@@ -1,9 +1,12 @@
 <div class="chart-header">
-  <div class="chart-title">{{chartData?.title}}</div>
+  <div class="chart-title">{{ chartData?.title }}</div>
   <div class="chart-controls">
     <mat-form-field appearance="fill">
       <mat-label>Last</mat-label>
-      <mat-select (selectionChange)="onRangeChange($event.value)" [value]="'3m'">
+      <mat-select
+        (selectionChange)="onRangeChange($event.value)"
+        [value]="'3m'"
+      >
         <mat-option value="month">Month</mat-option>
         <mat-option value="3m">3 Months</mat-option>
         <mat-option value="6m">6 Months</mat-option>
@@ -15,7 +18,12 @@
 
 <div class="chart-container">
   <div class="scrollable-container">
-    <canvas baseChart [data]="filteredChartData" [options]="chartData?.chartOptions" [type]="lineChartType">
+    <canvas
+      baseChart
+      [data]="filteredChartData"
+      [options]="chartData?.chartOptions"
+      [type]="lineChartType"
+    >
     </canvas>
   </div>
 </div>

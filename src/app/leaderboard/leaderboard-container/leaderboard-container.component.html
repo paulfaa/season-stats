@@ -1,24 +1,35 @@
-<ng-container *ngIf="(results$ | async)?.playlists?.length && (results$ | async)!.playlists!.length > 0; else loading">
-
+<ng-container
+  *ngIf="
+    (results$ | async)?.playlists?.length &&
+      (results$ | async)!.playlists!.length > 0;
+    else loading
+  "
+>
   <div class="leaderboard">
     <div class="leaderboard-header">
       <h1>Driver Standings</h1>
       <mat-icon class="info-icon" (click)="openDialog()">info</mat-icon>
     </div>
 
-    <leaderboard-result *ngFor="let player of leaderboard$ | async; let i = index" [playerName]="player.playerName"
-      [points]="player.points" [position]="i + 1">
+    <leaderboard-result
+      *ngFor="let player of leaderboard$ | async; let i = index"
+      [playerName]="player.playerName"
+      [points]="player.points"
+      [position]="i + 1"
+    >
     </leaderboard-result>
   </div>
 
   <mat-divider></mat-divider>
 
-  <div class="race-breakdown" style="overflow-x: auto;">
-    <h1>History</h1>
-    <player-results-container *ngFor="let playlist of (results$ | async)?.playlists; let i = index"
+  <div class="race-breakdown" style="overflow-x: auto">
+    <h1>Playlist History</h1>
+    <player-results-container
+      *ngFor="let playlist of (results$ | async)?.playlists; let i = index"
       [date]="playlist.date"
       [results]="playlist.results"
-      [ngClass]="{ 'alt-background': i % 2 === 1 }">
+      [ngClass]="{ 'alt-background': i % 2 === 1 }"
+    >
     </player-results-container>
   </div>
 </ng-container>

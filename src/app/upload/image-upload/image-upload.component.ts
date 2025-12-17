@@ -11,7 +11,6 @@ import { MatSelectModule } from '@angular/material/select';
 import { LoadingSpinnerComponent } from "src/app/loading-spinner/loading-spinner.component";
 import { PlaylistDataService } from 'src/app/service/playlist-data.service';
 import { map, Observable, Subject, takeUntil } from 'rxjs';
-import { ɵEmptyOutletComponent } from "@angular/router";
 import { totalPointsOrderValidator } from '../form-validators';
 import { MatNativeDateModule } from '@angular/material/core';
 import { MatDatepickerModule } from '@angular/material/datepicker';

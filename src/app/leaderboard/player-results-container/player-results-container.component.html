@@ -1,7 +1,7 @@
 <div class="results-container mat-elevation-z2">
-    <div class="date-display"> {{date | date: 'd MMM'}}</div>
-    <div class="results-placeholder">
-        <player-result *ngFor="let result of results" [playerPoints]="result">
-        </player-result>
-    </div>
+  <div class="date-display">{{ date | date : "d MMM" }}</div>
+  <div class="results-placeholder">
+    <player-result *ngFor="let result of results" [playerPoints]="result">
+    </player-result>
+  </div>
 </div>

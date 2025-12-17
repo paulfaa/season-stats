@@ -13,8 +13,29 @@ export class Utils {
         [7, 4]
     ])
 
-    static calculateChampionshipPoints(finishingPosition: number) {
-        return Utils.pointsMap.get(finishingPosition) || 0;
+    static calculateChampionshipPointsByPlayer(
+        players: { name: string; totalPoints: number }[]
+    ): Record<string, number> {
+
+        const sorted = [...players].sort(
+            (a, b) => b.totalPoints - a.totalPoints
+        );
+
+        const result: Record<string, number> = {};
+
+        let currentRank = 1;
+        let previousPoints: number | null = null;
+
+        sorted.forEach(player => {
+            if (previousPoints !== null && player.totalPoints < previousPoints) {
+                currentRank += 1;
+            }
+
+            result[player.name] = Utils.pointsMap.get(currentRank - 1) || 0;
+            previousPoints = player.totalPoints;
+        });
+
+        return result;
     }
 
     static playlistWasDraw(playlist: PlaylistData): boolean {

@@ -47,14 +47,14 @@ export class ChartsService {
           }
         },
         y: {
-          beginAtZero: true,
-          title: {
-            display: true,
-            text: 'Total Points'
-          }
+          beginAtZero: true
         }
       },
       plugins: {
+        legend: {
+          display: true,
+          position: 'bottom'
+        },
         tooltip: {
           callbacks: {
             labelColor: (context) => this.getLabelColor(context),
@@ -85,7 +85,7 @@ export class ChartsService {
         return {
           chartData: chart,
           chartOptions: championshipPointsChartOptions,
-          title: 'Points'
+          title: 'Total Points'
         };
       })
     );
@@ -121,13 +121,13 @@ export class ChartsService {
           ticks: {
             stepSize: 1,
           },
-          title: {
-            display: true,
-            text: 'Total Wins'
-          }
         }
       },
       plugins: {
+        legend: {
+          display: true,
+          position: 'bottom'
+        },
         tooltip: {
           callbacks: {
             labelColor: (context) => this.getLabelColor(context),
@@ -171,7 +171,7 @@ export class ChartsService {
     return {
       chartData: chart,
       chartOptions: totalWinsChartOptions,
-      title: 'Wins'
+      title: 'Total Wins'
     };
   }
 
@@ -204,14 +204,14 @@ export class ChartsService {
           beginAtZero: true,
           ticks: {
             stepSize: 1,
-          },
-          title: {
-            display: true,
-            text: 'Total Appearances'
           }
         }
       },
       plugins: {
+        legend: {
+          display: true,
+          position: 'bottom'
+        },
         tooltip: {
           callbacks: {
             labelColor: (context) => this.getLabelColor(context),
@@ -255,7 +255,7 @@ export class ChartsService {
     return {
       chartData: chart,
       chartOptions: totalAppearancesChartOptions,
-      title: 'Appearances'
+      title: 'Total Appearances'
     };
   }
 
@@ -310,17 +310,14 @@ export class ChartsService {
 
     const winRateChartOptions: ChartOptions<'line'> = {
       responsive: true,
+      maintainAspectRatio: false,
       scales: {
         y: {
-          min: 0,
-          max: 0.4,
+/*           min: 0,
+          suggestedMax: 0.4, */
           ticks: {
             stepSize: 0.05,
             callback: (value) => `${(value as number * 100).toFixed(0)}%`
-          },
-          title: {
-            display: true,
-            text: 'Win Rate'
           }
         },
         x: {

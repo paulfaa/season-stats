@@ -1,13 +1,14 @@
 .chart-container {
-  width: 100%;
-  overflow-x: auto;
-  white-space: nowrap;
-  margin-bottom: 35px;
+  width: 97%;
+  padding-left: 9px;
+  //overflow-x: auto;
+  //white-space: nowrap;
+  margin-bottom: 45px;
 }
 
 .chart-header {
   display: flex;
-  justify-content: space-evenly;
+  justify-content: space-around;
 }
 
 .chart-controls {
@@ -16,9 +17,9 @@
 
 .scrollable-container {
   height: 550px;
-  width: 1200px;
-  min-width: 100%;
-  padding: 25px;
+  //width: 1200px;
+  //min-width: 100%;
+  //padding: 25px;
   padding-top: 0px;
 }
 

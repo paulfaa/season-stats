@@ -52,14 +52,14 @@ export class StatsCalculatorService {
         points: 'Days'
       }
     });
-    /* tables.push({
+    tables.push({
       title: 'Days on Top of Leaderboard',
       data: this.calculateDaysOnTop(playlistData),
       columnHeaders: {
         playerName: 'Player',
         points: 'Days'
       }
-    }); */
+    });
     return tables;
   }
 
@@ -182,25 +182,41 @@ export class StatsCalculatorService {
   }
 
   private calculateDaysOnTop(playlistData: PlaylistData[]): PlayerResult[] {
+
+    // 1. Sort playlists chronologically
     const sortedPlaylists = [...playlistData].sort(
-      (a, b) => new Date(a.playlistDate).getTime() - new Date(b.playlistDate).getTime()
+      (a, b) =>
+        new Date(a.playlistDate).getTime() -
+        new Date(b.playlistDate).getTime()
     );
 
+    // 2. Track cumulative championship points
     const pointsPerPlayer: Record<string, number> = {};
-    ALL_NAMES.forEach(name => pointsPerPlayer[name] = 0);
+    ALL_NAMES.forEach(name => (pointsPerPlayer[name] = 0));
 
+    // 3. Track leader per date
     const leaderByDate: Record<string, string> = {};
     let currentLeader: string | null = null;
 
     sortedPlaylists.forEach(playlist => {
-      playlist.players.forEach((player, index) => {
-        pointsPerPlayer[player.name] += Utils.calculateChampionshipPoints(index);
-      });
 
-      const sortedLeaders = Object.entries(pointsPerPlayer)
-        .sort((a, b) => b[1] - a[1]);
+      const championshipPointsForPlaylist =
+        Utils.calculateChampionshipPointsByPlayer(
+          playlist.players.map(p => ({
+            name: p.name,
+            totalPoints: p.totalPoints
+          }))
+        );
 
-      currentLeader = sortedLeaders[0][0];
+      for (const [name, points] of Object.entries(championshipPointsForPlaylist)) {
+        pointsPerPlayer[name] += points;
+      }
+
+      currentLeader = Object.entries(pointsPerPlayer)
+        .reduce((leader, current) =>
+          current[1] > leader[1] ? current : leader
+        )[0];
+
       const dateKey = this.formatDateKey(new Date(playlist.playlistDate));
       leaderByDate[dateKey] = currentLeader;
     });
@@ -209,7 +225,7 @@ export class StatsCalculatorService {
     const today = new Date();
 
     const daysOnTop: Record<string, number> = {};
-    ALL_NAMES.forEach(name => daysOnTop[name] = 0);
+    ALL_NAMES.forEach(name => (daysOnTop[name] = 0));
 
     let dateCursor = new Date(startDate);
 
@@ -232,11 +248,9 @@ export class StatsCalculatorService {
       .sort((a, b) => b.points - a.points);
   }
 
-
   private formatDateKey(date: Date): string {
     return date.toISOString().split('T')[0];
   }
-
 
   private calculateLongestWinningStreak(playlistData: PlaylistData[]): IndividualResult {
     const sortedPlaylists = [...playlistData].sort(
