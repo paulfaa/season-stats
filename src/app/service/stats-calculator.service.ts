@@ -30,7 +30,7 @@ export class StatsCalculatorService {
     stats.push(this.calculateAverageSquadSize(playlistData));
     stats.push(...this.calculateMostPopularDays(playlistData));
     stats.push(this.calculateMostPlaylistsInOneWeek(playlistData));
-    //stats.push(this.calculateLongestWinningStreak()); //needs fix
+    stats.push(this.calculateLongestWinningStreak(playlistData));
     return stats
   }
 
@@ -100,8 +100,8 @@ export class StatsCalculatorService {
       dateObj: new Date(playlist.playlistDate)
     }));
 
-    const startOfYear = new Date('2025-01-01');
-    const endOfYear = new Date('2025-12-31');
+    const startOfYear = new Date('2026-01-01');
+    const endOfYear = new Date('2026-12-31');
 
     while (startOfYear.getDay() !== 1) {
       startOfYear.setDate(startOfYear.getDate() + 1);
@@ -182,19 +182,14 @@ export class StatsCalculatorService {
   }
 
   private calculateDaysOnTop(playlistData: PlaylistData[]): PlayerResult[] {
-
-    // 1. Sort playlists chronologically
     const sortedPlaylists = [...playlistData].sort(
       (a, b) =>
         new Date(a.playlistDate).getTime() -
         new Date(b.playlistDate).getTime()
     );
 
-    // 2. Track cumulative championship points
     const pointsPerPlayer: Record<string, number> = {};
     ALL_NAMES.forEach(name => (pointsPerPlayer[name] = 0));
-
-    // 3. Track leader per date
     const leaderByDate: Record<string, string> = {};
     let currentLeader: string | null = null;
 
@@ -221,7 +216,7 @@ export class StatsCalculatorService {
       leaderByDate[dateKey] = currentLeader;
     });
 
-    const startDate = new Date(2025, 0, 7);
+    const startDate = new Date(2026, 0, 1);
     const today = new Date();
 
     const daysOnTop: Record<string, number> = {};
@@ -287,6 +282,7 @@ export class StatsCalculatorService {
         }
       }
     });
+    console.log('Best Players:', bestPlayers);
 
     const bestPlayer = bestPlayers.length > 1 ? bestPlayers.join(', ') : bestPlayers[0];
     return { title: 'Longest Winning Streak:', subtitle: bestPlayer, value: longestStreak };

@@ -1,5 +1,13 @@
 <div class="results-container mat-elevation-z2">
-  <div class="date-display">{{ date | date : "d MMM" }}</div>
+  <div class="date-display">
+    <a *ngIf="imageUrl" [href]="imageUrl" target="_blank" rel="noopener">
+      {{ date | date : "d MMM" }}
+    </a>
+
+    <span *ngIf="!imageUrl">
+      {{ date | date : "d MMM" }}
+    </span>
+  </div>
   <div class="results-placeholder">
     <player-result *ngFor="let result of results" [playerPoints]="result">
     </player-result>

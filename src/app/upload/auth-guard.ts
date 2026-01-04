@@ -2,22 +2,22 @@ import { Injectable } from '@angular/core';
 import { CanActivate, Router, UrlTree } from '@angular/router';
 import { Observable, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
-import { ParsingService } from '../service/parsing.service';
+import { ApiService } from '../service/api.service';
 
 @Injectable({ providedIn: 'root' })
 export class AuthGuard implements CanActivate {
-  constructor(private auth: ParsingService, private router: Router) {}
+  constructor(private auth: ApiService, private router: Router) { }
 
   canActivate(): Observable<boolean | UrlTree> {
-  return this.auth.checkAuth().pipe(
-    map(() => {
-      console.log('AuthGuard: Authenticated');
-      return true;
-    }),
-    catchError((err) => {
-      console.log('AuthGuard: Not authenticated or server unreachable', err);
-      return of(this.router.createUrlTree(['/login']));
-    })
-  );
-}
+    return this.auth.checkAuth().pipe(
+      map(() => {
+        console.log('AuthGuard: Authenticated');
+        return true;
+      }),
+      catchError((err) => {
+        console.log('AuthGuard: Not authenticated or server unreachable', err);
+        return of(this.router.createUrlTree(['/login']));
+      })
+    );
+  }
 }

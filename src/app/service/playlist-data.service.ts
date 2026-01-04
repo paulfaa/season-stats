@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { startWith, interval, map, Observable, shareReplay, Subject, switchMap, takeUntil, merge } from 'rxjs';
 import { PlaylistData } from '../models';
-import { ParsingService } from './parsing.service';
+import { ApiService } from './api.service';
 
 @Injectable({
   providedIn: 'root'
@@ -11,7 +11,7 @@ export class PlaylistDataService {
   private TWELVE_HOURS_IN_MS: number = 12 * 60 * 60 * 1000;
   private manualRefresh$ = new Subject<void>();
 
-  constructor(private parsingService: ParsingService) { }
+  constructor(private parsingService: ApiService) { }
 
   public playlistData$: Observable<PlaylistData[]> = merge(
     interval(this.TWELVE_HOURS_IN_MS).pipe(startWith(0)), // Emits immediately and every 12 hours

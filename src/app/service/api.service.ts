@@ -1,11 +1,11 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, catchError, Observable, tap, throwError } from 'rxjs';
+import { BehaviorSubject, catchError, map, Observable, tap, throwError } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { PlaylistData } from '../models';
 
 @Injectable({ providedIn: 'root' })
-export class ParsingService {
+export class ApiService {
 
   private apiUrl = environment.apiUrl;
   private usernameSubject = new BehaviorSubject<string | null>(null);
@@ -19,6 +19,7 @@ export class ParsingService {
   public getAllPlaylists(): Observable<PlaylistData[]> {
     return this.http.get<PlaylistData[]>(`${this.apiUrl}/playlists`)
       .pipe(
+        map(playlists => playlists.filter(p => p.playlistDate.includes('2026'))),
         catchError(error => {
           console.error('Error fetching playlists:', error);
           return throwError(() => error);
@@ -57,7 +58,12 @@ export class ParsingService {
     return this.http.post(`${this.apiUrl}/upload`, formData);
   }
 
-  public saveToDatabase(playlistData: PlaylistData): Observable<any> {
-    return this.http.post(`${this.apiUrl}/save`, playlistData);
+  public saveToDatabase(playlistData: PlaylistData, imageFile: File | undefined): Observable<any> {
+    const formData = new FormData();
+    formData.append('playlistData', JSON.stringify(playlistData));
+    if (imageFile) {
+      formData.append('image', imageFile);
+    }
+    return this.http.post(`${this.apiUrl}/save`, formData);
   }
 }

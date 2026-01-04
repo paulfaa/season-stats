@@ -5,7 +5,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { Validators, FormBuilder, ReactiveFormsModule, FormArray, AbstractControl, ValidationErrors, FormGroup } from '@angular/forms';
-import { ParsingService } from 'src/app/service/parsing.service';
+import { ApiService } from 'src/app/service/api.service';
 import { ALL_NAMES, PlaylistData } from '../../models';
 import { MatSelectModule } from '@angular/material/select';
 import { LoadingSpinnerComponent } from "src/app/loading-spinner/loading-spinner.component";
@@ -29,7 +29,7 @@ export class ImageUploadComponent implements OnInit {
   latestUploads$: Observable<PlaylistData[]>;
   parseSuccess: boolean = false;
   isLoading: boolean = false;
-  imageFile: File | null = null;
+  imageFile: File | undefined;
   fileName: string | undefined;
   uploadForm: FormGroup;
   playlistDateFilter: (d: Date | null) => boolean = () => true;
@@ -38,7 +38,7 @@ export class ImageUploadComponent implements OnInit {
   private allNames = ALL_NAMES;
   private destroy$ = new Subject<void>();
 
-  constructor(private formBuilder: FormBuilder, private parsingService: ParsingService, private playlistDataService: PlaylistDataService, private snackBar: MatSnackBar) {
+  constructor(private formBuilder: FormBuilder, private parsingService: ApiService, private playlistDataService: PlaylistDataService, private snackBar: MatSnackBar) {
     this.uploadForm = this.formBuilder.group({
       playlistName: [''],
       playlistDate: [],
@@ -66,7 +66,7 @@ export class ImageUploadComponent implements OnInit {
           const year = candidate.getFullYear();
           const dateStr = Utils.dateToYYYYMMDD(candidate);
 
-          return year === 2025 && candidate <= today && !takenSet.has(dateStr);
+          return year === 2026 && candidate <= today && !takenSet.has(dateStr);
         };
       });
   }
@@ -101,16 +101,16 @@ export class ImageUploadComponent implements OnInit {
       next: (parsedData) => {
         this.createFormFromParsedImage(parsedData);
         this.parseSuccess = true;
-        this.showSnackBar('Image uploaded successfully');
+        this.showSnackBar('Image scanned successfully');
       },
       complete: () => {
         this.isLoading = false;
-        console.log('Image upload successful:', this.fileName);
+        console.log('Image scan successful:', this.fileName);
       },
       error: (error) => {
         this.isLoading = false;
         this.parseSuccess = false;
-        console.error('Image upload failed:', error);
+        console.error('Image scan failed:', error);
         this.showSnackBar('Failed to scan. Double check if Mikey took the photo.');
       }
     });
@@ -131,7 +131,7 @@ export class ImageUploadComponent implements OnInit {
   public resetForm(): void {
     this.uploadForm.reset();
     this.parseSuccess = false;
-    this.imageFile = null;
+    this.imageFile = undefined;
     this.fileName = undefined;
   }
 
@@ -180,9 +180,9 @@ export class ImageUploadComponent implements OnInit {
       }))
     };
 
-    console.log('data:', playlistData)
+    console.log('data:', playlistData);
 
-    this.parsingService.saveToDatabase(playlistData).subscribe({
+    this.parsingService.saveToDatabase(playlistData, this.imageFile).subscribe({
       next: () => {
         this.playlistDataService.refreshPlaylists();
         console.log('Data saved successfully');

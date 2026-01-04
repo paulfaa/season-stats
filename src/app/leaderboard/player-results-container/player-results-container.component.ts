@@ -13,6 +13,7 @@ import { PlayerResultComponent } from '../player-result/player-result.component'
 export class PlayerResultsContainerComponent implements OnInit {
 
   @Input() date: Date | undefined;
+  @Input() imageUrl: string | undefined;
   @Input() results: PlayerPoints[] | undefined;
 
   constructor() { }

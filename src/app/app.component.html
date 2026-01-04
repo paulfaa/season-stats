@@ -1,15 +1,22 @@
 <div class="sticky-header">
   <mat-toolbar>
     <mat-toolbar-row>
-      <span id="main-title">GTA Wrapped 2025</span>
+      <span id="main-title">GTA 2026</span>
       <span class="spacer"></span>
       <update-date></update-date>
     </mat-toolbar-row>
   </mat-toolbar>
 
   <nav mat-tab-nav-bar mat-align-tabs="center">
-    <a mat-tab-link *ngFor="let tab of tabs" [routerLink]="tab.route" routerLinkActive #rla="routerLinkActive"
-      [active]="rla.isActive" [routerLinkActiveOptions]="{ exact: true }">
+    <a
+      mat-tab-link
+      *ngFor="let tab of tabs"
+      [routerLink]="tab.route"
+      routerLinkActive
+      #rla="routerLinkActive"
+      [active]="rla.isActive"
+      [routerLinkActiveOptions]="{ exact: true }"
+    >
       <mat-icon>{{ tab.icon }}</mat-icon>
       {{ tab.label }}
     </a>
@@ -19,20 +26,19 @@
 <router-outlet></router-outlet>
 
 <div class="version-info">
-  <p>Version: {{APP_VERSION}}</p>
+  <p>Version: {{ APP_VERSION }}</p>
 
   <div class="footer-links">
     <div>
       <a [routerLink]="['/privacy-policy']"> Privacy Policy </a>
-
     </div>
     <div>
-      <a href="https://github.com/paulfaa/paulfaa.github.io/issues/new">Contact Us</a>
-
+      <a href="https://github.com/paulfaa/paulfaa.github.io/issues/new"
+        >Contact Us</a
+      >
     </div>
     <div>
       <a [routerLink]="['/version-history']"> Version history </a>
-
     </div>
   </div>
 </div>

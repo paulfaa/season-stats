@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { ParsingService } from '../../service/parsing.service';
+import { ApiService } from '../../service/api.service';
 import { ReactiveFormsModule, Validators, FormBuilder } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -24,7 +24,7 @@ export class LoginComponent {
     passwordInput: ['', Validators.required]
   });
 
-  constructor(private formBuilder: FormBuilder, private parsingService: ParsingService, private router: Router) { }
+  constructor(private formBuilder: FormBuilder, private parsingService: ApiService, private router: Router) { }
 
   submit() {
     this.parsingService.login(this.loginForm.value.usernameInput!, this.loginForm.value.passwordInput!).subscribe({

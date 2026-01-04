@@ -14,6 +14,7 @@ export interface PlaylistData {
     uploadDate: string;
     uploadedBy: string;
     players: Player[];
+    imageUrl?: string;
 }
 
 export interface Playlist {
@@ -68,6 +69,7 @@ export interface PlaylistBreakdown {
 
 export interface PlaylistResult {
     date: Date;
+    imageUrl?: string;
     results: PlayerPoints[];
 }
 

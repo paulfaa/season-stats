@@ -32,6 +32,7 @@ export class LeaderboardService {
 
     playlists.forEach(playlist => {
       const date = new Date(playlist.playlistDate);
+      const imageUrl = playlist.imageUrl;
       const missingNames = new Set(ALL_NAMES);
       const currentResults: PlayerPoints[] = [];
 
@@ -63,6 +64,7 @@ export class LeaderboardService {
 
       breakdown.playlists.push({
         date,
+        imageUrl,
         results: currentResults
       });
     });

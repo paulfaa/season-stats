@@ -19,5 +19,6 @@ export class VersionHistoryComponent {
     { version: '0.5.0', changes: 'Add sort mode to podiums page' },
     { version: '0.6.0', changes: 'Add filters to charts' },
     { version: '0.7.0', changes: 'Fix chart CSS and prorate participation calculation' },
+    { version: '0.8.0', changes: '2026 Update. Upload all playlist photos to Google cloud storage' },
   ]).reverse();
 }

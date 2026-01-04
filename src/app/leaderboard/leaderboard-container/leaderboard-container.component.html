@@ -27,6 +27,7 @@
     <player-results-container
       *ngFor="let playlist of (results$ | async)?.playlists; let i = index"
       [date]="playlist.date"
+      [imageUrl]="playlist.imageUrl"
       [results]="playlist.results"
       [ngClass]="{ 'alt-background': i % 2 === 1 }"
     >
