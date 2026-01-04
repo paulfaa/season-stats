@@ -4,8 +4,8 @@
 
 export const environment = {
   production: false,
-  apiUrl: 'http://localhost:8080',
-  // apiUrl: 'https://season-stats-server-157540107130.europe-southwest1.run.app'
+  //apiUrl: 'http://localhost:8080',
+  apiUrl: 'https://season-stats-server-157540107130.europe-southwest1.run.app'
 };
 
 /*
