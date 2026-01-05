@@ -68,8 +68,6 @@ export class LeaderboardService {
         results: currentResults
       });
     });
-
-    console.log('Generated Playlist Breakdown:', breakdown);
     return breakdown;
   }
 
